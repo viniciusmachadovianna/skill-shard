@@ -1,20 +1,30 @@
-# TCC RAG — Explainable RAG for Hallucination Mitigation
+# Skill Shard - RAG com rastreabilidade de fontes e mitigação de alucinações
 
-Autor: Vinícius Machado - Engenharia de Software - UniAcademia
+Autor: Vinícius Machado
 
-Sistema de Geração Aumentada por Recuperação (RAG) voltado à mitigação de alucinações e à rastreabilidade de fontes em consultas sobre bases documentais (PDFs), com uma camada opcional de extração de relações entre entidades (inspirada em GraphRAG) para responder perguntas que cruzam informações entre documentos.
+[English version](README.en.md) \
 
+Trabalho de Conclusão de Curso em 'Engenharia de Software' na universidade UniAcademia.
 
 ## Objetivo
 
-Desenvolver e avaliar um sistema RAG capaz de:
+Gerar um Sistema de Geração Aumentada por Recuperação (RAG) focado na mitigação de alucinações e a rastreabilidade de fontes na consultas em documentais (ex.: PDFs).
+
+Capacidades:
 - Responder perguntas com base em uma coleção de documentos PDF
 - Minimizar alucinações
 - Apresentar ao usuário as fontes e relações usadas na construção da resposta
 
 ## Arquitetura
 
-...
+backend/
+├── app/
+│ ├── ingestion/ # extração de PDFs, chunking, embeddings
+
+frontend/
+├── index.html
+├── style/
+└── script/
 
 ## Stack
 
