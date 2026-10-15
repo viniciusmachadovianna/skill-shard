@@ -2,7 +2,7 @@
 
 Autor: Vinícius Machado
 
-[English version](README.en.md) \
+[English version](README.en.md)
 
 Trabalho de Conclusão de Curso em 'Engenharia de Software' na universidade UniAcademia.
 
@@ -17,14 +17,14 @@ Capacidades:
 
 ## Arquitetura
 
-backend/
-├── app/
-│ ├── ingestion/ # extração de PDFs, chunking, embeddings
+backend/ <br>
+├── app/ <br>
+│ ├── ingestion/ # extração de PDFs, chunking, embeddings <br>
 
-frontend/
-├── index.html
-├── style/
-└── script/
+frontend/ <br>
+├── index.html <br>
+├── style/ <br>
+└── script/ <br>
 
 ## Stack
 

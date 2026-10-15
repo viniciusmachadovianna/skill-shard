@@ -2,7 +2,7 @@
 
 Author: Vinícius Machado
 
-[Versão em português](README.md) \
+[Versão em português](README.md)
 
 [EN-US] Codebase and evaluation framework for my Bachelor's Thesis (TCC)
 
@@ -17,14 +17,14 @@ Capabilities:
 
 ## Architecture
 
-backend/
-├── app/
-│ ├── ingestion/ # PDF extraction, chunking, embeddings
+backend/ <br>
+├── app/ <br>
+│ ├── ingestion/ # PDF extraction, chunking, embeddings <br>
 
-frontend/
-├── index.html
-├── style/
-└── script/
+frontend/ <br>
+├── index.html <br>
+├── style/ <br>
+└── script/ <br>
 
 ## Stack
 
