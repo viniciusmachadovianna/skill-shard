@@ -10,9 +10,10 @@ const sidebarToggle = document.querySelector('.sidebar-toggle');
 const assistantToggle = document.querySelector('.assistant-toggle');
 const appShell = document.querySelector('.app-shell');
 let toastTimeout;
-let conversationNumber = 1;
 const themeToggle = document.querySelector('#theme-toggle');
 const themeColor = document.querySelector('meta[name="theme-color"]');
+const conversationList = document.querySelector('.sidebar-top');
+const conversationCount = document.querySelector('#conversation-count');
 
 function showToast(message) {
     toast.textContent = message;
@@ -110,13 +111,31 @@ assistantToggle.addEventListener('click', () => {
 
 syncSidebarState();
 
-document.querySelector('.new-conversation').addEventListener('click', () => {
-    conversationNumber += 1;
-    conversationOutput.replaceChildren();
-    promptInput.value = '';
-    document.querySelector('#workspace-title').textContent = 'New investigation';
-    document.querySelector('#conversation-count').textContent = String(conversationNumber).padStart(2, '0');
-    showToast('New investigation started.');
+conversationList.addEventListener('click', (event) => {
+    const newConversationButton = event.target.closest('.new-conversation');
+
+    if (newConversationButton) {
+        const conversation = document.createElement('button');
+        conversation.type = 'button';
+        conversation.className = 'conversation-item active';
+
+        const icon = document.createElement('span');
+        icon.className = 'chat-icon';
+        icon.textContent = '▱';
+        const title = document.createElement('span');
+        title.textContent = 'New investigation';
+        conversation.append(icon, title);
+        conversationList.append(conversation);
+        conversationList.querySelectorAll('.conversation-item').forEach((item) => {
+            item.classList.toggle('active', item === conversation);
+        });
+
+        conversationOutput.replaceChildren();
+        promptInput.value = '';
+        document.querySelector('#workspace-title').textContent = 'New investigation';
+        conversationCount.textContent = String(conversationList.querySelectorAll('.conversation-item').length).padStart(2, '0');
+        showToast('New investigation started.');
+    }
 });
 
 document.querySelector('.scroll-cue').addEventListener('click', () => {

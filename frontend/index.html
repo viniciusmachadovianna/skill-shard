@@ -24,9 +24,8 @@
                 <button class="icon-button panel-toggle assistant-toggle" type="button" aria-label="Hide assistant panel" title="Hide assistant panel">⟩</button>
                 <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Switch to light theme">☼</button>
                 <button class="icon-button help-button" aria-label="About this interface" title="About this interface">?</button>
-                <span class="unit-label">UNIT RK-900<br>
+                <span class="unit-label"><span class="icon">⚙</span> UNIT SS-800<br>
                     <b>INTERFACE V.01</b>
-                    <p class="awaiting"><span class="status-dot"></span> AWAITING YOUR INPUT</p>
                 </span>
             </div>
         </header>
@@ -44,11 +43,10 @@
                     <span class="chevron">›</span>
                 </button>
                 <div class="operator-row">
-                    <span class="operator-avatar">RK</span>
+                    <span class="operator-avatar">SS</span>
                     <span class="knowledge-copy"><strong>Operator</strong><small>LOCAL SESSION</small></span>
                     <span class="shield">⬡</span>
                 </div>
-                <div class="sidebar-footer"><span>⚙</span> DEVIANT SYSTEMS <b>/</b> COGNITIVE INTERFACE</div>
             </div>
         </aside>
 
@@ -88,7 +86,8 @@
                     <div class="composer-actions">
                         <label class="attach-button" for="file-input" title="Add documents">⌁</label>
                         <input id="file-input" type="file" multiple hidden>
-                        <span class="model-label">RK-900 <b>/</b> RETRIEVAL</span>
+                        <p class="awaiting"><span class="status-dot"></span> AWAITING YOUR INPUT</p>
+
                         <button class="send-button" type="submit" aria-label="Send message">→</button>
                     </div>
                 </form>
@@ -101,6 +100,8 @@
                 <div class="telemetry">
                     <div class="telemetry-title">SYSTEM TELEMETRY</div>
                     <div class="metric"><span>Inference engine</span><strong>NOT CONNECTED</strong></div>
+                    <div class="metric"><span>Chunking overlap</span><strong>15</strong></div>
+                    <div class="metric"><span>LM Model</span><strong>Gemini</strong></div>
                     <div class="metric"><span>Knowledge sources</span><strong id="source-metric">00 DOCUMENTS</strong></div>
                     <div class="metric"><span>Conversation memory</span><strong>LOCAL</strong></div>
                     <div class="metric"><span>Retrieval protocol</span><strong>STANDBY</strong></div>
