@@ -1,3 +1,9 @@
+import { applyTheme } from './theme.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyTheme();
+});
+
 const composer = document.querySelector('#composer');
 const promptInput = document.querySelector('#prompt-input');
 const conversationOutput = document.querySelector('#conversation-output');
@@ -10,15 +16,13 @@ const sidebarToggle = document.querySelector('.sidebar-toggle');
 const assistantToggle = document.querySelector('.assistant-toggle');
 const appShell = document.querySelector('.app-shell');
 let toastTimeout;
-const themeToggle = document.querySelector('#theme-toggle');
-const themeColor = document.querySelector('meta[name="theme-color"]');
 const conversationList = document.querySelector('.sidebar-top');
 const conversationCount = document.querySelector('#conversation-count');
 const workspaceTitle = document.querySelector('#workspace-title');
 const responseLoader = document.querySelector('#response-loader');
 let responseTimeout;
 
-function showToast(message) {
+export function showToast(message) {
     toast.textContent = message;
     toast.classList.add('visible');
     window.clearTimeout(toastTimeout);
@@ -34,15 +38,6 @@ function addMessage(label, message, className = '') {
     body.textContent = message;
     article.append(caption, body);
     conversationOutput.append(article);
-}
-
-function applyTheme(theme) {
-    const isLight = theme === 'light';
-    document.documentElement.dataset.theme = isLight ? 'light' : 'dark';
-    themeToggle.textContent = isLight ? '☾' : '☼';
-    themeToggle.setAttribute('aria-label', `Switch to ${isLight ? 'dark' : 'light'} theme`);
-    themeToggle.title = `Switch to ${isLight ? 'dark' : 'light'} theme`;
-    themeColor.content = isLight ? '#f1f5f7' : '#080b0e';
 }
 
 function syncSidebarState() {
@@ -123,25 +118,6 @@ function cancelPendingResponse() {
     responseLoader.hidden = true;
     conversationOutput.removeAttribute('aria-busy');
 }
-
-try {
-    const savedTheme = localStorage.getItem('deviant-theme');
-    if (savedTheme === 'light' || savedTheme === 'dark') applyTheme(savedTheme);
-} catch (error) {
-    console.error('Could not load the saved theme preference.', error);
-    showToast('Theme preference could not be loaded. Using dark theme.');
-}
-
-themeToggle.addEventListener('click', () => {
-    const theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-    applyTheme(theme);
-    try {
-        localStorage.setItem('deviant-theme', theme);
-    } catch (error) {
-        console.error('Could not save the theme preference.', error);
-        showToast('Theme changed, but your preference could not be saved.');
-    }
-});
 
 document.querySelectorAll('.objective-card').forEach((card) => {
     card.addEventListener('click', () => {
