@@ -1,25 +1,37 @@
 import { applyTheme } from './theme.js';
+import { $, $$ } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     applyTheme();
 });
 
-const composer = document.querySelector('#composer');
-const promptInput = document.querySelector('#prompt-input');
-const conversationOutput = document.querySelector('#conversation-output');
-const workArea = document.querySelector('#work-area');
-const toast = document.querySelector('#toast');
-const fileInput = document.querySelector('#file-input');
-const sidebar = document.querySelector('.sidebar');
-const assistantPanel = document.querySelector('.assistant-panel');
-const sidebarToggle = document.querySelector('.sidebar-toggle');
-const assistantToggle = document.querySelector('.assistant-toggle');
-const appShell = document.querySelector('.app-shell');
+const appShell = $('.app-shell');
+
+const composer = $('#composer');
+const workArea = $('#work-area');
+
+const toast = $('#toast');
 let toastTimeout;
-const conversationList = document.querySelector('.sidebar-top');
-const conversationCount = document.querySelector('#conversation-count');
-const workspaceTitle = document.querySelector('#workspace-title');
-const responseLoader = document.querySelector('#response-loader');
+
+const fileInput = $('#file-input');
+const promptInput = $('#prompt-input');
+const conversationOutput = $('#conversation-output');
+const exportButton = $('#export-button');
+const helpButton = $('.help-button');
+
+const sidebar = $('.sidebar');
+const assistantPanel = $('.assistant-panel');
+const sidebarToggle = $('.sidebar-toggle');
+const assistantToggle = $('.assistant-toggle');
+
+const conversationList = $('.sidebar-top');
+const conversationCount = $('#conversation-count');
+const workspaceTitle = $('#workspace-title');
+const knowledgeButton = $('#knowledge-button');
+
+const objectiveCards = $$('.objective-card');
+
+const responseLoader = $('#response-loader');
 let responseTimeout;
 
 export function showToast(message) {
@@ -119,7 +131,7 @@ function cancelPendingResponse() {
     conversationOutput.removeAttribute('aria-busy');
 }
 
-document.querySelectorAll('.objective-card').forEach((card) => {
+objectiveCards.forEach((card) => {
     card.addEventListener('click', () => {
         promptInput.value = card.dataset.prompt;
         promptInput.focus();
@@ -140,7 +152,7 @@ composer.addEventListener('submit', (event) => {
         return;
     }
 
-    addMessage('OPERATOR / RK-900', message);
+    addMessage('OPERATOR / SS-800', message);
     promptInput.value = '';
     window.clearTimeout(responseTimeout);
     responseLoader.hidden = false;
@@ -150,7 +162,7 @@ composer.addEventListener('submit', (event) => {
         responseTimeout = undefined;
         conversationOutput.removeAttribute('aria-busy');
         addMessage(
-            'RK-900 / SYSTEM',
+            'SS-800 / SYSTEM',
             'The interface is ready, but no inference engine is connected yet. Add a retrieval and language-model backend to receive grounded answers.',
             'assistant-reply'
         );
@@ -283,7 +295,7 @@ document.querySelector('.scroll-cue').addEventListener('click', () => {
     promptInput.focus({ preventScroll: true });
 });
 
-document.querySelector('#knowledge-button').addEventListener('click', () => fileInput.click());
+knowledgeButton.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', () => {
     const count = fileInput.files.length;
@@ -293,7 +305,7 @@ fileInput.addEventListener('change', () => {
     showToast(`${count} document${count === 1 ? '' : 's'} selected locally. Connect a retrieval backend to index them.`);
 });
 
-document.querySelector('#export-button').addEventListener('click', () => {
+exportButton.addEventListener('click', () => {
     const messages = [...conversationOutput.querySelectorAll('.chat-message')].map((message) => {
         const [label, ...body] = message.innerText.split('\n');
         return `${label}\n${body.join('\n')}`;
@@ -311,6 +323,6 @@ document.querySelector('#export-button').addEventListener('click', () => {
     URL.revokeObjectURL(url);
 });
 
-document.querySelector('.help-button').addEventListener('click', () => {
+helpButton.addEventListener('click', () => {
     showToast('DEVIANT is a local interface prototype. No documents leave this device.');
 });
