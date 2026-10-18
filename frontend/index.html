@@ -1,14 +1,115 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#080b0e">
-    <title>SkillShard — Retrieval Augmented Intelligence</title>
+    <title>Skill Shard - Retrieval Augmented Intelligence</title>
     <link rel="shortcut icon" href="../public/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style/main.css">
 </head>
 <body>
+    <div class="app-shell">
+        <header class="topbar">
+            <a class="brand" href="#" aria-label="Deviant home">
+                <span class="brand-mark"><span></span></span>
+                <span class="brand-copy">
+                    <strong>SKILL SHARD</strong>
+                    <small>RETRIEVAL AUGMENTED INTELLIGENCE</small>
+                </span>
+            </a>
+            <div class="system-status"><span class="status-dot"></span> LOCAL SYSTEM ONLINE <span class="status-divider">//</span> <span class="cyan-text">KNOWLEDGE IS CONSCIOUSNESS</span></div>
+            <div class="topbar-meta">
+                <button class="icon-button panel-toggle sidebar-toggle" type="button" aria-label="Hide workspace sidebar" title="Hide workspace sidebar">⟨</button>
+                <button class="icon-button panel-toggle assistant-toggle" type="button" aria-label="Hide assistant panel" title="Hide assistant panel">⟩</button>
+                <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Switch to light theme">☼</button>
+                <button class="icon-button help-button" aria-label="About this interface" title="About this interface">?</button>
+                <span class="unit-label">UNIT RK-900<br>
+                    <b>INTERFACE V.01</b>
+                    <p class="awaiting"><span class="status-dot"></span> AWAITING YOUR INPUT</p>
+                </span>
+            </div>
+        </header>
+
+        <aside class="sidebar" aria-label="Workspace sidebar">
+            <div class="sidebar-top">
+                <div class="section-caption conversation-caption"><span>CONVERSATIONS</span><span id="conversation-count">01</span></div>
+                <button class="new-conversation"><span class="plus">＋</span> NEW CONVERSATION</button>
+                <button class="conversation-item active"><span class="chat-icon">▱</span><span>New investigation</span></button>
+            </div>
+            <div class="sidebar-bottom">
+                <button class="knowledge-row" id="knowledge-button">
+                    <span class="database-icon">▤</span>
+                    <span class="knowledge-copy"><strong>Knowledge base</strong><small><span id="document-count">0</span> DOCUMENTS AVAILABLE</small></span>
+                    <span class="chevron">›</span>
+                </button>
+                <div class="operator-row">
+                    <span class="operator-avatar">RK</span>
+                    <span class="knowledge-copy"><strong>Operator</strong><small>LOCAL SESSION</small></span>
+                    <span class="shield">⬡</span>
+                </div>
+                <div class="sidebar-footer"><span>⚙</span> DEVIANT SYSTEMS <b>/</b> COGNITIVE INTERFACE</div>
+            </div>
+        </aside>
+
+        <main class="main-panel">
+            <div class="workspace-heading">
+                <span class="heading-title"><span class="outline-chat">▱</span> <span id="workspace-title">New investigation</span></span>
+                <button class="icon-button export-button" id="export-button" title="Export conversation" aria-label="Export conversation">⇩</button>
+            </div>
+            <section class="work-area" id="work-area">
+                <div class="welcome-content">
+                    <div class="eyebrow"><span></span> COGNITIVE INTERFACE INITIALIZED</div>
+                    <h1>What do you<br><em>want to know?</em></h1>
+                    <p class="intro">Every answer begins with a question.<br>Let's find yours in the knowledge you trust.</p>
+                    <div class="objective-label">SELECT AN OBJECTIVE</div>
+                    <div class="objective-grid">
+                        <button class="objective-card" data-prompt="Analyze the key findings in my documents.">
+                            <span class="objective-icon">⌗</span><span class="card-arrow">↗</span><span class="objective-name">Analyze a document</span>
+                        </button>
+                        <button class="objective-card" data-prompt="Connect the dots across my knowledge base.">
+                            <span class="objective-icon">♧</span><span class="card-arrow">↗</span><span class="objective-name">Connect the dots</span>
+                        </button>
+                        <button class="objective-card" data-prompt="Give me a concise summary of my documents.">
+                            <span class="objective-icon">▤</span><span class="card-arrow">↗</span><span class="objective-name">Summarize a document</span>
+                        </button>
+                        <button class="objective-card" data-prompt="Search my knowledge base for a specific topic.">
+                            <span class="objective-icon">⌕</span><span class="card-arrow">↗</span><span class="objective-name">Search knowledge</span>
+                        </button>
+                    </div>
+                </div>
+                <button class="scroll-cue" aria-label="Scroll to the message box">↓</button>
+                <div class="conversation-output" id="conversation-output" aria-live="polite"></div>
+            </section>
+            <div class="composer-area">
+                <div class="composer-meta"><span><span class="database-icon small">▤</span> KNOWLEDGE BASE <b>/</b> NO SOURCES</span><span class="rag-mode">RAG MODE</span></div>
+                <form class="composer" id="composer">
+                    <textarea id="prompt-input" rows="2" placeholder="Analyze the key findings in my documents." aria-label="Ask a question"></textarea>
+                    <div class="composer-actions">
+                        <label class="attach-button" for="file-input" title="Add documents">⌁</label>
+                        <input id="file-input" type="file" multiple hidden>
+                        <span class="model-label">RK-900 <b>/</b> RETRIEVAL</span>
+                        <button class="send-button" type="submit" aria-label="Send message">→</button>
+                    </div>
+                </form>
+                <p class="composer-footnote">Answers grounded in your documents. Decisions remain yours.</p>
+            </div>
+        </main>
+
+        <aside class="assistant-panel" aria-label="Assistant panel">
+            <div class="assistant-copy">
+                <div class="telemetry">
+                    <div class="telemetry-title">SYSTEM TELEMETRY</div>
+                    <div class="metric"><span>Inference engine</span><strong>NOT CONNECTED</strong></div>
+                    <div class="metric"><span>Knowledge sources</span><strong id="source-metric">00 DOCUMENTS</strong></div>
+                    <div class="metric"><span>Conversation memory</span><strong>LOCAL</strong></div>
+                    <div class="metric"><span>Retrieval protocol</span><strong>STANDBY</strong></div>
+                </div>
+                <div class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+        </aside>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="script/main.js"></script>
 </body>
 </html>
