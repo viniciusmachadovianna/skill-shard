@@ -78,6 +78,10 @@
                 </div>
                 <button class="scroll-cue" aria-label="Scroll to the message box">↓</button>
                 <div class="conversation-output" id="conversation-output" aria-live="polite"></div>
+                <div class="response-loader" id="response-loader" role="status" aria-label="Assistant is processing your question" hidden>
+                    <span class="response-loader-ring" aria-hidden="true"></span>
+                    <span class="response-loader-label">ANALYZING</span>
+                </div>
             </section>
             <div class="composer-area">
                 <div class="composer-meta"><span><span class="database-icon small">▤</span> KNOWLEDGE BASE <b>/</b> NO SOURCES</span><span class="rag-mode">RAG MODE</span></div>

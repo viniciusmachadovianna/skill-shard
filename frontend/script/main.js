@@ -15,6 +15,8 @@ const themeColor = document.querySelector('meta[name="theme-color"]');
 const conversationList = document.querySelector('.sidebar-top');
 const conversationCount = document.querySelector('#conversation-count');
 const workspaceTitle = document.querySelector('#workspace-title');
+const responseLoader = document.querySelector('#response-loader');
+let responseTimeout;
 
 function showToast(message) {
     toast.textContent = message;
@@ -115,6 +117,13 @@ function updateConversationCount() {
     conversationCount.textContent = String(conversationList.querySelectorAll('.conversation-entry').length).padStart(2, '0');
 }
 
+function cancelPendingResponse() {
+    window.clearTimeout(responseTimeout);
+    responseTimeout = undefined;
+    responseLoader.hidden = true;
+    conversationOutput.removeAttribute('aria-busy');
+}
+
 try {
     const savedTheme = localStorage.getItem('deviant-theme');
     if (savedTheme === 'light' || savedTheme === 'dark') applyTheme(savedTheme);
@@ -141,6 +150,12 @@ document.querySelectorAll('.objective-card').forEach((card) => {
     });
 });
 
+promptInput.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+    event.preventDefault();
+    composer.requestSubmit();
+});
+
 composer.addEventListener('submit', (event) => {
     event.preventDefault();
     const message = promptInput.value.trim();
@@ -150,12 +165,21 @@ composer.addEventListener('submit', (event) => {
     }
 
     addMessage('OPERATOR / RK-900', message);
-    addMessage(
-        'RK-900 / SYSTEM',
-        'The interface is ready, but no inference engine is connected yet. Add a retrieval and language-model backend to receive grounded answers.',
-        'assistant-reply'
-    );
     promptInput.value = '';
+    window.clearTimeout(responseTimeout);
+    responseLoader.hidden = false;
+    conversationOutput.setAttribute('aria-busy', 'true');
+    responseTimeout = window.setTimeout(() => {
+        responseLoader.hidden = true;
+        responseTimeout = undefined;
+        conversationOutput.removeAttribute('aria-busy');
+        addMessage(
+            'RK-900 / SYSTEM',
+            'The interface is ready, but no inference engine is connected yet. Add a retrieval and language-model backend to receive grounded answers.',
+            'assistant-reply'
+        );
+        workArea.scrollTo({ top: workArea.scrollHeight, behavior: 'smooth' });
+    }, 1200);
     workArea.scrollTo({ top: workArea.scrollHeight, behavior: 'smooth' });
 });
 
@@ -177,6 +201,7 @@ conversationList.addEventListener('click', (event) => {
     const newConversationButton = target.closest('.new-conversation');
 
     if (newConversationButton) {
+        cancelPendingResponse();
         const conversation = createConversationEntry('New investigation');
         conversationList.append(conversation);
         activateConversation(conversation);
@@ -224,6 +249,7 @@ conversationList.addEventListener('click', (event) => {
             const entries = [...conversationList.querySelectorAll('.conversation-entry')];
             const wasActive = entry.classList.contains('active');
             const deletedIndex = entries.indexOf(entry);
+            if (wasActive) cancelPendingResponse();
             entry.remove();
             updateConversationCount();
 

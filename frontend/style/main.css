@@ -16,6 +16,14 @@
     --green: #58dba0;
     --scrollbar-thumb: #286477;
     --scrollbar-thumb-hover: #35c3ed;
+    --loader-size: 76px;
+    --loader-thickness: 7px;
+    --loader-color: #e6faff;
+    --loader-accent: #35c3ed;
+    --loader-glow: #35c3ed;
+    --loader-glow-blur: 13px;
+    --loader-glow-opacity: .8;
+    --loader-duration: 1.8s;
     --mono: 'IBM Plex Mono', 'Consolas', monospace;
     --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     --base-font-size: 16px;
@@ -318,6 +326,51 @@ h1 em { color: var(--cyan); font-style: normal; }
 .chat-message { margin: 10px 0; padding: 13px 15px; border-left: 2px solid var(--cyan); background: var(--surface); font-size: 15px; }
 .chat-message small { display: block; margin-bottom: 6px; color: var(--cyan); font: 10px var(--mono); }
 .assistant-reply { border-left-color: var(--green); color: var(--muted); }
+.response-loader {
+    display: flex;
+    width: min(546px, calc(100% - 64px));
+    align-items: center;
+    gap: 13px;
+    margin: 0 auto 24px;
+    color: var(--loader-accent);
+}
+.response-loader[hidden] { display: none; }
+.response-loader-ring {
+    position: relative;
+    display: block;
+    width: var(--loader-size);
+    height: var(--loader-size);
+    flex: 0 0 var(--loader-size);
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0 12%,
+        var(--loader-accent) 25%,
+        var(--loader-color) 42% 68%,
+        var(--loader-accent) 84%,
+        transparent 100%
+    );
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--loader-thickness)), #000 calc(100% - var(--loader-thickness) + 1px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - var(--loader-thickness)), #000 calc(100% - var(--loader-thickness) + 1px));
+    filter: drop-shadow(0 0 var(--loader-glow-blur) var(--loader-glow));
+    animation: response-ring-spin var(--loader-duration) linear infinite;
+}
+.response-loader-ring::before {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: inherit;
+    content: "";
+    filter: blur(var(--loader-glow-blur));
+    opacity: var(--loader-glow-opacity);
+}
+.response-loader-label { font: 10px var(--mono); letter-spacing: .12em; }
+@keyframes response-ring-spin {
+    to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .response-loader-ring { animation: none; }
+}
 
 .composer-area { flex: 0 0 auto; padding: 0 25px 15px; }
 .composer-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: #80909b; font-size: 10px; }
