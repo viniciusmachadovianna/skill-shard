@@ -14,6 +14,7 @@ const themeToggle = document.querySelector('#theme-toggle');
 const themeColor = document.querySelector('meta[name="theme-color"]');
 const conversationList = document.querySelector('.sidebar-top');
 const conversationCount = document.querySelector('#conversation-count');
+const workspaceTitle = document.querySelector('#workspace-title');
 
 function showToast(message) {
     toast.textContent = message;
@@ -53,6 +54,65 @@ function syncSidebarState() {
     assistantToggle.textContent = rightHidden ? '⟨' : '⟩';
     assistantToggle.setAttribute('aria-label', rightHidden ? 'Show assistant panel' : 'Hide assistant panel');
     assistantToggle.title = rightHidden ? 'Show assistant panel' : 'Hide assistant panel';
+}
+
+function createConversationEntry(name) {
+    const entry = document.createElement('div');
+    entry.className = 'conversation-entry';
+
+    const selectButton = document.createElement('button');
+    selectButton.type = 'button';
+    selectButton.className = 'conversation-item';
+    const icon = document.createElement('span');
+    icon.className = 'chat-icon';
+    icon.textContent = '▱';
+    const title = document.createElement('span');
+    title.textContent = name;
+    selectButton.append(icon, title);
+
+    // const menuToggle = document.createElement('button');
+    // menuToggle.type = 'button';
+    // menuToggle.className = 'conversation-menu-toggle';
+    // menuToggle.setAttribute('aria-label', 'Conversation options');
+    // menuToggle.setAttribute('aria-haspopup', 'menu');
+    // menuToggle.setAttribute('aria-expanded', 'false');
+    // menuToggle.textContent = '···';
+
+    const menu = document.createElement('div');
+    menu.className = 'conversation-menu';
+    menu.setAttribute('role', 'menu');
+    menu.hidden = true;
+    // for (const [action, label] of [['rename', 'Rename'], ['delete', 'Delete']]) {
+    //     const button = document.createElement('button');
+    //     button.type = 'button';
+    //     button.setAttribute('role', 'menuitem');
+    //     button.dataset.conversationAction = action;
+    //     button.textContent = label;
+    //     menu.append(button);
+    // }
+
+    entry.append(selectButton, menu);
+    // entry.append(selectButton, menuToggle, menu);
+    return entry;
+}
+
+// function closeConversationMenus() {
+//     conversationList.querySelectorAll('.conversation-entry').forEach((entry) => {
+//         entry.classList.remove('menu-open');
+//         entry.querySelector('.conversation-menu').hidden = true;
+//         entry.querySelector('.conversation-menu-toggle').setAttribute('aria-expanded', 'false');
+//     });
+// }
+
+function activateConversation(entry) {
+    conversationList.querySelectorAll('.conversation-entry').forEach((item) => {
+        item.classList.toggle('active', item === entry);
+    });
+    workspaceTitle.textContent = entry.querySelector('.conversation-item span:last-child').textContent;
+}
+
+function updateConversationCount() {
+    conversationCount.textContent = String(conversationList.querySelectorAll('.conversation-entry').length).padStart(2, '0');
 }
 
 try {
@@ -112,29 +172,107 @@ assistantToggle.addEventListener('click', () => {
 syncSidebarState();
 
 conversationList.addEventListener('click', (event) => {
-    const newConversationButton = event.target.closest('.new-conversation');
+    if (!(event.target instanceof Element)) return;
+    const target = event.target;
+    const newConversationButton = target.closest('.new-conversation');
 
     if (newConversationButton) {
-        const conversation = document.createElement('button');
-        conversation.type = 'button';
-        conversation.className = 'conversation-item active';
-
-        const icon = document.createElement('span');
-        icon.className = 'chat-icon';
-        icon.textContent = '▱';
-        const title = document.createElement('span');
-        title.textContent = 'New investigation';
-        conversation.append(icon, title);
+        const conversation = createConversationEntry('New investigation');
         conversationList.append(conversation);
-        conversationList.querySelectorAll('.conversation-item').forEach((item) => {
-            item.classList.toggle('active', item === conversation);
-        });
-
+        activateConversation(conversation);
         conversationOutput.replaceChildren();
         promptInput.value = '';
-        document.querySelector('#workspace-title').textContent = 'New investigation';
-        conversationCount.textContent = String(conversationList.querySelectorAll('.conversation-item').length).padStart(2, '0');
+        // closeConversationMenus();
+        updateConversationCount();
         showToast('New investigation started.');
+        return;
+    }
+
+    const entry = target.closest('.conversation-entry');
+    if (!entry) return;
+
+    const menuToggle = target.closest('.conversation-menu-toggle');
+    if (menuToggle) {
+        const menu = entry.querySelector('.conversation-menu');
+        const shouldOpen = menu.hidden;
+        // closeConversationMenus();
+        menu.hidden = !shouldOpen;
+        menuToggle.setAttribute('aria-expanded', String(shouldOpen));
+        entry.classList.toggle('menu-open', shouldOpen);
+        return;
+    }
+
+    const actionButton = target.closest('[data-conversation-action]');
+    if (actionButton) {
+        const action = actionButton.dataset.conversationAction;
+        const title = entry.querySelector('.conversation-item span:last-child');
+        // closeConversationMenus();
+
+        if (action === 'rename') {
+            const newName = window.prompt('Rename conversation:', title.textContent);
+            if (newName === null) return;
+            const trimmedName = newName.trim();
+            if (!trimmedName) {
+                showToast('Conversation name cannot be empty.');
+                return;
+            }
+            title.textContent = trimmedName;
+            if (entry.classList.contains('active')) workspaceTitle.textContent = trimmedName;
+            showToast('Conversation renamed.');
+        } else if (action === 'delete') {
+            if (!window.confirm(`Delete "${title.textContent}"?`)) return;
+            const entries = [...conversationList.querySelectorAll('.conversation-entry')];
+            const wasActive = entry.classList.contains('active');
+            const deletedIndex = entries.indexOf(entry);
+            entry.remove();
+            updateConversationCount();
+
+            if (wasActive) {
+                const remainingEntries = conversationList.querySelectorAll('.conversation-entry');
+                const nextEntry = remainingEntries[Math.min(deletedIndex, remainingEntries.length - 1)];
+                if (nextEntry) {
+                    activateConversation(nextEntry);
+                } else {
+                    workspaceTitle.textContent = 'No conversation selected';
+                    conversationOutput.replaceChildren();
+                    promptInput.value = '';
+                }
+            }
+            showToast('Conversation deleted.');
+        }
+        return;
+    }
+
+    // if (target.closest('.conversation-item')) {
+    //     activateConversation(entry);
+    //     closeConversationMenus();
+    // }
+});
+
+// document.addEventListener('click', (event) => {
+//     if (!(event.target instanceof Element) || !event.target.closest('.conversation-entry')) {
+//         closeConversationMenus();
+//     }
+// });
+
+document.addEventListener('keydown', (event) => {
+    if (!(event.target instanceof Element)) return;
+    const entry = event.target.closest('.conversation-entry');
+
+    if (event.key === 'Escape') {
+        const openEntry = conversationList.querySelector('.conversation-entry.menu-open');
+        // closeConversationMenus();
+        openEntry?.querySelector('.conversation-menu-toggle').focus();
+        return;
+    }
+
+    if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && entry?.classList.contains('menu-open')) {
+        const menuItems = [...entry.querySelectorAll('[role="menuitem"]')];
+        const currentIndex = menuItems.indexOf(event.target);
+        const direction = event.key === 'ArrowDown' ? 1 : -1;
+        const nextIndex = (currentIndex + direction + menuItems.length) % menuItems.length;
+        event.preventDefault();
+        menuItems[nextIndex].focus();
     }
 });
 
