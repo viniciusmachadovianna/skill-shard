@@ -19,9 +19,11 @@
                 </span>
             </a>
             <div class="system-status"><span class="status-dot"></span> LOCAL SYSTEM ONLINE <span class="status-divider">//</span> <span class="cyan-text">KNOWLEDGE IS CONSCIOUSNESS</span></div>
+            <div class="topbar-indicators" aria-hidden="true">
+                <span class="topbar-indicator topbar-indicator-blue"></span>
+                <!-- <span class="topbar-indicator topbar-indicator-red"></span> -->
+            </div>
             <div class="topbar-meta">
-                <button class="icon-button panel-toggle sidebar-toggle" type="button" aria-label="Hide workspace sidebar" title="Hide workspace sidebar">⟨</button>
-                <button class="icon-button panel-toggle assistant-toggle" type="button" aria-label="Hide assistant panel" title="Hide assistant panel">⟩</button>
                 <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Switch to light theme">☼</button>
                 <button class="icon-button help-button" aria-label="About this interface" title="About this interface">?</button>
                 <span class="unit-label"><span class="icon">⚙</span> UNIT SS-800<br>
@@ -32,6 +34,10 @@
 
         <aside class="sidebar" aria-label="Workspace sidebar">
             <div class="sidebar-top">
+                <div class="panel-bar">
+                    <span>WORKSPACE</span>
+                    <button class="icon-button panel-toggle sidebar-toggle" type="button" aria-label="Hide workspace sidebar" title="Hide workspace sidebar">⟨</button>
+                </div>
                 <div class="section-caption conversation-caption"><span>CONVERSATIONS</span><span id="conversation-count">01</span></div>
                 <button class="new-conversation"><span class="plus">＋</span> NEW CONVERSATION</button>
                 <button class="conversation-item active"><span class="chat-icon">▱</span><span>New investigation</span></button>
@@ -100,6 +106,10 @@
         </main>
 
         <aside class="assistant-panel" aria-label="Assistant panel">
+            <div class="panel-bar assistant-bar">
+                <button class="icon-button panel-toggle assistant-toggle" type="button" aria-label="Hide assistant panel" title="Hide assistant panel">⟩</button>
+                <span>ASSISTANT</span>
+            </div>
             <div class="assistant-copy">
                 <div class="telemetry">
                     <div class="telemetry-title">SYSTEM TELEMETRY</div>

@@ -3,4 +3,5 @@ def build_prompt(context: str, question: str) -> str:
 
 Texto: {context}
 Pergunta: {question}
-Resposta:"""
+Resposta:
+"""

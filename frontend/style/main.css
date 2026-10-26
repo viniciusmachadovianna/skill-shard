@@ -75,13 +75,13 @@ button { color: inherit; }
     transition: grid-template-columns .2s ease;
 }
 .app-shell.sidebar-collapsed {
-    grid-template-columns: 0 minmax(420px, 1fr) 306px;
+    grid-template-columns: 32px minmax(420px, 1fr) 306px;
 }
 .app-shell.assistant-collapsed {
-    grid-template-columns: 232px minmax(420px, 1fr) 0;
+    grid-template-columns: 232px minmax(420px, 1fr) 32px;
 }
 .app-shell.sidebar-collapsed.assistant-collapsed {
-    grid-template-columns: 0 minmax(420px, 1fr) 0;
+    grid-template-columns: 32px minmax(420px, 1fr) 32px;
 }
 
 .topbar {
@@ -120,6 +120,34 @@ button { color: inherit; }
 .status-dot { display: inline-block; width: 4px; height: 4px; margin: 0 6px 1px 0; background: var(--green); box-shadow: 0 0 8px #58dba055; }
 .status-divider { color: var(--cyan); margin: 0 10px; }
 .cyan-text, .unit-label b { color: var(--cyan); font-weight: 400; }
+.topbar-indicators {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: auto;
+    padding: 0 19px;
+}
+.topbar-indicator {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    border-radius: 50%;
+    border: 4px solid #efffff;
+    animation: indicator-blink 1.8s ease-in-out infinite alternate;
+}
+.topbar-indicator-blue {
+    box-shadow: 0 0 0 2px #00d9ff, 0 0 9px 3px #00bfff, 0 0 23px 7px #006bff88, inset 0 0 8px #00aaff;
+}
+.topbar-indicator-red {
+    position: relative;
+    top: 5px;
+    box-shadow: 0 0 0 2px #ff303d, 0 0 9px 3px #ff343f, 0 0 23px 7px #ff142c88, inset 0 0 8px #ff303d;
+    animation-delay: .35s;
+}
+@keyframes indicator-blink {
+    from { opacity: .68; transform: scale(.96); }
+    to { opacity: 1; transform: scale(1.04); }
+}
 .topbar-meta { display: flex; align-items: center; gap: 17px; }
 .unit-label { border-left: 1px solid var(--line); padding-left: 16px; line-height: 1.9; color: #82909b; }
 .unit-label .icon { color: var(--cyan); font-size: 12px; margin-right: 4px; }
@@ -151,12 +179,30 @@ button { color: inherit; }
 }
 .sidebar.is-collapsed,
 .assistant-panel.is-collapsed {
-    width: 0;
-    min-width: 0;
-    border-width: 0;
-    opacity: 0;
-    pointer-events: none;
     overflow: hidden;
+}
+.sidebar.is-collapsed {
+    width: 32px;
+    min-width: 32px;
+}
+.assistant-panel.is-collapsed {
+    width: 32px;
+    min-width: 32px;
+}
+.sidebar.is-collapsed .sidebar-top > :not(.panel-bar),
+.sidebar.is-collapsed .sidebar-bottom,
+.assistant-panel.is-collapsed .assistant-copy {
+    visibility: hidden;
+}
+.sidebar.is-collapsed .panel-bar,
+.assistant-panel.is-collapsed .panel-bar {
+    justify-content: center;
+    padding: 0;
+}
+.sidebar.is-collapsed .sidebar-top { padding: 0; }
+.sidebar.is-collapsed .panel-bar > span,
+.assistant-panel.is-collapsed .panel-bar > span {
+    display: none;
 }
 .panel-toggle {
     display: grid;
@@ -174,6 +220,19 @@ button { color: inherit; }
     line-height: 1;
 }
 .panel-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.panel-bar {
+    display: flex;
+    height: 44px;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--line);
+    color: #788b98;
+    font: 10px var(--mono);
+    letter-spacing: .04em;
+}
+.assistant-bar { justify-content: flex-start; gap: 12px; }
 .sidebar-top { padding: 0 16px 0; }
 .section-caption { display: flex; justify-content: space-between; color: #788b98; padding: 0 7px; }
 .section-caption span:last-child { color: #8fa0aa; }
@@ -369,7 +428,7 @@ h1 em { color: var(--cyan); font-style: normal; }
     to { transform: rotate(360deg); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .response-loader-ring { animation: none; }
+    .response-loader-ring, .topbar-indicator { animation: none; }
 }
 
 .composer-area { flex: 0 0 auto; padding: 0 25px 15px; }
@@ -431,6 +490,7 @@ h1 em { color: var(--cyan); font-style: normal; }
     scrollbar-width: thin;
     transition: transform .2s ease, opacity .2s ease;
 }
+.assistant-panel .panel-bar { position: sticky; top: 0; z-index: 1; background: var(--panel); }
 .portrait-wrap { position: relative; height: 345px; overflow: hidden; background: #0c1320; }
 .portrait { display: block; width: 100%; height: 100%; object-fit: cover; }
 .portrait-label { position: absolute; z-index: 1; top: 21px; left: 17px; color: #9ce7fa; line-height: 1.65; }
