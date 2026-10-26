@@ -15,6 +15,10 @@ Capacidades:
 - Minimizar alucinações
 - Apresentar ao usuário as fontes e relações usadas na construção da resposta
 
+## Como usar
+
+1. Run `npm run dev`
+
 ## Arquitetura
 
 backend/ <br>
