@@ -163,7 +163,7 @@ button { color: inherit; }
     cursor: pointer;
     font-family: var(--mono);
 }
-.help-button { border: 1px solid #44515a; border-radius: 50%; width: 14px; height: 14px; font-size: 10px; }
+.help-button { border: 1px solid #44515a; border-radius: 50%; width: 27px; height: 27px; font-size: 10px; }
 .theme-toggle { width: 27px; height: 27px; border: 1px solid var(--line); border-radius: 50%; font-size: 16px; }
 .theme-toggle:hover { color: var(--cyan); border-color: var(--cyan); }
 .theme-toggle:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
