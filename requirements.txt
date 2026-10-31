@@ -1,0 +1,16 @@
+Python 3.15.0
+pip-26.2.2
+pypdf // pip install pypdf // 6.20.1 // extrator de dados dos PDFs
+python-dotenv // pip install python-dotenv // 1.2.4 // leitura da key env
+gemini ai // pip install google-genai // 2.31.0 // https://googleapis.github.io/python-genai/
+ASGI server // pip install uvicorn // https://uvicorn.dev/
+fastapi // pip install fastapi // annotated-doc-0.0.5 fastapi-0.162.0 opentelemetry-api-1.45.2 starlette-1.10.0
+https://aistudio.google.com/api-keys
+
+# modelos gemini
+https://ai.google.dev/gemini-api/docs/models?hl=pt-br
+
+https://fonts.google.com/icons?icon.style=Sharp&icon.size=24&icon.color=%23EEE
+https://fonts.google.com/specimen/Barlow+Condensed
+
+https://platform.openai.com/homes
