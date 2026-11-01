@@ -1,6 +1,7 @@
 import { showToast } from './main.js';
 
 const themeToggle = document.getElementById('theme-toggle');
+const themeIcon = document.getElementById('theme-icon');
 const themeColor = document.querySelector('meta[name="theme-color"]');
 const mobileTheme = {
     light: '#f1f5f7',
@@ -9,7 +10,9 @@ const mobileTheme = {
 export function applyTheme(theme) {
     const isLight = theme === 'light';
     document.documentElement.dataset.theme = isLight ? 'light' : 'dark';
-    themeToggle.textContent = isLight ? '☾' : '☼';
+    const iconPath = isLight ? 'assets/icons/dark_mode.svg' : 'assets/icons/light_mode.svg';
+    themeIcon.src = iconPath;
+    themeIcon.alt = `${isLight ? 'dark' : 'light'} theme icon`;
     themeToggle.setAttribute('aria-label', `Switch to ${isLight ? 'dark' : 'light'} theme`);
     themeToggle.title = `Switch to ${isLight ? 'dark' : 'light'} theme`;
     themeColor.content = isLight ? mobileTheme.light : mobileTheme.dark;
