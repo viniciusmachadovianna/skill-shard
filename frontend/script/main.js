@@ -1,8 +1,10 @@
 import { applyTheme } from './theme.js';
+import { applyLanguage, getCurrentLanguage, initializeLanguage, t } from './language.js';
 import { $, $$ } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     applyTheme();
+    initializeLanguage();
 });
 
 const appShell = $('.app-shell');
@@ -60,15 +62,17 @@ function syncSidebarState() {
     appShell.classList.toggle('sidebar-collapsed', leftHidden);
     appShell.classList.toggle('assistant-collapsed', rightHidden);
 
+    sidebarToggle.dataset.i18nAria = leftHidden ? 'sidebar-expand' : 'sidebar-collapse';
+    sidebarToggle.dataset.i18nTitle = leftHidden ? 'sidebar-expand' : 'sidebar-collapse';
+    assistantToggle.dataset.i18nAria = rightHidden ? 'assistant-expand' : 'assistant-collapse';
+    assistantToggle.dataset.i18nTitle = rightHidden ? 'assistant-expand' : 'assistant-collapse';
+
     sidebarToggleIcon.src = leftHidden ? 'assets/icons/left_panel_open.svg' : 'assets/icons/left_panel_close.svg';
     sidebarToggleIcon.alt = leftHidden ? 'Show workspace sidebar' : 'Hide workspace sidebar';
-    sidebarToggle.setAttribute('aria-label', leftHidden ? 'Show workspace sidebar' : 'Hide workspace sidebar');
-    sidebarToggle.title = leftHidden ? 'Show workspace sidebar' : 'Hide workspace sidebar';
-
     assistantToggleIcon.src = rightHidden ? 'assets/icons/right_panel_open.svg' : 'assets/icons/right_panel_close.svg';
     assistantToggleIcon.alt = rightHidden ? 'Show assistant panel' : 'Hide assistant panel';
-    assistantToggle.setAttribute('aria-label', rightHidden ? 'Show assistant panel' : 'Hide assistant panel');
-    assistantToggle.title = rightHidden ? 'Show assistant panel' : 'Hide assistant panel';
+
+    applyLanguage(getCurrentLanguage());
 }
 
 function createConversationEntry(name) {
@@ -203,7 +207,7 @@ conversationList.addEventListener('click', (event) => {
         promptInput.value = '';
         // closeConversationMenus();
         updateConversationCount();
-        showToast('New investigation started.');
+        showToast(t('new-conversation-toast'));
         return;
     }
 
