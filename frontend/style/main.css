@@ -229,6 +229,13 @@ button { color: inherit; }
     font-size: 14px;
     line-height: 1;
 }
+.panel-toggle img {
+    display: block;
+    width: 17px;
+    height: 17px;
+    object-fit: contain;
+    pointer-events: none;
+}
 .panel-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
 .panel-bar {
     display: flex;

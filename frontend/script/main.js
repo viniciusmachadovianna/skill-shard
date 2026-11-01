@@ -22,7 +22,9 @@ const helpButton = $('.help-button');
 const sidebar = $('.sidebar');
 const assistantPanel = $('.assistant-panel');
 const sidebarToggle = $('.sidebar-toggle');
+const sidebarToggleIcon = sidebarToggle.querySelector('img');
 const assistantToggle = $('.assistant-toggle');
+const assistantToggleIcon = assistantToggle.querySelector('img');
 
 const conversationList = $('.sidebar-top');
 const conversationCount = $('#conversation-count');
@@ -57,10 +59,14 @@ function syncSidebarState() {
     const rightHidden = assistantPanel.classList.contains('is-collapsed');
     appShell.classList.toggle('sidebar-collapsed', leftHidden);
     appShell.classList.toggle('assistant-collapsed', rightHidden);
-    sidebarToggle.textContent = leftHidden ? '⟩' : '⟨';
+
+    sidebarToggleIcon.src = leftHidden ? 'assets/icons/left_panel_open.svg' : 'assets/icons/left_panel_close.svg';
+    sidebarToggleIcon.alt = leftHidden ? 'Show workspace sidebar' : 'Hide workspace sidebar';
     sidebarToggle.setAttribute('aria-label', leftHidden ? 'Show workspace sidebar' : 'Hide workspace sidebar');
     sidebarToggle.title = leftHidden ? 'Show workspace sidebar' : 'Hide workspace sidebar';
-    assistantToggle.textContent = rightHidden ? '⟨' : '⟩';
+
+    assistantToggleIcon.src = rightHidden ? 'assets/icons/right_panel_open.svg' : 'assets/icons/right_panel_close.svg';
+    assistantToggleIcon.alt = rightHidden ? 'Show assistant panel' : 'Hide assistant panel';
     assistantToggle.setAttribute('aria-label', rightHidden ? 'Show assistant panel' : 'Hide assistant panel');
     assistantToggle.title = rightHidden ? 'Show assistant panel' : 'Hide assistant panel';
 }
