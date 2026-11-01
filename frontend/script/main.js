@@ -157,7 +157,7 @@ composer.addEventListener('submit', (event) => {
     window.clearTimeout(responseTimeout);
     responseLoader.hidden = false;
     conversationOutput.setAttribute('aria-busy', 'true');
-    responseTimeout = window.setTimeout(() => {
+    // responseTimeout = window.setTimeout(() => {
         responseLoader.hidden = true;
         responseTimeout = undefined;
         conversationOutput.removeAttribute('aria-busy');
@@ -167,7 +167,7 @@ composer.addEventListener('submit', (event) => {
             'assistant-reply'
         );
         workArea.scrollTo({ top: workArea.scrollHeight, behavior: 'smooth' });
-    }, 1200);
+    // }, 1200);
     workArea.scrollTo({ top: workArea.scrollHeight, behavior: 'smooth' });
 });
 

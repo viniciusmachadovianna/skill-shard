@@ -11,7 +11,7 @@
 <body>
     <div class="app-shell">
         <header class="topbar">
-            <a class="brand" href="#" aria-label="Deviant home">
+            <a class="brand" href="#" aria-label="Skill Shard home">
                 <span class="brand-mark"><span></span></span>
                 <span class="brand-copy">
                     <strong>SKILL SHARD</strong>
@@ -21,14 +21,11 @@
             <div class="system-status">
                 <span class="status-dot"></span> LOCAL SYSTEM ONLINE
                 <span class="status-divider">//</span>
-                <span class="cyan-text">INTERFACE V.01</span>
-            </div>
-            <div class="topbar-indicators" aria-hidden="true">
-                <span class="topbar-indicator topbar-indicator-blue"></span>
-                <!-- <span class="topbar-indicator topbar-indicator-red"></span> -->
             </div>
             <div class="topbar-meta">
-                <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Switch to light theme">☼</button>
+                <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Switch to light theme">
+                    <img id="theme-icon" src="assets/icons/light_mode.svg" alt="Theme icon" width="16" height="16">
+                </button>
                 <button class="icon-button help-button" aria-label="About this interface" title="About this interface">?</button>
                 <span class="unit-label"><span class="icon">⚙</span> UNIT SS-800<br>
                     <!-- <b></b> -->
@@ -94,11 +91,14 @@
                 </div>
             </section>
             <div class="composer-area">
-                <div class="composer-meta"><span><span class="database-icon small">▤</span> KNOWLEDGE BASE <b>/</b> NO SOURCES</span><span class="rag-mode">RAG MODE</span></div>
+                <div class="composer-meta">
+                    <span><span class="database-icon small">▤</span> KNOWLEDGE BASE <b>/</b> NO SOURCES</span>
+                    <span class="cyan-text">INTERFACE V.01</span>
+                </div>
                 <form class="composer" id="composer">
                     <textarea id="prompt-input" rows="2" placeholder="Analyze the key findings in my documents." aria-label="Ask a question"></textarea>
                     <div class="composer-actions">
-                        <label class="attach-button" for="file-input" title="Add documents">⌁</label>
+                        <label class="topbar-indicator topbar-indicator-red attach-button" for="file-input" title="Add documents">⌁</label>
                         <input id="file-input" type="file" multiple hidden>
                         <p class="awaiting"><span class="status-dot"></span> AWAITING YOUR INPUT</p>
 
