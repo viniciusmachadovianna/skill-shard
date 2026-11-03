@@ -15,9 +15,17 @@ Capacidades:
 - Minimizar alucinações
 - Apresentar ao usuário as fontes e relações usadas na construção da resposta
 
+## Pré-requisitos
+
+- [Python](https://www.python.org/downloads/)
+
+
 ## Como usar
 
-1. Run `npm run dev`
+1. Para evitar conflito de versões das dependências, use `python -m venv venv`
+2. Ative o amb. virtual `.\venv\Scripts\Activate`
+3. Install the project requirements using `python -m pip install -r requirements.txt`
+4. Open the main.py file on terminal and hit `python -m uvicorn main:app --reload` for the backend load
 
 ## Arquitetura
 
