@@ -19,13 +19,16 @@ Capacidades:
 
 - [Python](https://www.python.org/downloads/)
 
-
 ## Como usar
 
 1. Para evitar conflito de versões das dependências, use `python -m venv venv`
 2. Ative o amb. virtual `.\venv\Scripts\Activate`
 3. Install the project requirements using `python -m pip install -r requirements.txt`
-4. Open the main.py file on terminal and hit `python -m uvicorn main:app --reload` for the backend load
+4. Configure `LLM_API_KEY` and `LLM_MODEL_ID` in a `.env` file at the repository root, there it is a `env.example` for reference.
+5. In a terminal at the repository root, start the backend with `python -m uvicorn backend.app.main:app --reload`.
+6. In a second terminal, serve the frontend from the `frontend` folder with `python -m http.server 5500`, then open `http://localhost:5500`.
+7. The chat sends `POST http://127.0.0.1:8000/ask` with JSON `{ "question": "..." }`; the API returns the answer as a JSON string.
+8. When done, to close the virtual Python environment (`venv`) run `deactivate`.
 
 ## Arquitetura
 

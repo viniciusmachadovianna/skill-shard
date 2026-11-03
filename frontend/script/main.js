@@ -20,6 +20,7 @@ const promptInput = $('#prompt-input');
 const conversationOutput = $('#conversation-output');
 const exportButton = $('#export-button');
 const helpButton = $('.help-button');
+const sendButton = $('.send-button');
 
 const sidebar = $('.sidebar');
 const assistantPanel = $('.assistant-panel');
@@ -36,7 +37,7 @@ const knowledgeButton = $('#knowledge-button');
 const objectiveCards = $$('.objective-card');
 
 const responseLoader = $('#response-loader');
-let responseTimeout;
+let pendingRequestController;
 
 export function showToast(message) {
     toast.textContent = message;
@@ -135,10 +136,11 @@ function updateConversationCount() {
 }
 
 function cancelPendingResponse() {
-    window.clearTimeout(responseTimeout);
-    responseTimeout = undefined;
+    pendingRequestController?.abort();
+    pendingRequestController = undefined;
     responseLoader.hidden = true;
     conversationOutput.removeAttribute('aria-busy');
+    sendButton.disabled = false;
 }
 
 objectiveCards.forEach((card) => {
@@ -154,31 +156,60 @@ promptInput.addEventListener('keydown', (event) => {
     composer.requestSubmit();
 });
 
-composer.addEventListener('submit', (event) => {
+async function ask(question, signal) {
+    const response = await fetch('http://127.0.0.1:8000/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+        signal
+    });
+
+    if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+    }
+
+    const answer = await response.json();
+    if (typeof answer !== 'string' || !answer.trim()) {
+        throw new Error('The API returned an invalid answer.');
+    }
+
+    return answer;
+}
+
+composer.addEventListener('submit', async (event) => {
     event.preventDefault();
     const message = promptInput.value.trim();
     if (!message) {
         promptInput.focus();
         return;
     }
+    if (pendingRequestController) return;
 
     addMessage('OPERATOR / SS-800', message);
     promptInput.value = '';
-    window.clearTimeout(responseTimeout);
+    const controller = new AbortController();
+    pendingRequestController = controller;
+    sendButton.disabled = true;
     responseLoader.hidden = false;
     conversationOutput.setAttribute('aria-busy', 'true');
-    // responseTimeout = window.setTimeout(() => {
-        responseLoader.hidden = true;
-        responseTimeout = undefined;
-        conversationOutput.removeAttribute('aria-busy');
-        addMessage(
-            'SS-800 / SYSTEM',
-            'The interface is ready, but no inference engine is connected yet. Add a retrieval and language-model backend to receive grounded answers.',
-            'assistant-reply'
-        );
+
+    try {
+        const answer = await ask(message, controller.signal);
+        if (controller.signal.aborted) return;
+        addMessage('SS-800 / SYSTEM', answer, 'assistant-reply');
+    } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error('Unable to get an answer from the API:', error);
+        addMessage('SS-800 / SYSTEM', t('request-failed'), 'assistant-reply');
+    } finally {
+        if (pendingRequestController === controller) {
+            pendingRequestController = undefined;
+            sendButton.disabled = false;
+            responseLoader.hidden = true;
+            conversationOutput.removeAttribute('aria-busy');
+        }
         workArea.scrollTo({ top: workArea.scrollHeight, behavior: 'smooth' });
-    // }, 1200);
-    workArea.scrollTo({ top: workArea.scrollHeight, behavior: 'smooth' });
+    }
 });
 
 sidebarToggle.addEventListener('click', () => {
