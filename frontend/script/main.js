@@ -1,6 +1,7 @@
 import { applyTheme } from './theme.js';
 import { applyLanguage, getCurrentLanguage, initializeLanguage, t } from './language.js';
-import { $, $$ } from './utils.js';
+import { clearChat, initializeChat, cancelPendingResponse } from './chat.js';
+import { $ } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     applyTheme();
@@ -9,18 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const appShell = $('.app-shell');
 
-const composer = $('#composer');
-const workArea = $('#work-area');
-
 const toast = $('#toast');
 let toastTimeout;
 
 const fileInput = $('#file-input');
-const promptInput = $('#prompt-input');
-const conversationOutput = $('#conversation-output');
-const exportButton = $('#export-button');
 const helpButton = $('.help-button');
-const sendButton = $('.send-button');
 
 const sidebar = $('.sidebar');
 const assistantPanel = $('.assistant-panel');
@@ -34,27 +28,11 @@ const conversationCount = $('#conversation-count');
 const workspaceTitle = $('#workspace-title');
 const knowledgeButton = $('#knowledge-button');
 
-const objectiveCards = $$('.objective-card');
-
-const responseLoader = $('#response-loader');
-let pendingRequestController;
-
 export function showToast(message) {
     toast.textContent = message;
     toast.classList.add('visible');
     window.clearTimeout(toastTimeout);
     toastTimeout = window.setTimeout(() => toast.classList.remove('visible'), 3200);
-}
-
-function addMessage(label, message, className = '') {
-    const article = document.createElement('article');
-    article.className = `chat-message ${className}`.trim();
-    const caption = document.createElement('small');
-    caption.textContent = label;
-    const body = document.createElement('div');
-    body.textContent = message;
-    article.append(caption, body);
-    conversationOutput.append(article);
 }
 
 function syncSidebarState() {
@@ -135,81 +113,8 @@ function updateConversationCount() {
     conversationCount.textContent = String(conversationList.querySelectorAll('.conversation-entry').length).padStart(2, '0');
 }
 
-function cancelPendingResponse() {
-    pendingRequestController?.abort();
-    pendingRequestController = undefined;
-    responseLoader.hidden = true;
-    conversationOutput.removeAttribute('aria-busy');
-    sendButton.disabled = false;
-}
-
-objectiveCards.forEach((card) => {
-    card.addEventListener('click', () => {
-        promptInput.value = card.dataset.prompt;
-        promptInput.focus();
-    });
-});
-
-promptInput.addEventListener('keydown', (event) => {
-    if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
-    event.preventDefault();
-    composer.requestSubmit();
-});
-
-async function ask(question, signal) {
-    const response = await fetch('http://127.0.0.1:8000/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
-        signal
-    });
-
-    if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
-    }
-
-    const answer = await response.json();
-    if (typeof answer !== 'string' || !answer.trim()) {
-        throw new Error('The API returned an invalid answer.');
-    }
-
-    return answer;
-}
-
-composer.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const message = promptInput.value.trim();
-    if (!message) {
-        promptInput.focus();
-        return;
-    }
-    if (pendingRequestController) return;
-
-    addMessage('OPERATOR / SS-800', message);
-    promptInput.value = '';
-    const controller = new AbortController();
-    pendingRequestController = controller;
-    sendButton.disabled = true;
-    responseLoader.hidden = false;
-    conversationOutput.setAttribute('aria-busy', 'true');
-
-    try {
-        const answer = await ask(message, controller.signal);
-        if (controller.signal.aborted) return;
-        addMessage('SS-800 / SYSTEM', answer, 'assistant-reply');
-    } catch (error) {
-        if (controller.signal.aborted) return;
-        console.error('Unable to get an answer from the API:', error);
-        addMessage('SS-800 / SYSTEM', t('request-failed'), 'assistant-reply');
-    } finally {
-        if (pendingRequestController === controller) {
-            pendingRequestController = undefined;
-            sendButton.disabled = false;
-            responseLoader.hidden = true;
-            conversationOutput.removeAttribute('aria-busy');
-        }
-        workArea.scrollTo({ top: workArea.scrollHeight, behavior: 'smooth' });
-    }
+initializeChat({
+    onEmptyExport: () => showToast('There are no messages to export yet.')
 });
 
 sidebarToggle.addEventListener('click', () => {
@@ -230,12 +135,10 @@ conversationList.addEventListener('click', (event) => {
     const newConversationButton = target.closest('.new-conversation');
 
     if (newConversationButton) {
-        cancelPendingResponse();
+        clearChat();
         const conversation = createConversationEntry('New investigation');
         conversationList.append(conversation);
         activateConversation(conversation);
-        conversationOutput.replaceChildren();
-        promptInput.value = '';
         // closeConversationMenus();
         updateConversationCount();
         showToast(t('new-conversation-toast'));
@@ -289,8 +192,7 @@ conversationList.addEventListener('click', (event) => {
                     activateConversation(nextEntry);
                 } else {
                     workspaceTitle.textContent = 'No conversation selected';
-                    conversationOutput.replaceChildren();
-                    promptInput.value = '';
+                    clearChat();
                 }
             }
             showToast('Conversation deleted.');
@@ -331,11 +233,6 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-document.querySelector('.scroll-cue').addEventListener('click', () => {
-    document.querySelector('.composer').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    promptInput.focus({ preventScroll: true });
-});
-
 knowledgeButton.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', () => {
@@ -344,24 +241,6 @@ fileInput.addEventListener('change', () => {
     document.querySelector('#document-count').textContent = String(count);
     document.querySelector('#source-metric').textContent = `${String(count).padStart(2, '0')} DOCUMENT${count === 1 ? '' : 'S'}`;
     showToast(`${count} document${count === 1 ? '' : 's'} selected locally. Connect a retrieval backend to index them.`);
-});
-
-exportButton.addEventListener('click', () => {
-    const messages = [...conversationOutput.querySelectorAll('.chat-message')].map((message) => {
-        const [label, ...body] = message.innerText.split('\n');
-        return `${label}\n${body.join('\n')}`;
-    });
-    if (!messages.length) {
-        showToast('There are no messages to export yet.');
-        return;
-    }
-    const file = new Blob([messages.join('\n\n')], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(file);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'deviant-investigation.txt';
-    link.click();
-    URL.revokeObjectURL(url);
 });
 
 helpButton.addEventListener('click', () => {
