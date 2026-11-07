@@ -135,8 +135,9 @@ button { color: inherit; }
     box-shadow: 0 0 0 2px #00d9ff, 0 0 9px 3px #00bfff, 0 0 23px 7px #006bff88, inset 0 0 8px #00aaff;
 }
 .status-led-red {
-    box-shadow: 0 0 0 2px #ff303d, 0 0 9px 3px #ff343f, 0 0 23px 7px #ff142c88, inset 0 0 8px #ff303d;
-    animation-delay: .35s;
+    border-color: #ec5748;
+    animation: none;
+    box-shadow: 0 0 0 2px #ec5748, 0 0 9px 3px #ec5748, 0 0 23px 7px #ec574888, inset 0 0 8px #ec5748;
 }
 @keyframes indicator-blink {
     0% {
@@ -449,6 +450,17 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 
 .composer-area { flex: 0 0 auto; padding: 0 25px 15px; }
+.backend-retry {
+    padding: 2px 6px;
+    border: 1px solid currentColor;
+    background: transparent;
+    color: #ec5748;
+    font: 9px var(--mono);
+    cursor: pointer;
+}
+.backend-retry:hover:not(:disabled) { background: #ec574822; }
+.backend-retry:disabled { cursor: wait; opacity: .6; }
+.backend-retry:focus-visible { outline: 2px solid #ec5748; outline-offset: 2px; }
 .composer-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: #80909b; font-size: 10px; }
 .composer-meta > span:first-child { display: flex; align-items: center; gap: 7px; }
 .composer-meta b { color: var(--cyan); font-weight: 400; }
@@ -502,6 +514,13 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .composer textarea::placeholder { color: #8a9ba6; opacity: 1; }
 .composer-actions { display: flex; align-items: center; gap: 10px; }
+.awaiting.is-unavailable { color: #ec5748; }
+.awaiting.is-unavailable .status-dot {
+    background: #ec5748;
+    box-shadow: 0 0 8px #ec574888;
+}
+.composer-actions.is-unavailable .send-button { background: #45494c; color: #a4aaad; cursor: not-allowed; }
+.composer textarea:disabled { cursor: not-allowed; opacity: .55; }
 .send-button {
     display: grid;
     place-items: center;

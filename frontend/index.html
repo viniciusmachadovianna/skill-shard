@@ -104,12 +104,15 @@
                     </select>
                 </div>
                 <form class="composer" id="composer">
-                    <textarea id="prompt-input" rows="2" data-i18n-placeholder="prompt-placeholder" aria-label="Ask a question" data-i18n-aria="prompt-aria" placeholder="Analyze the key findings in my documents."></textarea>
+                    <textarea id="prompt-input" rows="2" data-i18n-placeholder="prompt-placeholder" aria-label="Ask a question" data-i18n-aria="prompt-aria" placeholder="Analyze the key findings in my documents." disabled></textarea>
                     <div class="composer-actions">
-                        <label class="status-led status-led-blue"></label>
-                        <p class="awaiting"><span class="status-dot"></span> <span data-i18n="awaiting-input">AWAITING YOUR INPUT</span></p>
-
-                        <button class="send-button" type="submit" aria-label="Send message">→</button>
+                        <span class="status-led status-led-red" id="backend-led" aria-hidden="true"></span>
+                        <p class="awaiting is-unavailable" id="backend-status" role="status" aria-live="polite">
+                            <span class="status-dot"></span>
+                            <span id="backend-status-text" data-i18n="backend-checking">CHECKING MODEL CONNECTION</span>
+                        </p>
+                        <button class="backend-retry" id="backend-retry" type="button" data-i18n="backend-retry" hidden>RETRY CHECK</button>
+                        <button class="send-button" type="submit" aria-label="Send message" disabled>→</button>
                     </div>
                 </form>
                 <p class="composer-footnote" data-i18n="composer-footnote">Answers grounded in your documents. Decisions remain yours.</p>

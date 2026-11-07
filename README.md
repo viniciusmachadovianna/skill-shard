@@ -31,6 +31,11 @@ Capacidades:
 7. The chat sends `POST http://127.0.0.1:8000/ask` with JSON `{ "question": "..." }`; the API returns the answer as a JSON string.
 8. When done, to close the virtual Python environment (`venv`) run `deactivate`.
 
+## Endpoints
+
+- `GET /ready` ao iniciar e após falhas nas perguntas. Verifica a configuração e a disponibilidade do modelo, armazena em cache apenas verificações *bem-sucedidas* por 15 segundos e aceita `GET /ready?refresh=true` para ignorar o cache. Em caso negativo, o envio de perguntas é bloqueado até o status ser normalizado.
+- `GET /health` verifica se o backend está ativo; chamadas ao modelo expiram após 45 segundos.
+
 ## Arquitetura
 
 backend/ <br>

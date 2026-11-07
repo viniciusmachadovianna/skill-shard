@@ -6,10 +6,17 @@ const workArea = $('#work-area');
 const promptInput = $('#prompt-input');
 const conversationOutput = $('#conversation-output');
 const scrollCue = $('.scroll-cue');
+const backendStatus = $('#backend-status');
+const backendStatusText = $('#backend-status-text');
+const backendRetryButton = $('#backend-retry');
+const backendLed = $('#backend-led');
+const composerActions = $('.composer-actions');
 const exportButton = $('#export-button');
 const sendButton = $('.send-button');
 const responseLoader = $('#response-loader');
 let pendingRequestController;
+let readinessController;
+let backendReady = false;
 
 function addMessage(label, message, className = '') {
     const article = document.createElement('article');
@@ -28,7 +35,7 @@ export function cancelPendingResponse() {
     pendingRequestController = undefined;
     responseLoader.hidden = true;
     conversationOutput.removeAttribute('aria-busy');
-    sendButton.disabled = false;
+    sendButton.disabled = !backendReady;
     updateScrollCue();
 }
 
@@ -70,6 +77,67 @@ function updateScrollCue() {
         || workArea.scrollTop + workArea.clientHeight >= workArea.scrollHeight - 1;
 }
 
+function setBackendStatus(key) {
+    backendReady = key === 'backend-ready';
+    backendStatus.classList.toggle('is-unavailable', !backendReady);
+    backendStatusText.dataset.i18n = backendReady ? 'awaiting-input' : key;
+    backendStatusText.textContent = t(backendReady ? 'awaiting-input' : key);
+    backendLed.classList.toggle('status-led-blue', backendReady);
+    backendLed.classList.toggle('status-led-red', !backendReady);
+    backendActionsState();
+}
+
+function backendActionsState() {
+    composerActions.classList.toggle('is-unavailable', !backendReady);
+    promptInput.disabled = !backendReady;
+    sendButton.disabled = !backendReady || Boolean(pendingRequestController);
+    backendRetryButton.hidden = backendReady || backendStatusText.dataset.i18n === 'backend-checking';
+}
+
+function markBackendReady() {
+    readinessController?.abort();
+    readinessController = undefined;
+    setBackendStatus('backend-ready');
+}
+
+async function checkBackendReadiness({ refresh = false } = {}) {
+    readinessController?.abort();
+    const controller = new AbortController();
+    readinessController = controller;
+    const timeout = window.setTimeout(() => controller.abort(), 5_000);
+    backendRetryButton.disabled = true;
+    setBackendStatus('backend-checking');
+
+    try {
+        const response = await fetch(
+            `http://127.0.0.1:8000/ready${refresh ? '?refresh=true' : ''}`,
+            { cache: 'no-store', signal: controller.signal }
+        );
+        const result = await response.json();
+        const reason = result.detail?.reason ?? result.reason;
+
+        if (response.ok && result.ready) {
+            setBackendStatus('backend-ready');
+        } else if (reason === 'configuration_missing') {
+            setBackendStatus('backend-config-missing');
+        } else {
+            setBackendStatus('backend-model-unavailable');
+        }
+    } catch (error) {
+        if (readinessController !== controller) return;
+        setBackendStatus(controller.signal.aborted
+            ? 'backend-check-timeout'
+            : 'backend-unavailable');
+    } finally {
+        window.clearTimeout(timeout);
+        if (readinessController === controller) {
+            readinessController = undefined;
+            backendRetryButton.disabled = false;
+            backendActionsState();
+        }
+    }
+}
+
 function exportConversation(onEmptyExport) {
     const messages = [...conversationOutput.querySelectorAll('.chat-message')].map((message) => {
         const [label, ...body] = message.innerText.split('\n');
@@ -106,12 +174,19 @@ export function initializeChat({ onEmptyExport }) {
     window.addEventListener('resize', updateScrollCue);
     workArea.addEventListener('scroll', updateScrollCue);
     updateScrollCue();
+    setBackendStatus('backend-checking');
+    backendRetryButton.addEventListener('click', () => checkBackendReadiness({ refresh: true }));
+    checkBackendReadiness();
 
     composer.addEventListener('submit', async (event) => {
         event.preventDefault();
         const message = promptInput.value.trim();
         if (!message) {
             promptInput.focus();
+            return;
+        }
+        if (!backendReady) {
+            checkBackendReadiness({ refresh: true });
             return;
         }
         if (pendingRequestController) return;
@@ -128,15 +203,17 @@ export function initializeChat({ onEmptyExport }) {
         try {
             const answer = await ask(message, controller.signal);
             if (controller.signal.aborted) return;
+            markBackendReady();
             addMessage('SS-800 / SYSTEM', answer, 'assistant-reply');
         } catch (error) {
             if (controller.signal.aborted) return;
             console.error('Unable to get an answer from the API:', error);
             addMessage('SS-800 / SYSTEM', t('request-failed'), 'assistant-reply');
+            checkBackendReadiness({ refresh: true });
         } finally {
             if (pendingRequestController === controller) {
                 pendingRequestController = undefined;
-                sendButton.disabled = false;
+                sendButton.disabled = !backendReady;
                 responseLoader.hidden = true;
                 conversationOutput.removeAttribute('aria-busy');
                 updateScrollCue();
