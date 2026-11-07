@@ -135,9 +135,19 @@ button { color: inherit; }
     box-shadow: 0 0 0 2px #00d9ff, 0 0 9px 3px #00bfff, 0 0 23px 7px #006bff88, inset 0 0 8px #00aaff;
 }
 .status-led-red {
-    border-color: #ec5748;
-    animation: none;
-    box-shadow: 0 0 0 2px #ec5748, 0 0 9px 3px #ec5748, 0 0 23px 7px #ec574888, inset 0 0 8px #ec5748;
+    animation: status-led-red-blink 1.2s ease-in-out infinite alternate;
+}
+@keyframes status-led-red-blink {
+    from {
+        border-color: #8f3028;
+        opacity: .75;
+        box-shadow: none;
+    }
+    to {
+        border-color: #ec5748;
+        opacity: 1;
+        box-shadow: 0 0 0 2px #ec5748, 0 0 9px 3px #ec5748, 0 0 20px 6px #ec574888, inset 0 0 7px #ec5748;
+    }
 }
 @keyframes indicator-blink {
     0% {
