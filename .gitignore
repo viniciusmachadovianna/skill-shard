@@ -1,3 +1,4 @@
 refs/
 backend/data/
 .env
+.vscode/
