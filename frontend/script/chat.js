@@ -5,6 +5,7 @@ const composer = $('#composer');
 const workArea = $('#work-area');
 const promptInput = $('#prompt-input');
 const conversationOutput = $('#conversation-output');
+const scrollCue = $('.scroll-cue');
 const exportButton = $('#export-button');
 const sendButton = $('.send-button');
 const responseLoader = $('#response-loader');
@@ -19,6 +20,7 @@ function addMessage(label, message, className = '') {
     body.textContent = message;
     article.append(caption, body);
     conversationOutput.append(article);
+    scrollToLatestMessage();
 }
 
 export function cancelPendingResponse() {
@@ -27,12 +29,14 @@ export function cancelPendingResponse() {
     responseLoader.hidden = true;
     conversationOutput.removeAttribute('aria-busy');
     sendButton.disabled = false;
+    updateScrollCue();
 }
 
 export function clearChat() {
     cancelPendingResponse();
     conversationOutput.replaceChildren();
     promptInput.value = '';
+    updateScrollCue();
 }
 
 async function ask(question, signal) {
@@ -57,6 +61,13 @@ async function ask(question, signal) {
 
 function scrollToLatestMessage() {
     workArea.scrollTo({ top: workArea.scrollHeight, behavior: 'smooth' });
+}
+
+function updateScrollCue() {
+    const cueHeight = scrollCue.offsetHeight || 34;
+    scrollCue.style.top = `${Math.max(0, workArea.clientHeight - cueHeight - 5)}px`;
+    scrollCue.hidden = conversationOutput.childElementCount === 0
+        || workArea.scrollTop + workArea.clientHeight >= workArea.scrollHeight - 1;
 }
 
 function exportConversation(onEmptyExport) {
@@ -92,6 +103,10 @@ export function initializeChat({ onEmptyExport }) {
         composer.requestSubmit();
     });
 
+    window.addEventListener('resize', updateScrollCue);
+    workArea.addEventListener('scroll', updateScrollCue);
+    updateScrollCue();
+
     composer.addEventListener('submit', async (event) => {
         event.preventDefault();
         const message = promptInput.value.trim();
@@ -108,6 +123,7 @@ export function initializeChat({ onEmptyExport }) {
         sendButton.disabled = true;
         responseLoader.hidden = false;
         conversationOutput.setAttribute('aria-busy', 'true');
+        updateScrollCue();
 
         try {
             const answer = await ask(message, controller.signal);
@@ -123,13 +139,14 @@ export function initializeChat({ onEmptyExport }) {
                 sendButton.disabled = false;
                 responseLoader.hidden = true;
                 conversationOutput.removeAttribute('aria-busy');
+                updateScrollCue();
             }
             scrollToLatestMessage();
         }
     });
 
-    document.querySelector('.scroll-cue').addEventListener('click', () => {
-        composer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    scrollCue.addEventListener('click', () => {
+        scrollToLatestMessage();
         promptInput.focus({ preventScroll: true });
     });
 

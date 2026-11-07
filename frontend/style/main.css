@@ -385,12 +385,11 @@ h1 em { color: var(--cyan); font-style: normal; }
 .scroll-cue {
     position: sticky;
     z-index: 1;
-    left: 50%;
-    bottom: 5px;
+    top: 0;
     display: block;
     width: 34px;
     height: 34px;
-    margin: -17px auto 0;
+    margin: 0 auto -34px;
     border: 1px solid var(--line);
     border-radius: 50%;
     background: var(--panel);
@@ -398,6 +397,7 @@ h1 em { color: var(--cyan); font-style: normal; }
     font-size: 19px;
     cursor: pointer;
 }
+.scroll-cue[hidden] { display: none; }
 .conversation-output { width: min(546px, calc(100% - 64px)); margin: 8px auto 24px; }
 .chat-message { margin: 10px 0; padding: 13px 15px; border-left: 2px solid var(--cyan); background: var(--surface); font-size: 15px; }
 .chat-message small { display: block; margin-bottom: 6px; color: var(--cyan); font: 10px var(--mono); }
