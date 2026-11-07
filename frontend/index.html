@@ -216,6 +216,17 @@
         <ul class="knowledge-document-list" id="knowledge-document-list" aria-label="Knowledge base documents" data-i18n-aria="knowledge-documents"></ul>
         <p class="knowledge-empty" id="knowledge-empty" data-i18n="knowledge-empty">No documents yet. Add a file to get started.</p>
     </dialog>
+    <dialog class="conversation-delete-dialog" id="conversation-delete-dialog" aria-labelledby="conversation-delete-title"
+        aria-describedby="conversation-delete-message">
+        <h2 id="conversation-delete-title" data-i18n="delete-conversation-title">Delete conversation?</h2>
+        <p id="conversation-delete-message"></p>
+        <div class="conversation-delete-actions">
+            <button class="conversation-delete-cancel" id="conversation-delete-cancel" type="button"
+                data-i18n="cancel">Cancel</button>
+            <button class="conversation-delete-confirm" id="conversation-delete-confirm" type="button"
+                data-i18n="delete">Delete</button>
+        </div>
+    </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script type="module" src="script/main.js"></script>
 </body>

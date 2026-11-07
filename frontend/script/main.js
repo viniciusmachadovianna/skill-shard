@@ -26,6 +26,11 @@ const assistantToggleIcon = assistantToggle.querySelector('img');
 const conversationList = $('.sidebar-top');
 const conversationCount = $('#conversation-count');
 const workspaceTitle = $('#workspace-title');
+const conversationDeleteDialog = $('#conversation-delete-dialog');
+const conversationDeleteMessage = $('#conversation-delete-message');
+const conversationDeleteCancel = $('#conversation-delete-cancel');
+const conversationDeleteConfirm = $('#conversation-delete-confirm');
+let conversationPendingDeletion;
 
 export function showToast(message) {
     toast.textContent = message;
@@ -127,6 +132,29 @@ function updateConversationCount() {
     conversationCount.textContent = String(conversationList.querySelectorAll('.conversation-entry').length).padStart(2, '0');
 }
 
+function deleteConversation(entry) {
+    if (!entry.isConnected) return;
+
+    const entries = [...conversationList.querySelectorAll('.conversation-entry')];
+    const wasActive = entry.classList.contains('active');
+    const deletedIndex = entries.indexOf(entry);
+    if (wasActive) cancelPendingResponse();
+    entry.remove();
+    updateConversationCount();
+
+    if (wasActive) {
+        const remainingEntries = conversationList.querySelectorAll('.conversation-entry');
+        const nextEntry = remainingEntries[Math.min(deletedIndex, remainingEntries.length - 1)];
+        if (nextEntry) {
+            activateConversation(nextEntry);
+        } else {
+            workspaceTitle.textContent = 'No conversation selected';
+            clearChat();
+        }
+    }
+    showToast(t('conversation-deleted'));
+}
+
 initializeChat({
     onEmptyExport: () => showToast('There are no messages to export yet.')
 });
@@ -144,6 +172,16 @@ assistantToggle.addEventListener('click', () => {
 });
 
 syncSidebarState();
+
+conversationDeleteCancel.addEventListener('click', () => conversationDeleteDialog.close());
+conversationDeleteConfirm.addEventListener('click', () => {
+    if (conversationPendingDeletion) deleteConversation(conversationPendingDeletion);
+    conversationPendingDeletion = undefined;
+    conversationDeleteDialog.close();
+});
+conversationDeleteDialog.addEventListener('close', () => {
+    conversationPendingDeletion = undefined;
+});
 
 conversationList.addEventListener('click', (event) => {
     if (!(event.target instanceof Element)) return;
@@ -193,25 +231,11 @@ conversationList.addEventListener('click', (event) => {
             if (entry.classList.contains('active')) workspaceTitle.textContent = trimmedName;
             showToast('Conversation renamed.');
         } else if (action === 'delete') {
-            if (!window.confirm(t('delete-conversation-confirm').replace('{name}', title.textContent))) return;
-            const entries = [...conversationList.querySelectorAll('.conversation-entry')];
-            const wasActive = entry.classList.contains('active');
-            const deletedIndex = entries.indexOf(entry);
-            if (wasActive) cancelPendingResponse();
-            entry.remove();
-            updateConversationCount();
-
-            if (wasActive) {
-                const remainingEntries = conversationList.querySelectorAll('.conversation-entry');
-                const nextEntry = remainingEntries[Math.min(deletedIndex, remainingEntries.length - 1)];
-                if (nextEntry) {
-                    activateConversation(nextEntry);
-                } else {
-                    workspaceTitle.textContent = 'No conversation selected';
-                    clearChat();
-                }
-            }
-            showToast(t('conversation-deleted'));
+            conversationPendingDeletion = entry;
+            conversationDeleteMessage.textContent = t('delete-conversation-confirm')
+                .replace('{name}', title.textContent);
+            conversationDeleteDialog.showModal();
+            conversationDeleteCancel.focus();
         }
         return;
     }
