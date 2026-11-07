@@ -93,10 +93,11 @@ function createDocumentRow(document) {
     row.className = 'knowledge-document';
     row.dataset.documentId = document.id;
 
-    const icon = documentList.ownerDocument.createElement('span');
+    const icon = documentList.ownerDocument.createElement('img');
     icon.className = 'knowledge-document-icon';
+    icon.src = 'assets/icons/database.svg';
+    icon.alt = '';
     icon.setAttribute('aria-hidden', 'true');
-    icon.textContent = '▤';
 
     const name = documentList.ownerDocument.createElement('span');
     name.className = 'knowledge-document-name';

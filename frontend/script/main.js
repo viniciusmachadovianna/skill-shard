@@ -60,9 +60,10 @@ function createConversationEntry(name) {
     const selectButton = document.createElement('button');
     selectButton.type = 'button';
     selectButton.className = 'conversation-item';
-    const icon = document.createElement('span');
+    const icon = document.createElement('img');
     icon.className = 'chat-icon';
-    icon.textContent = '▱';
+    icon.src = 'assets/icons/chat.svg';
+    icon.alt = '';
     const title = document.createElement('span');
     title.textContent = name;
     selectButton.append(icon, title);
