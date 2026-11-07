@@ -3,6 +3,7 @@ import { t } from './language.js';
 
 const composer = $('#composer');
 const workArea = $('#work-area');
+const welcomeContent = $('.welcome-content');
 const promptInput = $('#prompt-input');
 const conversationOutput = $('#conversation-output');
 const scrollCue = $('.scroll-cue');
@@ -42,6 +43,7 @@ export function cancelPendingResponse() {
 export function clearChat() {
     cancelPendingResponse();
     conversationOutput.replaceChildren();
+    welcomeContent.hidden = false;
     promptInput.value = '';
     updateScrollCue();
 }
@@ -191,6 +193,7 @@ export function initializeChat({ onEmptyExport }) {
         }
         if (pendingRequestController) return;
 
+        welcomeContent.hidden = true;
         addMessage('OPERATOR / SS-800', message);
         promptInput.value = '';
         const controller = new AbortController();
