@@ -17,13 +17,14 @@ Capacidades:
 
 ## Pré-requisitos
 
-- [Python](https://www.python.org/downloads/)
+- [Python](https://www.python.org/downloads/) // sudo apt install python3 python3-venv python3-pip
 
 ## Como usar
 
-1. Para evitar conflito de versões das dependências, use `python -m venv venv`
-2. Ative o amb. virtual `.\venv\Scripts\Activate`
-3. Install the project requirements using `python -m pip install -r requirements.txt`
+1. Para evitar conflito de versões das dependências, use `python3 -m venv venv`
+2. (Windows) Ative o amb. virtual `.\venv\Scripts\Activate`
+2. (Debian) Ative o amb. virtual `source venv/bin/activate`
+3. Install the project requirements using `python3 -m pip install -r requirements.txt`
 4. Configure `LLM_API_KEY` and `LLM_MODEL_ID` in a `.env` file at the repository root, there it is a `env.example` for reference.
 5. In a terminal at the repository root, start the backend with `python -m uvicorn backend.app.main:app --reload`.
 6. In a second terminal, serve the frontend from the `frontend` folder with `python -m http.server 5500`, then open `http://localhost:5500`.
