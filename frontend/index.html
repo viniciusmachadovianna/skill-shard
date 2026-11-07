@@ -126,8 +126,11 @@
                 <div class="conversation-output" id="conversation-output" aria-live="polite"></div>
                 <div class="response-loader" id="response-loader" role="status"
                     aria-label="Assistant is processing your question" hidden>
-                    <span class="response-loader-ring" aria-hidden="true"></span>
-                    <span class="response-loader-label">ANALYZING</span>
+                    <div class="response-skeleton" aria-hidden="true">
+                        <span class="response-skeleton-caption"></span>
+                        <span class="response-skeleton-line"></span>
+                        <span class="response-skeleton-line response-skeleton-line-short"></span>
+                    </div>
                 </div>
             </section>
             <div class="composer-area">
