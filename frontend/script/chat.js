@@ -194,7 +194,7 @@ export function initializeChat({ onEmptyExport }) {
         if (pendingRequestController) return;
 
         welcomeContent.hidden = true;
-        addMessage('OPERATOR / SS-800', message);
+        addMessage('OPERATOR / SS-800', message, 'user-prompt');
         promptInput.value = '';
         const controller = new AbortController();
         pendingRequestController = controller;

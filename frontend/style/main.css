@@ -421,6 +421,23 @@ h1 em { color: var(--cyan); font-style: normal; }
 .chat-message { margin: 10px 0; padding: 13px 15px; border-left: 2px solid var(--cyan); background: var(--surface); font-size: 15px; }
 .chat-message small { display: block; margin-bottom: 6px; color: var(--cyan); font: 10px var(--mono); }
 .assistant-reply { border-left-color: var(--green); color: var(--muted); }
+.user-prompt {
+    padding: 13px 0;
+    border: 0;
+    background: transparent;
+}
+.user-prompt small { margin-bottom: 14px; color: var(--subtext); }
+.user-prompt > div {
+    width: fit-content;
+    max-width: 85%;
+    margin-left: auto;
+    padding: 12px 18px;
+    border-radius: 4px;
+    background: var(--surface-selected);
+    color: var(--text);
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
 .response-loader {
     width: min(546px, calc(100% - 64px));
     margin: 10px auto 24px;
