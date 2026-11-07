@@ -14,7 +14,9 @@ const appShell = $('.app-shell');
 const toast = $('#toast');
 let toastTimeout;
 
-const helpButton = $('.help-button');
+const informationModal = $('.information-modal');
+const informationDialog = $('#information-dialog');
+const informationClose = $('#information-close');
 
 const sidebar = $('.sidebar');
 const assistantPanel = $('.assistant-panel');
@@ -26,11 +28,18 @@ const assistantToggleIcon = assistantToggle.querySelector('img');
 const conversationList = $('.sidebar-top');
 const conversationCount = $('#conversation-count');
 const workspaceTitle = $('#workspace-title');
+const retrievalMode = $('#retrieval-mode');
+const retrievalModeIcon = $('#retrieval-mode-icon');
 const conversationDeleteDialog = $('#conversation-delete-dialog');
 const conversationDeleteMessage = $('#conversation-delete-message');
 const conversationDeleteCancel = $('#conversation-delete-cancel');
 const conversationDeleteConfirm = $('#conversation-delete-confirm');
 let conversationPendingDeletion;
+
+function updateRetrievalModeIcon() {
+    const icon = retrievalMode.selectedOptions[0]?.dataset.icon;
+    if (icon) retrievalModeIcon.src = icon;
+}
 
 export function showToast(message) {
     toast.textContent = message;
@@ -172,6 +181,8 @@ assistantToggle.addEventListener('click', () => {
 });
 
 syncSidebarState();
+retrievalMode.addEventListener('change', updateRetrievalModeIcon);
+updateRetrievalModeIcon();
 
 conversationDeleteCancel.addEventListener('click', () => conversationDeleteDialog.close());
 conversationDeleteConfirm.addEventListener('click', () => {
@@ -273,6 +284,15 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-helpButton.addEventListener('click', () => {
-    showToast('DEVIANT is a local interface prototype. No documents leave this device.');
+informationModal.addEventListener('click', () => {
+    informationDialog.showModal();
+    informationClose.focus();
+});
+
+informationClose.addEventListener('click', () => {
+    informationDialog.close();
+});
+
+informationDialog.addEventListener('click', (event) => {
+    if (event.target === informationDialog) informationDialog.close();
 });

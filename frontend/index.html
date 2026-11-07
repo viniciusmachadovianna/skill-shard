@@ -24,17 +24,15 @@
                 Every answer begins with a question. Let's find yours in the knowledge you trust.
             </div>
             <div class="topbar-meta">
-                <button class="icon-button language-toggle" id="language-toggle" type="button"
-                    aria-label="Switch language" title="Switch language">
+                <button class="icon-button language-toggle" id="language-toggle" type="button" aria-label="Switch language" title="Switch language">
                     <img src="assets/icons/language.svg" alt="Language selector" width="16" height="16">
                 </button>
-                <button class="icon-button theme-toggle" id="theme-toggle" type="button"
-                    aria-label="Switch to light theme" title="Switch to light theme">
+                <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Switch to light theme">
                     <img id="theme-icon" src="assets/icons/light_mode.svg" alt="Theme icon" width="16" height="16">
                 </button>
-                <button class="icon-button help-button" type="button" aria-label="About this interface"
-                    title="About this interface"><img src="assets/icons/info.svg" alt="" width="16"
-                        height="16"></button>
+                <button class="icon-button information-modal" id="information-modal" type="button" aria-label="About this interface" title="About this interface">
+                    <img src="assets/icons/info.svg" alt="Help icon" width="16" height="16">
+                </button>
                 <span class="unit-label"><img class="icon" src="assets/icons/unit.svg" alt="" width="12" height="12">
                     UNIT SS-800<br>
                     <b>INTERFACE V.01</b>
@@ -103,21 +101,24 @@
                     <div class="objective-label" data-i18n="objective-label">SELECT AN OBJECTIVE</div>
                     <div class="objective-grid">
                         <button class="objective-card" data-prompt-key="prompt-analyze">
-                            <span class="objective-icon">⌗</span><span class="card-arrow">↗</span><span
-                                class="objective-name" data-i18n="objective-analyze">Analyze a document</span>
+                            <img class="objective-icon" src="assets/icons/summarize.svg" alt="" width="19" height="19">
+                            <span class="card-arrow"><img class="objective-icon" src="assets/icons/go.svg" alt="" width="19" height="19"></span>
+                            <span class="objective-name" data-i18n="objective-analyze">Analyze a document</span>
                         </button>
                         <button class="objective-card" data-prompt-key="prompt-connect">
-                            <span class="objective-icon">♧</span><span class="card-arrow">↗</span><span
-                                class="objective-name" data-i18n="objective-connect">Connect the dots</span>
+                            <img class="objective-icon" src="assets/icons/connections.svg" alt="" width="19" height="19">
+                            <span class="card-arrow"><img class="objective-icon" src="assets/icons/go.svg" alt="" width="19" height="19"></span>
+                            <span class="objective-name" data-i18n="objective-connect">Connect the dots</span>
                         </button>
                         <button class="objective-card" data-prompt-key="prompt-summary">
-                            <img class="objective-icon" src="assets/icons/database.svg" alt="" width="19"
-                                height="19"><span class="card-arrow">↗</span><span class="objective-name"
-                                data-i18n="objective-summary">Summarize a document</span>
+                            <img class="objective-icon" src="assets/icons/database.svg" alt="" width="19" height="19">
+                            <span class="card-arrow"><img class="objective-icon" src="assets/icons/go.svg" alt="" width="19" height="19"></span>
+                            <span class="objective-name" data-i18n="objective-summary">Summarize a document</span>
                         </button>
                         <button class="objective-card" data-prompt-key="prompt-search">
-                            <span class="objective-icon">⌕</span><span class="card-arrow">↗</span><span
-                                class="objective-name" data-i18n="objective-search">Search knowledge</span>
+                            <img class="objective-icon" src="assets/icons/investigate.svg" alt="" width="19" height="19">
+                            <span class="card-arrow"><img class="objective-icon" src="assets/icons/go.svg" alt="" width="19" height="19"></span>
+                            <span class="objective-name" data-i18n="objective-search">Search knowledge</span>
                         </button>
                     </div>
                 </div>
@@ -139,11 +140,15 @@
                     </span>
                     <label class="sr-only" for="retrieval-mode" data-i18n="retrieval-mode-label">Select retrieval
                         mode</label>
-                    <select class="mode-select" id="retrieval-mode" name="retrieval-mode">
-                        <option value="llm">LLM</option>
-                        <option value="rag">RAG</option>
-                        <option value="graphrag">GraphRAG</option>
-                    </select>
+                    <div class="mode-select-control">
+                        <img id="retrieval-mode-icon" src="assets/icons/c1.svg" alt="" aria-hidden="true"
+                            width="18" height="18">
+                        <select class="mode-select" id="retrieval-mode" name="retrieval-mode">
+                            <option value="llm" data-icon="assets/icons/simple_retrieval.svg">LLM</option>
+                            <option value="rag" data-icon="assets/icons/intermediate_retrieval.svg">RAG</option>
+                            <option value="graphrag" data-icon="assets/icons/complex_retrieval.svg">GraphRAG</option>
+                        </select>
+                    </div>
                 </div>
                 <form class="composer" id="composer">
                     <textarea id="prompt-input" rows="2" data-i18n-placeholder="prompt-placeholder"
@@ -226,6 +231,22 @@
             <button class="conversation-delete-confirm" id="conversation-delete-confirm" type="button"
                 data-i18n="delete">Delete</button>
         </div>
+    </dialog>
+    <dialog class="information-dialog" id="information-dialog" aria-labelledby="information-title"
+        aria-describedby="information-description">
+        <div class="knowledge-dialog-header">
+            <div>
+                <h2 id="information-title" data-i18n="information-title">Deviant / System information</h2>
+                <p data-i18n="information-subtitle">Android-inspired RAG interface prototype</p>
+            </div>
+            <button class="knowledge-close" id="information-close" type="button" aria-label="Close information"
+                data-i18n-aria="close-information">×</button>
+        </div>
+        <p class="information-description" id="information-description" data-i18n="information-description">
+            Documents are stored in this browser. Chat history remains in this session. Questions are sent to the
+            configured language model when it is available.
+        </p>
+        <p class="information-version" data-i18n="information-version">SS-800 / INTERFACE V.01</p>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script type="module" src="script/main.js"></script>
