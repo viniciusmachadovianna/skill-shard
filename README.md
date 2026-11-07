@@ -54,6 +54,10 @@ frontend/ <br>
 - **LLM:** Gemini (API)
 - **Banco vetorial:** ...
 
+### Assets
+
+[Material Icons](https://fonts.google.com/icons?icon.size=24&icon.color=%23EEE&icon.style=Sharp)
+
 ## Metodologia de Avaliação
 
 Comparação entre três configurações:
