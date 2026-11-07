@@ -68,6 +68,20 @@ function createConversationEntry(name) {
     title.textContent = name;
     selectButton.append(icon, title);
 
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'knowledge-delete conversation-delete';
+    deleteButton.type = 'button';
+    deleteButton.dataset.conversationAction = 'delete';
+    deleteButton.setAttribute('aria-label', t('delete-conversation'));
+    deleteButton.dataset.i18nAria = 'delete-conversation';
+    deleteButton.title = t('delete-conversation');
+    deleteButton.dataset.i18nTitle = 'delete-conversation';
+    const deleteIcon = document.createElement('img');
+    deleteIcon.src = 'assets/icons/delete.svg';
+    deleteIcon.alt = '';
+    deleteIcon.setAttribute('aria-hidden', 'true');
+    deleteButton.append(deleteIcon);
+
     // const menuToggle = document.createElement('button');
     // menuToggle.type = 'button';
     // menuToggle.className = 'conversation-menu-toggle';
@@ -89,7 +103,7 @@ function createConversationEntry(name) {
     //     menu.append(button);
     // }
 
-    entry.append(selectButton, menu);
+    entry.append(selectButton, deleteButton, menu);
     // entry.append(selectButton, menuToggle, menu);
     return entry;
 }
@@ -179,7 +193,7 @@ conversationList.addEventListener('click', (event) => {
             if (entry.classList.contains('active')) workspaceTitle.textContent = trimmedName;
             showToast('Conversation renamed.');
         } else if (action === 'delete') {
-            if (!window.confirm(`Delete "${title.textContent}"?`)) return;
+            if (!window.confirm(t('delete-conversation-confirm').replace('{name}', title.textContent))) return;
             const entries = [...conversationList.querySelectorAll('.conversation-entry')];
             const wasActive = entry.classList.contains('active');
             const deletedIndex = entries.indexOf(entry);
@@ -197,7 +211,7 @@ conversationList.addEventListener('click', (event) => {
                     clearChat();
                 }
             }
-            showToast('Conversation deleted.');
+            showToast(t('conversation-deleted'));
         }
         return;
     }

@@ -57,10 +57,17 @@
                         data-i18n="conversations">CONVERSATIONS</span><span id="conversation-count">01</span></div>
                 <button class="new-conversation"><span class="plus">＋</span> <span data-i18n="new-conversation">NEW
                         CONVERSATION</span></button>
-                <button class="conversation-item active">
-                    <img class="chat-icon" src="assets/icons/chat.svg" alt="" width="18" height="18">
-                    <span data-i18n="new-investigation">New investigation</span>
-                </button>
+                <div class="conversation-entry active">
+                    <button class="conversation-item" type="button">
+                        <img class="chat-icon" src="assets/icons/chat.svg" alt="" width="18" height="18">
+                        <span data-i18n="new-investigation">New investigation</span>
+                    </button>
+                    <button class="knowledge-delete conversation-delete" type="button" data-conversation-action="delete"
+                        aria-label="Delete conversation" data-i18n-aria="delete-conversation"
+                        title="Delete conversation" data-i18n-title="delete-conversation">
+                        <img src="assets/icons/delete.svg" alt="" aria-hidden="true">
+                    </button>
+                </div>
             </div>
             <div class="sidebar-bottom">
                 <button class="knowledge-row" id="knowledge-button">
@@ -90,7 +97,7 @@
             </div>
             <section class="work-area" id="work-area">
                 <div class="welcome-content">
-                    <div class="eyebrow"><span></span> <span data-i18n="interface-initialized">COGNITIVE INTERFACE INITIALIZED</span></div>
+                    <div class="eyebrow"><span></span> <p data-i18n="interface-initialized">COGNITIVE INTERFACE INITIALIZED</p></div>
                     <h1><span data-i18n="greeting-title">What do you</span><br><em data-i18n="greeting-emphasis">want to
                             know?</em></h1>
                     <div class="objective-label" data-i18n="objective-label">SELECT AN OBJECTIVE</div>
@@ -203,15 +210,11 @@
             <span data-i18n="add-documents">Add documents</span>
         </button>
         <input id="file-input" type="file"
-            accept=".txt,.md,.csv,.json,text/plain,text/markdown,text/csv,application/json" multiple hidden>
-        <p class="knowledge-dialog-hint" data-i18n="supported-document-formats">TXT / MARKDOWN / CSV / JSON · UP TO 2 MB
-            EACH</p>
-        <p class="knowledge-dialog-note" data-i18n="knowledge-local-note">Stored in this browser. Document retrieval is
-            not connected yet.</p>
-        <ul class="knowledge-document-list" id="knowledge-document-list" aria-label="Knowledge base documents"
-            data-i18n-aria="knowledge-documents"></ul>
-        <p class="knowledge-empty" id="knowledge-empty" data-i18n="knowledge-empty">No documents yet. Add a file to get
-            started.</p>
+            accept=".txt,text/plain,.md,text/markdown,.csv,text/csv,.json,application/json,.pdf,application/pdf" multiple hidden>
+        <p class="knowledge-dialog-hint" data-i18n="supported-document-formats">TXT / MARKDOWN / CSV / JSON · UP TO 2 MB EACH</p>
+        <p class="knowledge-dialog-note" data-i18n="knowledge-local-note">Stored in this browser. Document retrieval is not connected yet.</p>
+        <ul class="knowledge-document-list" id="knowledge-document-list" aria-label="Knowledge base documents" data-i18n-aria="knowledge-documents"></ul>
+        <p class="knowledge-empty" id="knowledge-empty" data-i18n="knowledge-empty">No documents yet. Add a file to get started.</p>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script type="module" src="script/main.js"></script>

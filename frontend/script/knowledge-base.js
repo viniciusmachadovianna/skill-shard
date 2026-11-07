@@ -120,12 +120,10 @@ function createDocumentRow(document) {
     deleteButton.type = 'button';
     deleteButton.setAttribute('aria-label', t('delete-document').replace('{name}', document.name));
     deleteButton.title = t('delete-document-title');
-    const deleteIcon = documentList.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    deleteIcon.setAttribute('viewBox', '0 0 20 20');
+    const deleteIcon = documentList.ownerDocument.createElement('img');
+    deleteIcon.src = 'assets/icons/delete.svg';
+    deleteIcon.alt = '';
     deleteIcon.setAttribute('aria-hidden', 'true');
-    const deletePath = documentList.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
-    deletePath.setAttribute('d', 'M6 6h8l-.7 11H6.7L6 6Zm-2-2h12M8 4V2.8h4V4m-3.8 4.5v5.5m3.6-5.5v5.5');
-    deleteIcon.append(deletePath);
     deleteButton.append(deleteIcon);
 
     row.append(icon, name, toggleLabel, deleteButton);
