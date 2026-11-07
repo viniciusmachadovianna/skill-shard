@@ -20,9 +20,6 @@
                     <small data-i18n="brand-tagline">RETRIEVAL AUGMENTED INTELLIGENCE</small>
                 </span>
             </a>
-            <div class="system-status" data-i18n="greeting-subtitle">
-                Every answer begins with a question. Let's find yours in the knowledge you trust.
-            </div>
             <div class="topbar-meta">
                 <button class="icon-button language-toggle" id="language-toggle" type="button" aria-label="Switch language" title="Switch language">
                     <img src="assets/icons/language.svg" alt="Language selector" width="16" height="16">
@@ -168,8 +165,6 @@
                         <button class="send-button" type="submit" aria-label="Send message" disabled>→</button>
                     </div>
                 </form>
-                <p class="composer-footnote" data-i18n="composer-footnote">Answers grounded in your documents. Decisions
-                    remain yours.</p>
             </div>
         </main>
 
@@ -198,9 +193,11 @@
                     <div class="metric"><span data-i18n="retrieval-protocol">Retrieval protocol</span><strong
                             data-i18n="standby">STANDBY</strong></div>
                 </div>
+
                 <div class="signal-bars" aria-hidden="true">
                     <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
                 </div>
+                <p class="composer-footnote" data-i18n="composer-footnote"> Answers grounded in your documents. Decisions remain yours. </p>
             </div>
         </aside>
     </div>
@@ -245,6 +242,9 @@
             <button class="knowledge-close" id="information-close" type="button" aria-label="Close information"
                 data-i18n-aria="close-information">×</button>
         </div>
+        <q class="system-status" data-i18n="greeting-subtitle">
+            Every answer begins with a question. Let's find yours in the knowledge you trust.
+        </q>
         <p class="information-description" id="information-description" data-i18n="information-description">
             Documents are stored in this browser. Chat history remains in this session. Questions are sent to the
             configured language model when it is available.
