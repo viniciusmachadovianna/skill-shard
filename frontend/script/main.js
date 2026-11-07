@@ -1,6 +1,7 @@
 import { applyTheme } from './theme.js';
 import { applyLanguage, getCurrentLanguage, initializeLanguage, t } from './language.js';
 import { clearChat, initializeChat, cancelPendingResponse } from './chat.js';
+import { initializeKnowledgeBase } from './knowledge-base.js';
 import { $ } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,7 +14,6 @@ const appShell = $('.app-shell');
 const toast = $('#toast');
 let toastTimeout;
 
-const fileInput = $('#file-input');
 const helpButton = $('.help-button');
 
 const sidebar = $('.sidebar');
@@ -26,7 +26,6 @@ const assistantToggleIcon = assistantToggle.querySelector('img');
 const conversationList = $('.sidebar-top');
 const conversationCount = $('#conversation-count');
 const workspaceTitle = $('#workspace-title');
-const knowledgeButton = $('#knowledge-button');
 
 export function showToast(message) {
     toast.textContent = message;
@@ -116,6 +115,8 @@ function updateConversationCount() {
 initializeChat({
     onEmptyExport: () => showToast('There are no messages to export yet.')
 });
+
+initializeKnowledgeBase({ showToast });
 
 sidebarToggle.addEventListener('click', () => {
     sidebar.classList.toggle('is-collapsed');
@@ -231,16 +232,6 @@ document.addEventListener('keydown', (event) => {
         event.preventDefault();
         menuItems[nextIndex].focus();
     }
-});
-
-knowledgeButton.addEventListener('click', () => fileInput.click());
-
-fileInput.addEventListener('change', () => {
-    const count = fileInput.files.length;
-    if (!count) return;
-    document.querySelector('#document-count').textContent = String(count);
-    document.querySelector('#source-metric').textContent = `${String(count).padStart(2, '0')} DOCUMENT${count === 1 ? '' : 'S'}`;
-    showToast(`${count} document${count === 1 ? '' : 's'} selected locally. Connect a retrieval backend to index them.`);
 });
 
 helpButton.addEventListener('click', () => {

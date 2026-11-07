@@ -30,7 +30,7 @@
                 </button>
                 <button class="icon-button help-button" aria-label="About this interface" title="About this interface">?</button>
                 <span class="unit-label"><span class="icon">⚙</span> UNIT SS-800<br>
-                    <!-- <b></b> -->
+                    <b>INTERFACE V.01</b>
                 </span>
             </div>
         </header>
@@ -96,13 +96,17 @@
             <div class="composer-area">
                 <div class="composer-meta">
                     <span><span class="database-icon small">▤</span> <span data-i18n="knowledge-base-meta">KNOWLEDGE BASE</span> <b>/</b> <span data-i18n="no-sources">NO SOURCES</span></span>
-                    <span class="cyan-text" data-i18n="interface-version">INTERFACE V.01</span>
+                    <label class="sr-only" for="retrieval-mode" data-i18n="retrieval-mode-label">Select retrieval mode</label>
+                    <select class="mode-select" id="retrieval-mode" name="retrieval-mode">
+                        <option value="llm">LLM</option>
+                        <option value="rag">RAG</option>
+                        <option value="graphrag">GraphRAG</option>
+                    </select>
                 </div>
                 <form class="composer" id="composer">
                     <textarea id="prompt-input" rows="2" data-i18n-placeholder="prompt-placeholder" aria-label="Ask a question" data-i18n-aria="prompt-aria" placeholder="Analyze the key findings in my documents."></textarea>
                     <div class="composer-actions">
-                        <label class="topbar-indicator topbar-indicator-red attach-button" for="file-input" title="Add documents">⌁</label>
-                        <input id="file-input" type="file" multiple hidden>
+                        <label class="topbar-indicator topbar-indicator-red attach-button" for="file-input" title="Add documents" data-i18n-title="add-documents">⌁</label>
                         <p class="awaiting"><span class="status-dot"></span> <span data-i18n="awaiting-input">AWAITING YOUR INPUT</span></p>
 
                         <button class="send-button" type="submit" aria-label="Send message">→</button>
@@ -133,6 +137,24 @@
             </div>
         </aside>
     </div>
+    <dialog class="knowledge-dialog" id="knowledge-dialog" aria-labelledby="knowledge-title">
+        <div class="knowledge-dialog-header">
+            <div>
+                <h2 id="knowledge-title" data-i18n="knowledge-base">Knowledge base</h2>
+                <p id="knowledge-summary" aria-live="polite"></p>
+            </div>
+            <button class="knowledge-close" id="knowledge-close" type="button" aria-label="Close knowledge base" data-i18n-aria="close-knowledge-base">×</button>
+        </div>
+        <button class="knowledge-add" id="add-documents" type="button">
+            <span aria-hidden="true">＋</span>
+            <span data-i18n="add-documents">Add documents</span>
+        </button>
+        <input id="file-input" type="file" accept=".txt,.md,.csv,.json,text/plain,text/markdown,text/csv,application/json" multiple hidden>
+        <p class="knowledge-dialog-hint" data-i18n="supported-document-formats">TXT / MARKDOWN / CSV / JSON · UP TO 2 MB EACH</p>
+        <p class="knowledge-dialog-note" data-i18n="knowledge-local-note">Stored in this browser. Document retrieval is not connected yet.</p>
+        <ul class="knowledge-document-list" id="knowledge-document-list" aria-label="Knowledge base documents" data-i18n-aria="knowledge-documents"></ul>
+        <p class="knowledge-empty" id="knowledge-empty" data-i18n="knowledge-empty">No documents yet. Add a file to get started.</p>
+    </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script type="module" src="script/main.js"></script>
 </body>
