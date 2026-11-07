@@ -419,7 +419,16 @@ h1 em { color: var(--cyan); font-style: normal; }
 .scroll-cue[hidden] { display: none; }
 .conversation-output { width: min(546px, calc(100% - 64px)); margin: 8px auto 24px; }
 .chat-message { margin: 10px 0; padding: 13px 15px; border-left: 2px solid var(--cyan); background: var(--surface); font-size: 15px; }
-.chat-message small { display: block; margin-bottom: 6px; color: var(--cyan); font: 10px var(--mono); }
+.chat-message small {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+    color: var(--cyan);
+    font: 10px var(--mono);
+}
+.chat-message time { color: var(--subtext); font-size: 9px; white-space: nowrap; }
 .assistant-reply { border-left-color: var(--green); color: var(--muted); }
 .user-prompt {
     padding: 13px 0;

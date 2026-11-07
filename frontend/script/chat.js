@@ -23,7 +23,16 @@ function addMessage(label, message, className = '') {
     const article = document.createElement('article');
     article.className = `chat-message ${className}`.trim();
     const caption = document.createElement('small');
-    caption.textContent = label;
+    const messageLabel = document.createElement('span');
+    messageLabel.textContent = label;
+    const timestamp = new Date();
+    const time = document.createElement('time');
+    time.dateTime = timestamp.toISOString();
+    time.textContent = new Intl.DateTimeFormat(document.documentElement.lang, {
+        hour: 'numeric',
+        minute: '2-digit'
+    }).format(timestamp);
+    caption.append(messageLabel, time);
     const body = document.createElement('div');
     body.textContent = message;
     article.append(caption, body);
@@ -142,8 +151,10 @@ async function checkBackendReadiness({ refresh = false } = {}) {
 
 function exportConversation(onEmptyExport) {
     const messages = [...conversationOutput.querySelectorAll('.chat-message')].map((message) => {
-        const [label, ...body] = message.innerText.split('\n');
-        return `${label}\n${body.join('\n')}`;
+        const label = message.querySelector('small span').textContent;
+        const timestamp = message.querySelector('time').textContent;
+        const body = message.querySelector(':scope > div').innerText;
+        return `${label} — ${timestamp}\n${body}`;
     });
     if (!messages.length) {
         onEmptyExport();
