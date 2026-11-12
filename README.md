@@ -1,71 +1,75 @@
 # Skill Shard - RAG com rastreabilidade de fontes e mitigação de alucinações
 
-Autor: Vinícius Machado
+**Autor:** Vinícius Machado
 
 [English version](README.en.md)
 
-Trabalho de Conclusão de Curso em 'Engenharia de Software' na universidade UniAcademia.
+Trabalho de Conclusão de Curso em Engenharia de Software na UniAcademia.
 
 ## Objetivo
 
-Gerar um Sistema de Geração Aumentada por Recuperação (RAG) focado na mitigação de alucinações e a rastreabilidade de fontes na consultas em documentais (ex.: PDFs).
+Desenvolver um Sistema de Geração Aumentada por Recuperação (RAG) para reduzir alucinações e permitir a rastreabilidade das fontes em consultas a documentos.
 
-Capacidades:
-- Responder perguntas com base em uma coleção de documentos PDF
-- Minimizar alucinações
-- Apresentar ao usuário as fontes e relações usadas na construção da resposta
+O sistema permite:
+
+- Responder a perguntas com base em documentos TXT, Markdown, CSV, JSON e PDF;
+- Reduzir a ocorrência de alucinações;
+- Apresentar as fontes usadas na elaboração das respostas.
 
 ## Pré-requisitos
 
-- [Python](https://www.python.org/downloads/) // sudo apt install python3 python3-venv python3-pip
+- [Python](https://www.python.org/downloads/)
+- No Debian ou Ubuntu, instale o Python e outras ferramentas usando `sudo apt install python3 python3-venv python3-pip`.
 
 ## Como usar
 
-1. Para evitar conflito de versões das dependências, use `python3 -m venv venv`
-2. (Windows) Ative o amb. virtual `.\venv\Scripts\Activate`
-2. (Debian) Ative o amb. virtual `source venv/bin/activate`
-3. Install the project requirements using `python3 -m pip install -r requirements.txt`
-4. Configure `LLM_API_KEY` and `LLM_MODEL_ID` in a `.env` file at the repository root, there it is a `env.example` for reference.
-5. In a terminal at the repository root, start the backend with `python -m uvicorn backend.app.main:app --reload`.
-6. In a second terminal, serve the frontend from the `frontend` folder with `python -m http.server 5500`, then open `http://localhost:5500`.
-7. The chat sends `POST http://127.0.0.1:8000/ask` with JSON `{ "question": "..." }`; the API returns the answer as a JSON string.
-8. When done, to close the virtual Python environment (`venv`) run `deactivate`.
+1. Para evitar conflitos entre versões das dependências, crie um ambiente virtual com `python3 -m venv venv`.
+2. No Windows, ative o ambiente virtual com `.\venv\Scripts\Activate`.
+3. No Debian ou Ubuntu, ative o ambiente virtual com `source venv/bin/activate`.
+4. Instale as dependências do projeto com `python3 -m pip install -r requirements.txt`.
+5. Na raiz do repositório, configure `LLM_API_KEY` e `LLM_MODEL_ID` no arquivo `.env`. Use o arquivo `env.example` como referência.
+6. Em um terminal na raiz do repositório, entre na pasta `backend` com `cd backend` e inicie o backend com `python -m uvicorn app.main:app --reload`. O caminho `app.main:app` é necessário porque os módulos do backend importam a partir de `app`.
+7. Em outro terminal, inicie o servidor da interface na pasta `frontend` com `python -m http.server 5500` e abra `http://localhost:5500` no navegador.
+8. O chat envia uma requisição `POST` para `http://127.0.0.1:8000/ask` com a pergunta e os documentos habilitados na base de conhecimento. A API retorna a resposta como uma string JSON.
+9. Ao terminar, encerre o ambiente virtual com `deactivate`.
 
 ## Endpoints
 
-- `GET /ready` ao iniciar e após falhas nas perguntas. Verifica a configuração e a disponibilidade do modelo, armazena em cache apenas verificações *bem-sucedidas* por 15 segundos e aceita `GET /ready?refresh=true` para ignorar o cache. Em caso negativo, o envio de perguntas é bloqueado até o status ser normalizado.
-- `GET /health` verifica se o backend está ativo; chamadas ao modelo expiram após 45 segundos.
+- `GET /ready`: verifica a configuração e a disponibilidade do modelo ao iniciar e após falhas nas perguntas. Apenas verificações *bem-sucedidas* ficam em cache por 15 segundos. Use `GET /ready?refresh=true` para ignorar o cache. Se o modelo estiver indisponível, o envio de perguntas é bloqueado até a conexão ser restabelecida.
+- `GET /health`: verifica se o backend está ativo. As chamadas ao modelo expiram após 45 segundos.
 
 ## Arquitetura
 
 backend/ <br>
 ├── app/ <br>
-│ ├── ingestion/ # extração de PDFs, chunking, embeddings <br>
+│ ├── ingestion/ # extração de documentos, divisão em trechos e embeddings <br>
 
 frontend/ <br>
 ├── index.html <br>
 ├── style/ <br>
 └── script/ <br>
 
-## Stack
+## Tecnologias
 
-- **Frontend:** HTML, CSS e JS vanilla
+- **Interface:** HTML, CSS e JavaScript puro
 - **Backend:** Python
 - **LLM:** Gemini (API)
-- **Banco vetorial:** ...
+- **Banco de dados vetorial:** Não definido
 
-### Assets
+### Recursos visuais
 
 [Material Icons](https://fonts.google.com/icons?icon.size=24&icon.color=%23EEE&icon.style=Sharp)
 
 ## Metodologia de Avaliação
 
-Comparação entre três configurações:
-1. Sem RAG (baseline)
-2. RAG tradicional (busca vetorial)
-3. RAG + camada de relações entre entidades
+Comparação de três configurações:
 
-Perguntas-teste **factuais** e **relacionais**, com classificação manual das respostas em:
-- Correta e fundamentada
-- Correta mas mal fundamentada
-- Alucinação
+1. Modelo sem RAG (linha de base);
+2. RAG tradicional, com busca vetorial;
+3. RAG com uma camada de relações entre entidades.
+
+As perguntas de teste serão **factuais** e **relacionais**. As respostas serão classificadas manualmente como:
+
+- Correta e fundamentada;
+- Correta, mas mal fundamentada;
+- Alucinação.
