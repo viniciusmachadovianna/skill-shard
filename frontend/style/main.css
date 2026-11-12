@@ -590,6 +590,45 @@ h1 em { color: var(--cyan); font-style: normal; }
 .telemetry-title { margin-bottom: 13px; color: #687a86; font-size: 8px; }
 .metric { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 12px; color: #70818d; font: 12px var(--display); }
 .metric strong { color: #dbe5ea; font: 10px var(--mono); text-align: right; }
+.document-preview { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 18px; }
+.document-preview .telemetry-title { margin-bottom: 10px; }
+.document-preview-select {
+    width: 100%;
+    min-width: 0;
+    padding: 7px 8px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--surface);
+    color: var(--text);
+    font: 11px var(--display);
+}
+.document-preview-content {
+    height: 220px;
+    margin-top: 10px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface);
+}
+.document-preview-empty {
+    margin: 0;
+    padding: 10px;
+    color: var(--muted);
+    font: 10px/1.5 var(--mono);
+}
+.document-preview-text {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 10px;
+    overflow: auto;
+    color: var(--text);
+    font: 10px/1.55 var(--mono);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.document-preview-pdf { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
+.document-preview-content > [hidden],
+.document-preview-select[hidden] { display: none; }
 .signal-bars { height: 34px; display: flex; align-items: end; justify-content: space-between; gap: 6px; margin-top: 25px; overflow: hidden; }
 .signal-bars i {
     width: 5px;

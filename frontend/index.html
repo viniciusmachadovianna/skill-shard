@@ -194,6 +194,24 @@
                             data-i18n="standby">STANDBY</strong></div>
                 </div>
 
+                <section class="document-preview" aria-labelledby="document-preview-title">
+                    <div class="telemetry-title" id="document-preview-title" data-i18n="document-preview-title">
+                        DOCUMENT PREVIEW
+                    </div>
+                    <label class="sr-only" for="assistant-document-select" data-i18n="document-preview-select-label">
+                        Select a document to preview
+                    </label>
+                    <select class="document-preview-select" id="assistant-document-select" hidden></select>
+                    <div class="document-preview-content">
+                        <p class="document-preview-empty" id="assistant-document-empty" data-i18n="document-preview-empty">
+                            Enable a document in the knowledge base to preview it here.
+                        </p>
+                        <pre class="document-preview-text" id="assistant-document-text" hidden></pre>
+                        <iframe class="document-preview-pdf" id="assistant-document-pdf" hidden
+                            title="Document preview" data-i18n-title="document-preview-title"></iframe>
+                    </div>
+                </section>
+
                 <div class="signal-bars" aria-hidden="true">
                     <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
                 </div>
