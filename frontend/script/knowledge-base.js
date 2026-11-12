@@ -16,8 +16,16 @@ const emptyState = document.querySelector('#knowledge-empty');
 const summary = document.querySelector('#knowledge-summary');
 const documentCount = document.querySelector('#document-count');
 const sourceMetric = document.querySelector('#source-metric');
+const previewSelect = document.querySelector('#assistant-document-select');
+const previewEmpty = document.querySelector('#assistant-document-empty');
+const previewText = document.querySelector('#assistant-document-text');
+const previewPdf = document.querySelector('#assistant-document-pdf');
+const PREVIEW_CHARACTER_LIMIT = 1200;
 
 let databasePromise;
+let currentDocuments = [];
+let selectedPreviewDocumentId;
+let previewObjectUrl;
 
 function openDatabase() {
     if (!('indexedDB' in window)) {
@@ -73,6 +81,42 @@ function saveDocument(document) {
 
 function removeDocument(id) {
     return runTransaction('readwrite', (store) => store.delete(id));
+}
+
+function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+
+    for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+        binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+    }
+
+    return window.btoa(binary);
+}
+
+async function readDocumentFile(file, extension) {
+    if (extension === 'pdf') {
+        return {
+            content: arrayBufferToBase64(await file.arrayBuffer()),
+            encoding: 'base64'
+        };
+    }
+
+    return {
+        content: await file.text(),
+        encoding: 'text'
+    };
+}
+
+export async function getEnabledDocuments() {
+    const documents = await getDocuments();
+    return documents
+        .filter((document) => document.enabled)
+        .map(({ name, content, encoding }) => ({
+            name,
+            content,
+            encoding: encoding ?? 'text'
+        }));
 }
 
 function formatSummary(count) {
@@ -132,9 +176,79 @@ function createDocumentRow(document) {
 
 async function renderDocuments() {
     const documents = await getDocuments();
+    currentDocuments = documents;
     documentList.replaceChildren(...documents.map(createDocumentRow));
     updateDocumentCounters(documents);
+    renderAssistantPreview(documents);
     return documents;
+}
+
+function clearPdfPreview() {
+    previewPdf.removeAttribute('src');
+    if (previewObjectUrl) {
+        URL.revokeObjectURL(previewObjectUrl);
+        previewObjectUrl = undefined;
+    }
+}
+
+function renderAssistantPreview(documents) {
+    const enabledDocuments = documents.filter((document) => document.enabled);
+    const selectedDocument = enabledDocuments.find((document) => document.id === selectedPreviewDocumentId)
+        ?? enabledDocuments[0];
+
+    selectedPreviewDocumentId = selectedDocument?.id;
+    previewSelect.replaceChildren(...enabledDocuments.map((document) => {
+        const option = documentList.ownerDocument.createElement('option');
+        option.value = document.id;
+        option.textContent = document.name;
+        return option;
+    }));
+    previewSelect.hidden = enabledDocuments.length === 0;
+    if (selectedDocument) previewSelect.value = selectedDocument.id;
+
+    previewText.hidden = true;
+    previewPdf.hidden = true;
+    previewEmpty.hidden = Boolean(selectedDocument);
+    previewEmpty.textContent = t('document-preview-empty');
+    clearPdfPreview();
+
+    if (!selectedDocument) return;
+
+    const extension = selectedDocument.name.split('.').pop()?.toLowerCase();
+    if (extension === 'pdf') {
+        if (selectedDocument.encoding !== 'base64') {
+            previewEmpty.hidden = false;
+            previewEmpty.textContent = t('document-preview-pdf-readd');
+            return;
+        }
+
+        try {
+            const binary = window.atob(selectedDocument.content);
+            const bytes = new Uint8Array(binary.length);
+            for (let index = 0; index < binary.length; index += 1) {
+                bytes[index] = binary.charCodeAt(index);
+            }
+            previewObjectUrl = URL.createObjectURL(
+                new Blob([bytes], { type: 'application/pdf' })
+            );
+            previewPdf.src = previewObjectUrl;
+            previewPdf.hidden = false;
+            previewEmpty.hidden = true;
+        } catch (error) {
+            console.error('Could not render the PDF preview:', error);
+            previewEmpty.hidden = false;
+            previewEmpty.textContent = t('document-preview-error');
+        }
+        return;
+    }
+
+    const content = selectedDocument.content ?? '';
+    const isTruncated = content.length > PREVIEW_CHARACTER_LIMIT;
+    previewText.textContent = isTruncated
+        ? `${content.slice(0, PREVIEW_CHARACTER_LIMIT)}\n\n${t('document-preview-truncated')}`
+        : content || t('document-preview-no-text');
+    previewText.hidden = false;
+    previewEmpty.hidden = true;
 }
 
 function reportStorageError(error, showToast) {
@@ -143,6 +257,11 @@ function reportStorageError(error, showToast) {
 }
 
 export function initializeKnowledgeBase({ showToast }) {
+    previewSelect.addEventListener('change', () => {
+        selectedPreviewDocumentId = previewSelect.value;
+        renderAssistantPreview(currentDocuments);
+    });
+
     async function refreshDocuments() {
         try {
             await renderDocuments();
@@ -181,10 +300,11 @@ export function initializeKnowledgeBase({ showToast }) {
             }
 
             try {
+                const fileContent = await readDocumentFile(file, extension);
                 await saveDocument({
                     id: window.crypto.randomUUID(),
                     name: file.name,
-                    content: await file.text(),
+                    ...fileContent,
                     enabled: true
                 });
                 addedCount += 1;

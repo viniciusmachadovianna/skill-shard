@@ -1,6 +1,16 @@
 import sys
+from io import BytesIO
 from pathlib import Path
 from pypdf import PdfReader
+
+
+def load_pdf_pages_from_bytes(pdf_content: bytes) -> list[dict]:
+    reader = PdfReader(BytesIO(pdf_content))
+
+    return [
+        {"page": page_number, "text": page.extract_text() or ""}
+        for page_number, page in enumerate(reader.pages, start=1)
+    ]
 
 
 def load_pdf_text(pdf_path: str) -> str:

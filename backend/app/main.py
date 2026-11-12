@@ -1,16 +1,92 @@
+import base64
+import binascii
 import logging
+import os
+from pathlib import Path
+from threading import Lock
+from time import monotonic
+from typing import Literal
+
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
+from pypdf.errors import PdfReadError
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-
+from pydantic import BaseModel, Field
 from app.generation.llm_client import ask_llm
 from app.config import frontend_origin
+from app.ingestion.chunker import chunk_text_by_words
+from app.ingestion.loader import load_pdf_pages_from_bytes
+from app.retrieval.vector_store import retrieve_relevant_chunks
+
 
 logger = logging.getLogger(__name__)
 
+READY_CACHE_SECONDS = 15
+READY_TIMEOUT_MS = 3_000
+ASK_TIMEOUT_MS = 45_000
+
+load_dotenv()
+
+
+class AskDocument(BaseModel):
+    name: str = Field(min_length=1, description="Original document filename.")
+    content: str = Field(description="Text content or base64-encoded PDF bytes.")
+    encoding: Literal["text", "base64"] = Field(
+        default="text",
+        description="Use base64 for PDF files and text for other supported formats.",
+    )
+
+
 class AskRequest(BaseModel):
-    question: str
+    question: str = Field(description="Question to answer.")
+    documents: list[AskDocument] = Field(
+        default_factory=list,
+        description="Enabled knowledge-base documents to search for relevant context.",
+    )
+
+
+def build_document_chunks(documents: list[AskDocument]) -> list[dict]:
+    chunks = []
+    supported_extensions = {".txt", ".md", ".csv", ".json", ".pdf"}
+
+    for document in documents:
+        extension = Path(document.name).suffix.lower()
+        if extension not in supported_extensions:
+            raise ValueError(f"{document.name}: file type is not supported.")
+
+        pages = []
+        if extension == ".pdf":
+            if document.encoding != "base64":
+                raise ValueError(
+                    f"{document.name}: remove and add this PDF again before using it."
+                )
+            try:
+                pdf_content = base64.b64decode(document.content, validate=True)
+                pages = load_pdf_pages_from_bytes(pdf_content)
+            except (binascii.Error, ValueError, PdfReadError) as error:
+                raise ValueError(f"{document.name}: could not read this PDF ({error}).") from error
+        else:
+            if document.encoding != "text":
+                raise ValueError(f"{document.name}: invalid text encoding.")
+            pages = [{"page": None, "text": document.content}]
+
+        chunk_index = 0
+        for page in pages:
+            for text in chunk_text_by_words(page["text"]):
+                chunk_index += 1
+                chunks.append(
+                    {
+                        "text": text,
+                        "source": document.name,
+                        "page": page["page"],
+                        "chunk": chunk_index,
+                    }
+                )
+
+    return chunks
 
 
 app = FastAPI()
@@ -21,11 +97,94 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 
+api_key = os.getenv("LLM_API_KEY")
+llm_model = os.getenv("LLM_MODEL_ID")
+client = genai.Client(
+    api_key=api_key,
+    http_options=types.HttpOptions(timeout=ASK_TIMEOUT_MS),
+)
+readiness_client: genai.Client | None = None
+ready_cache_until: float = 0.0
+readiness_lock = Lock()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/ready")
+def ready(refresh: bool = False):
+    global readiness_client, ready_cache_until
+
+    if not api_key or not llm_model:
+        raise HTTPException(
+            status_code=503,
+            detail={"ready": False, "reason": "configuration_missing"},
+        )
+
+    with readiness_lock:
+        if not refresh and ready_cache_until > monotonic():
+            return {"ready": True, "cached": True}
+
+        try:
+            if readiness_client is None:
+                readiness_client = genai.Client(
+                    api_key=api_key,
+                    http_options=types.HttpOptions(timeout=READY_TIMEOUT_MS),
+                )
+            readiness_client.models.get(model=llm_model)
+        except Exception:
+            ready_cache_until = 0.0
+            logger.exception("Gemini readiness check failed.")
+            raise HTTPException(
+                status_code=503,
+                detail={"ready": False, "reason": "model_unavailable"},
+            ) from None
+
+        ready_cache_until = monotonic() + READY_CACHE_SECONDS
+        return {"ready": True, "cached": False}
+
 @app.post("/ask")
 def ask(request: AskRequest):
+    context = None
+    sources = []
+
+    if request.documents:
+        try:
+            chunks = build_document_chunks(request.documents)
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+
+        if not chunks:
+            raise HTTPException(
+                status_code=422,
+                detail="No readable text was found in the enabled documents. Scanned PDFs require OCR.",
+            )
+
+        try:
+            relevant_chunks = retrieve_relevant_chunks(request.question, chunks)
+        except Exception:
+            logger.exception("Document retrieval failed.")
+            raise HTTPException(
+                status_code=502,
+                detail="Document search failed. Check the embedding model connection and retry.",
+            ) from None
+
+        context_parts = []
+        for chunk in relevant_chunks:
+            page_label = f", page {chunk['page']}" if chunk["page"] is not None else ""
+            context_parts.append(
+                f"[Source: {chunk['source']}{page_label}, chunk {chunk['chunk']}]\n"
+                f"{chunk['text']}"
+            )
+        context = "\n\n".join(context_parts)
+        sources = list(dict.fromkeys(
+            (chunk["source"], chunk["page"])
+            for chunk in relevant_chunks
+        ))
 
     try:
-        answer = ask_llm(request.question)
+        answer = ask_llm(request.question, context)
     except Exception:
         logger.exception("Gemini request failed.")
         raise HTTPException(
@@ -38,4 +197,12 @@ def ask(request: AskRequest):
             status_code=502,
             detail="The model returned an empty response.",
         )
+
+    if sources:
+        citations = [
+            f"- {name}" if page is None else f"- {name}, page {page}"
+            for name, page in sources
+        ]
+        answer = f"{answer}\n\nSources consulted / Fontes consultadas:\n" + "\n".join(citations)
+
     return answer

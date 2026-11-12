@@ -1,5 +1,6 @@
 import { $, $$ } from './utils.js';
 import { t } from './language.js';
+import { getEnabledDocuments } from './knowledge-base.js';
 
 const composer = $('#composer');
 const workArea = $('#work-area');
@@ -57,19 +58,22 @@ export function clearChat() {
     updateScrollCue();
 }
 
-async function ask(question, signal) {
+async function ask(question, documents, signal) {
     const response = await fetch('http://127.0.0.1:8000/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, documents }),
         signal
     });
 
+    const result = await response.json();
     if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
+        throw new Error(typeof result.detail === 'string'
+            ? result.detail
+            : `Response status: ${response.status}`);
     }
 
-    const answer = await response.json();
+    const answer = result;
     if (typeof answer !== 'string' || !answer.trim()) {
         throw new Error('The API returned an invalid answer.');
     }
@@ -215,14 +219,16 @@ export function initializeChat({ onEmptyExport }) {
         updateScrollCue();
 
         try {
-            const answer = await ask(message, controller.signal);
+            const documents = await getEnabledDocuments();
+            const answer = await ask(message, documents, controller.signal);
             if (controller.signal.aborted) return;
             markBackendReady();
             addMessage('SS-800 / SYSTEM', answer, 'assistant-reply');
         } catch (error) {
             if (controller.signal.aborted) return;
             console.error('Unable to get an answer from the API:', error);
-            addMessage('SS-800 / SYSTEM', t('request-failed'), 'assistant-reply');
+            const detail = error instanceof Error ? `\n${error.message}` : '';
+            addMessage('SS-800 / SYSTEM', `${t('request-failed')}${detail}`, 'assistant-reply');
             checkBackendReadiness({ refresh: true });
         } finally {
             if (pendingRequestController === controller) {
