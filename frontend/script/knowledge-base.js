@@ -83,6 +83,47 @@ function removeDocument(id) {
     return runTransaction('readwrite', (store) => store.delete(id));
 }
 
+async function synchronizeRepositoryDocuments() {
+    const response = await fetch('http://127.0.0.1:8000/documents');
+    const repositoryDocuments = await response.json();
+    if (!response.ok) {
+        throw new Error(typeof repositoryDocuments.detail === 'string'
+            ? repositoryDocuments.detail
+            : `Response status: ${response.status}`);
+    }
+    if (!Array.isArray(repositoryDocuments) || repositoryDocuments.some((document) => (
+        typeof document.id !== 'string'
+        || !document.id.startsWith('repository:')
+        || typeof document.name !== 'string'
+        || typeof document.content !== 'string'
+        || !['text', 'base64'].includes(document.encoding)
+    ))) {
+        throw new Error('The API returned an invalid repository document list.');
+    }
+
+    const storedDocuments = await getDocuments();
+    const storedRepositoryDocuments = new Map(
+        storedDocuments
+            .filter((document) => document.source === 'repository')
+            .map((document) => [document.id, document])
+    );
+    const currentIds = new Set();
+
+    for (const document of repositoryDocuments) {
+        currentIds.add(document.id);
+        const storedDocument = storedRepositoryDocuments.get(document.id);
+        await saveDocument({
+            ...document,
+            source: 'repository',
+            enabled: storedDocument?.enabled ?? false
+        });
+    }
+
+    for (const [id] of storedRepositoryDocuments) {
+        if (!currentIds.has(id)) await removeDocument(id);
+    }
+}
+
 function arrayBufferToBase64(buffer) {
     const bytes = new Uint8Array(buffer);
     let binary = '';
@@ -159,18 +200,20 @@ function createDocumentRow(document) {
     toggleTrack.setAttribute('aria-hidden', 'true');
     toggleLabel.append(toggle, toggleTrack);
 
-    const deleteButton = documentList.ownerDocument.createElement('button');
-    deleteButton.className = 'knowledge-delete';
-    deleteButton.type = 'button';
-    deleteButton.setAttribute('aria-label', t('delete-document').replace('{name}', document.name));
-    deleteButton.title = t('delete-document-title');
-    const deleteIcon = documentList.ownerDocument.createElement('img');
-    deleteIcon.src = 'assets/icons/delete.svg';
-    deleteIcon.alt = '';
-    deleteIcon.setAttribute('aria-hidden', 'true');
-    deleteButton.append(deleteIcon);
-
-    row.append(icon, name, toggleLabel, deleteButton);
+    row.append(icon, name, toggleLabel);
+    if (document.source !== 'repository') {
+        const deleteButton = documentList.ownerDocument.createElement('button');
+        deleteButton.className = 'knowledge-delete';
+        deleteButton.type = 'button';
+        deleteButton.setAttribute('aria-label', t('delete-document').replace('{name}', document.name));
+        deleteButton.title = t('delete-document-title');
+        const deleteIcon = documentList.ownerDocument.createElement('img');
+        deleteIcon.src = 'assets/icons/delete.svg';
+        deleteIcon.alt = '';
+        deleteIcon.setAttribute('aria-hidden', 'true');
+        deleteButton.append(deleteIcon);
+        row.append(deleteButton);
+    }
     return row;
 }
 
@@ -262,7 +305,16 @@ export function initializeKnowledgeBase({ showToast }) {
         renderAssistantPreview(currentDocuments);
     });
 
-    async function refreshDocuments() {
+    async function refreshDocuments({ synchronize = false } = {}) {
+        if (synchronize) {
+            try {
+                await synchronizeRepositoryDocuments();
+            } catch (error) {
+                console.error('Could not load repository documents:', error);
+                showToast(t('repository-documents-error'));
+            }
+        }
+
         try {
             await renderDocuments();
         } catch (error) {
@@ -272,7 +324,7 @@ export function initializeKnowledgeBase({ showToast }) {
 
     function openDialog() {
         if (!dialog.open) dialog.showModal();
-        refreshDocuments();
+        refreshDocuments({ synchronize: true });
     }
 
     knowledgeButton.addEventListener('click', openDialog);
@@ -355,5 +407,5 @@ export function initializeKnowledgeBase({ showToast }) {
         }
     });
 
-    refreshDocuments();
+    refreshDocuments({ synchronize: true });
 }

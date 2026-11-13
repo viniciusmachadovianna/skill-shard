@@ -13,6 +13,7 @@ Desenvolver um Sistema de Geração Aumentada por Recuperação (RAG) para reduz
 O sistema permite:
 
 - Responder a perguntas com base em documentos TXT, Markdown, CSV, JSON e PDF;
+- Listar automaticamente os documentos compatíveis de `data/` na base de conhecimento, desativados por padrão;
 - Reduzir a ocorrência de alucinações;
 - Apresentar as fontes usadas na elaboração das respostas.
 

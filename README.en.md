@@ -11,7 +11,8 @@ Author: Vinícius Machado
 Developing a Relational Retrieval-Augmented Generation (RAG) system that combines vector search, cross-document entity linking, and explicit source citation to minimize LLM hallucinations.
 
 Capabilities:
-- Answer questions based on a collection of PDF documents.
+- Answer questions based on TXT, Markdown, CSV, JSON, and PDF documents.
+- Automatically list supported documents from `data/` in the knowledge base, disabled by default.
 - Minimize hallucinations.
 - Present the sources and relationships used to construct the answer to the user.
 

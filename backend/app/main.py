@@ -27,6 +27,8 @@ logger = logging.getLogger(__name__)
 READY_CACHE_SECONDS = 15
 READY_TIMEOUT_MS = 3_000
 ASK_TIMEOUT_MS = 45_000
+DATA_DIRECTORY = Path(__file__).resolve().parents[2] / "data"
+SUPPORTED_REPOSITORY_EXTENSIONS = {".txt", ".md", ".csv", ".json", ".pdf"}
 
 load_dotenv()
 
@@ -89,6 +91,40 @@ def build_document_chunks(documents: list[AskDocument]) -> list[dict]:
     return chunks
 
 
+def load_repository_documents() -> list[dict]:
+    data_directory = DATA_DIRECTORY.resolve()
+    documents = []
+
+    for path in sorted(data_directory.rglob("*")):
+        if not path.is_file() or path.suffix.lower() not in SUPPORTED_REPOSITORY_EXTENSIONS:
+            continue
+
+        resolved_path = path.resolve()
+        try:
+            relative_path = resolved_path.relative_to(data_directory)
+        except ValueError:
+            continue
+
+        name = relative_path.as_posix()
+        if path.suffix.lower() == ".pdf":
+            content = base64.b64encode(resolved_path.read_bytes()).decode("ascii")
+            encoding = "base64"
+        else:
+            content = resolved_path.read_text(encoding="utf-8")
+            encoding = "text"
+
+        documents.append(
+            {
+                "id": f"repository:{name}",
+                "name": name,
+                "content": content,
+                "encoding": encoding,
+            }
+        )
+
+    return documents
+
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -110,6 +146,11 @@ readiness_lock = Lock()
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/documents")
+def list_repository_documents():
+    return load_repository_documents()
 
 
 @app.get("/ready")

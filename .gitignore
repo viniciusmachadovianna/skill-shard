@@ -6,3 +6,4 @@ venv/
 temp.md
 *.pyc
 doc.md
+data/

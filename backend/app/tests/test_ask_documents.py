@@ -1,5 +1,8 @@
+import base64
 import os
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 os.environ.setdefault("FRONTEND_ORIGIN", "http://localhost:5500")
@@ -12,6 +15,37 @@ from app.main import app
 class AskDocumentsTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
+
+    def test_repository_documents_are_listed_recursively_with_supported_encodings(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            data_directory = Path(temporary_directory)
+            (data_directory / "guide.md").write_text("# Guide", encoding="utf-8")
+            (data_directory / "nested").mkdir()
+            pdf_content = b"%PDF-1.7"
+            (data_directory / "nested" / "report.pdf").write_bytes(pdf_content)
+            (data_directory / "ignored.bin").write_bytes(b"not a supported document")
+
+            with patch("app.main.DATA_DIRECTORY", data_directory):
+                response = self.client.get("/documents")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            [
+                {
+                    "id": "repository:guide.md",
+                    "name": "guide.md",
+                    "content": "# Guide",
+                    "encoding": "text",
+                },
+                {
+                    "id": "repository:nested/report.pdf",
+                    "name": "nested/report.pdf",
+                    "content": base64.b64encode(pdf_content).decode("ascii"),
+                    "encoding": "base64",
+                },
+            ],
+        )
 
     @patch("app.main.ask_llm", return_value="Grounded answer.")
     @patch("app.main.retrieve_relevant_chunks")
