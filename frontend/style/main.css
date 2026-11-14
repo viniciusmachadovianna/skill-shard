@@ -472,7 +472,8 @@ h1 em { color: var(--cyan); font-style: normal; }
     to { background-position: -200% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .response-skeleton-caption, .response-skeleton-line, .status-led { animation: none; }
+    .response-skeleton-caption, .response-skeleton-line, .status-led,
+    .awaiting.is-loading .status-dot { animation: none; }
 }
 
 .composer-area { flex: 0 0 auto; padding: 0 25px 15px; }
@@ -546,6 +547,15 @@ h1 em { color: var(--cyan); font-style: normal; }
 .awaiting.is-unavailable .status-dot {
     background: #ec5748;
     box-shadow: 0 0 8px #ec574888;
+}
+.awaiting.is-loading { color: var(--cyan); }
+.awaiting.is-loading .status-dot {
+    background: var(--cyan);
+    box-shadow: 0 0 8px #00d9ff88;
+    animation: status-dot-pulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes status-dot-pulse {
+    to { opacity: .35; }
 }
 .composer-actions.is-unavailable .send-button { background: #45494c; color: #a4aaad; cursor: not-allowed; }
 .composer textarea:disabled { cursor: not-allowed; opacity: .55; }
