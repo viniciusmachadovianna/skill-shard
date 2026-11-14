@@ -34,10 +34,13 @@ O sistema permite:
 8. O chat envia uma requisição `POST` para `http://127.0.0.1:8000/ask` com a pergunta e os documentos habilitados na base de conhecimento. A API retorna a resposta como uma string JSON.
 9. Ao terminar, encerre o ambiente virtual com `deactivate`.
 
+Ao carregar a interface, os documentos habilitados são enviados ao backend e indexados antes de liberar o chat. O status mostra esse carregamento; se falhar, use **Verificar novamente**. Os trechos e embeddings ficam armazenados localmente em `backend/data/vectors.sqlite3`. Trechos inalterados reutilizam os vetores existentes; a geração de embeddings e respostas continua dependendo da API Gemini.
+
 ## Endpoints
 
 - `GET /ready`: verifica a configuração e a disponibilidade do modelo ao iniciar e após falhas nas perguntas. Apenas verificações *bem-sucedidas* ficam em cache por 15 segundos. Use `GET /ready?refresh=true` para ignorar o cache. Se o modelo estiver indisponível, o envio de perguntas é bloqueado até a conexão ser restabelecida.
 - `GET /health`: verifica se o backend está ativo. As chamadas ao modelo expiram após 45 segundos.
+- `POST /index`: recebe `{"documents": [...]}` no mesmo formato de `/ask`, divide os documentos habilitados em trechos e persiste os embeddings antes das perguntas. Retorna `{"indexed_chunks": n}`; responde `422` para documentos inválidos ou sem texto legível e `502` se a API de embeddings falhar. A interface chama esse endpoint ao iniciar e quando a base é alterada.
 
 ## Arquitetura
 
@@ -55,7 +58,7 @@ frontend/ <br>
 - **Interface:** HTML, CSS e JavaScript puro
 - **Backend:** Python
 - **LLM:** Gemini (API)
-- **Banco de dados vetorial:** Não definido
+- **Armazenamento vetorial:** SQLite local (`backend/data/vectors.sqlite3`)
 
 ### Recursos visuais
 

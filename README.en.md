@@ -27,12 +27,20 @@ frontend/ <br>
 ├── style/ <br>
 └── script/ <br>
 
+Document chunks and their embeddings are persisted locally in `backend/data/vectors.sqlite3`. Embeddings for unchanged chunks are reused across questions; generating embeddings and answers still requires the Gemini API.
+
+When the interface loads, it sends enabled documents to the backend for indexing before enabling chat. The status indicator shows this initial loading; use **Retry check** if indexing fails.
+
 ## Stack
 
 - **Frontend:** HTML, CSS e JS vanilla
 - **Backend:** Python
 - **LLM:** Gemini (API)
-- **Vector Database:** ...
+- **Vector Storage:** Local SQLite (`backend/data/vectors.sqlite3`)
+
+## API endpoints
+
+- `POST /index`: accepts `{"documents": [...]}` using the same document shape as `/ask`, chunks enabled documents, and persists their embeddings before questions. Returns `{"indexed_chunks": n}`; responds with `422` for invalid documents or documents without readable text, and `502` if the embedding API fails. The interface calls it on startup and when the knowledge base changes.
 
 ## Evaluation Methodology
 
