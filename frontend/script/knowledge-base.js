@@ -108,10 +108,19 @@ async function synchronizeRepositoryDocuments() {
             .map((document) => [document.id, document])
     );
     const currentIds = new Set();
+    let changed = false;
 
     for (const document of repositoryDocuments) {
         currentIds.add(document.id);
         const storedDocument = storedRepositoryDocuments.get(document.id);
+        if (
+            !storedDocument
+            || storedDocument.name !== document.name
+            || storedDocument.content !== document.content
+            || storedDocument.encoding !== document.encoding
+        ) {
+            changed = true;
+        }
         await saveDocument({
             ...document,
             source: 'repository',
@@ -120,8 +129,13 @@ async function synchronizeRepositoryDocuments() {
     }
 
     for (const [id] of storedRepositoryDocuments) {
-        if (!currentIds.has(id)) await removeDocument(id);
+        if (!currentIds.has(id)) {
+            await removeDocument(id);
+            changed = true;
+        }
     }
+
+    return changed;
 }
 
 function arrayBufferToBase64(buffer) {
@@ -158,6 +172,26 @@ export async function getEnabledDocuments() {
             content,
             encoding: encoding ?? 'text'
         }));
+}
+
+async function requestDocumentIndex(documents) {
+    const response = await fetch('http://127.0.0.1:8000/index', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documents })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+        throw new Error(typeof result.detail === 'string'
+            ? result.detail
+            : `Response status: ${response.status}`);
+    }
+    if (!Number.isInteger(result.indexed_chunks) || result.indexed_chunks < 0) {
+        throw new Error('The API returned an invalid document indexing result.');
+    }
+
+    return result;
 }
 
 function formatSummary(count) {
@@ -299,16 +333,45 @@ function reportStorageError(error, showToast) {
     showToast(t('knowledge-storage-error'));
 }
 
-export function initializeKnowledgeBase({ showToast }) {
+export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} }) {
+    let indexRequestId = 0;
+
+    async function indexEnabledDocuments() {
+        const requestId = ++indexRequestId;
+        onIndexingState('loading');
+
+        try {
+            const documents = await getEnabledDocuments();
+            const result = await requestDocumentIndex(documents);
+            if (requestId === indexRequestId) onIndexingState('ready');
+            return result;
+        } catch (error) {
+            if (requestId === indexRequestId) onIndexingState('error');
+            throw error;
+        }
+    }
+
+    async function retryIndexing() {
+        try {
+            await synchronizeRepositoryDocuments();
+            await renderDocuments();
+            await indexEnabledDocuments();
+        } catch (error) {
+            console.error('Could not index enabled documents:', error);
+            showToast(t('document-indexing-error'));
+        }
+    }
+
     previewSelect.addEventListener('change', () => {
         selectedPreviewDocumentId = previewSelect.value;
         renderAssistantPreview(currentDocuments);
     });
 
-    async function refreshDocuments({ synchronize = false } = {}) {
+    async function refreshDocuments({ synchronize = false, index = false } = {}) {
+        let repositoryDocumentsChanged = false;
         if (synchronize) {
             try {
-                await synchronizeRepositoryDocuments();
+                repositoryDocumentsChanged = await synchronizeRepositoryDocuments();
             } catch (error) {
                 console.error('Could not load repository documents:', error);
                 showToast(t('repository-documents-error'));
@@ -319,6 +382,17 @@ export function initializeKnowledgeBase({ showToast }) {
             await renderDocuments();
         } catch (error) {
             reportStorageError(error, showToast);
+            if (index) onIndexingState('error');
+            return;
+        }
+
+        if (index || repositoryDocumentsChanged) {
+            try {
+                await indexEnabledDocuments();
+            } catch (error) {
+                console.error('Could not index enabled documents:', error);
+                showToast(t('document-indexing-error'));
+            }
         }
     }
 
@@ -367,7 +441,7 @@ export function initializeKnowledgeBase({ showToast }) {
         }
 
         fileInput.value = '';
-        await refreshDocuments();
+        await refreshDocuments({ index: true });
 
         if (errors.length) showToast(errors.join(' '));
         else if (addedCount) showToast(t('documents-added').replace('{count}', String(addedCount)));
@@ -385,10 +459,10 @@ export function initializeKnowledgeBase({ showToast }) {
             if (!document) return;
             document.enabled = event.target.checked;
             await saveDocument(document);
-            await refreshDocuments();
+            await refreshDocuments({ index: true });
         } catch (error) {
             reportStorageError(error, showToast);
-            await refreshDocuments();
+            await refreshDocuments({ index: true });
         }
     });
 
@@ -400,12 +474,15 @@ export function initializeKnowledgeBase({ showToast }) {
 
         try {
             await removeDocument(row.dataset.documentId);
-            await refreshDocuments();
+            await refreshDocuments({ index: true });
             showToast(t('document-deleted'));
         } catch (error) {
             reportStorageError(error, showToast);
         }
     });
 
-    refreshDocuments({ synchronize: true });
+    onIndexingState('loading');
+    refreshDocuments({ synchronize: true, index: true });
+
+    return { retryIndexing };
 }

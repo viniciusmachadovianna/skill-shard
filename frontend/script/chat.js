@@ -19,6 +19,10 @@ const responseLoader = $('#response-loader');
 let pendingRequestController;
 let readinessController;
 let backendReady = false;
+let modelReady = false;
+let modelStatus = 'backend-checking';
+let knowledgeIndexStatus = 'loading';
+let retryKnowledgeIndex = () => {};
 
 function addMessage(label, message, className = '') {
     const article = document.createElement('article');
@@ -94,25 +98,53 @@ function updateScrollCue() {
 
 function setBackendStatus(key) {
     backendReady = key === 'backend-ready';
-    backendStatus.classList.toggle('is-unavailable', !backendReady);
+    const isLoading = ['backend-checking', 'indexing-documents'].includes(key);
+    backendStatus.classList.toggle('is-unavailable', !backendReady && !isLoading);
+    backendStatus.classList.toggle('is-loading', isLoading);
     backendStatusText.dataset.i18n = backendReady ? 'awaiting-input' : key;
     backendStatusText.textContent = t(backendReady ? 'awaiting-input' : key);
-    backendLed.classList.toggle('status-led-blue', backendReady);
-    backendLed.classList.toggle('status-led-red', !backendReady);
+    backendLed.classList.toggle('status-led-blue', backendReady || isLoading);
+    backendLed.classList.toggle('status-led-red', !backendReady && !isLoading);
     backendActionsState();
+}
+
+function updateBackendStatus() {
+    if (knowledgeIndexStatus === 'loading') {
+        setBackendStatus('indexing-documents');
+    } else if (modelStatus === 'backend-checking') {
+        setBackendStatus(modelStatus);
+    } else if (!modelReady) {
+        setBackendStatus(modelStatus);
+    } else if (knowledgeIndexStatus === 'error') {
+        setBackendStatus('indexing-failed');
+    } else {
+        setBackendStatus('backend-ready');
+    }
+}
+
+function setKnowledgeIndexStatus(status) {
+    knowledgeIndexStatus = status;
+    updateBackendStatus();
+}
+
+function setRetryKnowledgeIndex(retry) {
+    retryKnowledgeIndex = retry;
 }
 
 function backendActionsState() {
     composerActions.classList.toggle('is-unavailable', !backendReady);
     promptInput.disabled = !backendReady;
     sendButton.disabled = !backendReady || Boolean(pendingRequestController);
-    backendRetryButton.hidden = backendReady || backendStatusText.dataset.i18n === 'backend-checking';
+    backendRetryButton.hidden = backendReady
+        || ['backend-checking', 'indexing-documents'].includes(backendStatusText.dataset.i18n);
 }
 
 function markBackendReady() {
     readinessController?.abort();
     readinessController = undefined;
-    setBackendStatus('backend-ready');
+    modelReady = true;
+    modelStatus = 'backend-ready';
+    updateBackendStatus();
 }
 
 async function checkBackendReadiness({ refresh = false } = {}) {
@@ -121,7 +153,8 @@ async function checkBackendReadiness({ refresh = false } = {}) {
     readinessController = controller;
     const timeout = window.setTimeout(() => controller.abort(), 5_000);
     backendRetryButton.disabled = true;
-    setBackendStatus('backend-checking');
+    modelStatus = 'backend-checking';
+    updateBackendStatus();
 
     try {
         const response = await fetch(
@@ -132,17 +165,23 @@ async function checkBackendReadiness({ refresh = false } = {}) {
         const reason = result.detail?.reason ?? result.reason;
 
         if (response.ok && result.ready) {
-            setBackendStatus('backend-ready');
+            modelReady = true;
+            modelStatus = 'backend-ready';
         } else if (reason === 'configuration_missing') {
-            setBackendStatus('backend-config-missing');
+            modelReady = false;
+            modelStatus = 'backend-config-missing';
         } else {
-            setBackendStatus('backend-model-unavailable');
+            modelReady = false;
+            modelStatus = 'backend-model-unavailable';
         }
+        updateBackendStatus();
     } catch (error) {
         if (readinessController !== controller) return;
-        setBackendStatus(controller.signal.aborted
+        modelReady = false;
+        modelStatus = controller.signal.aborted
             ? 'backend-check-timeout'
-            : 'backend-unavailable');
+            : 'backend-unavailable';
+        updateBackendStatus();
     } finally {
         window.clearTimeout(timeout);
         if (readinessController === controller) {
@@ -191,8 +230,11 @@ export function initializeChat({ onEmptyExport }) {
     window.addEventListener('resize', updateScrollCue);
     workArea.addEventListener('scroll', updateScrollCue);
     updateScrollCue();
-    setBackendStatus('backend-checking');
-    backendRetryButton.addEventListener('click', () => checkBackendReadiness({ refresh: true }));
+    updateBackendStatus();
+    backendRetryButton.addEventListener('click', () => {
+        if (knowledgeIndexStatus === 'error') retryKnowledgeIndex();
+        checkBackendReadiness({ refresh: true });
+    });
     checkBackendReadiness();
 
     composer.addEventListener('submit', async (event) => {
@@ -248,4 +290,6 @@ export function initializeChat({ onEmptyExport }) {
     });
 
     exportButton.addEventListener('click', () => exportConversation(onEmptyExport));
+
+    return { setKnowledgeIndexStatus, setRetryKnowledgeIndex };
 }

@@ -19,7 +19,7 @@ from app.generation.llm_client import ask_llm
 from app.config import frontend_origin
 from app.ingestion.chunker import chunk_text_by_words
 from app.ingestion.loader import load_pdf_pages_from_bytes
-from app.retrieval.vector_store import retrieve_relevant_chunks
+from app.retrieval.vector_store import index_document_chunks, retrieve_relevant_chunks
 
 
 logger = logging.getLogger(__name__)
@@ -48,6 +48,17 @@ class AskRequest(BaseModel):
         default_factory=list,
         description="Enabled knowledge-base documents to search for relevant context.",
     )
+
+
+class IndexRequest(BaseModel):
+    documents: list[AskDocument] = Field(
+        default_factory=list,
+        description="Enabled knowledge-base documents to index before questions are asked.",
+    )
+
+
+class IndexResponse(BaseModel):
+    indexed_chunks: int = Field(ge=0, description="Number of document chunks indexed.")
 
 
 def build_document_chunks(documents: list[AskDocument]) -> list[dict]:
@@ -151,6 +162,31 @@ def health():
 @app.get("/documents")
 def list_repository_documents():
     return load_repository_documents()
+
+
+@app.post("/index", response_model=IndexResponse)
+def index_documents(request: IndexRequest) -> IndexResponse:
+    try:
+        chunks = build_document_chunks(request.documents)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+    if request.documents and not chunks:
+        raise HTTPException(
+            status_code=422,
+            detail="No readable text was found in the enabled documents. Scanned PDFs require OCR.",
+        )
+
+    try:
+        indexed_chunks = index_document_chunks(chunks)
+    except Exception:
+        logger.exception("Document indexing failed.")
+        raise HTTPException(
+            status_code=502,
+            detail="Document indexing failed. Check the embedding model connection and retry.",
+        ) from None
+
+    return IndexResponse(indexed_chunks=indexed_chunks)
 
 
 @app.get("/ready")

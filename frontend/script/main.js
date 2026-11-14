@@ -164,11 +164,15 @@ function deleteConversation(entry) {
     showToast(t('conversation-deleted'));
 }
 
-initializeChat({
+const chat = initializeChat({
     onEmptyExport: () => showToast('There are no messages to export yet.')
 });
 
-initializeKnowledgeBase({ showToast });
+const knowledgeBase = initializeKnowledgeBase({
+    showToast,
+    onIndexingState: chat.setKnowledgeIndexStatus
+});
+chat.setRetryKnowledgeIndex(knowledgeBase.retryIndexing);
 
 sidebarToggle.addEventListener('click', () => {
     sidebar.classList.toggle('is-collapsed');
