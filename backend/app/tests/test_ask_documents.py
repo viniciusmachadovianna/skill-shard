@@ -47,6 +47,45 @@ class AskDocumentsTests(unittest.TestCase):
             ],
         )
 
+    @patch("app.main.index_document_chunks", return_value=2)
+    def test_index_endpoint_precomputes_enabled_document_chunks(self, index_document_chunks):
+        response = self.client.post(
+            "/index",
+            json={
+                "documents": [
+                    {
+                        "name": "guide.md",
+                        "content": " ".join(f"word{index}" for index in range(160)),
+                    }
+                ]
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"indexed_chunks": 2})
+        chunks = index_document_chunks.call_args.args[0]
+        self.assertEqual(len(chunks), 2)
+        self.assertEqual(chunks[0]["source"], "guide.md")
+
+    def test_index_endpoint_rejects_documents_without_readable_text(self):
+        response = self.client.post(
+            "/index",
+            json={"documents": [{"name": "empty.md", "content": "   "}]},
+        )
+
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("No readable text", response.json()["detail"])
+
+    @patch("app.main.index_document_chunks", side_effect=RuntimeError("embedding unavailable"))
+    def test_index_endpoint_reports_embedding_failures(self, index_document_chunks):
+        response = self.client.post(
+            "/index",
+            json={"documents": [{"name": "guide.md", "content": "some readable text"}]},
+        )
+
+        self.assertEqual(response.status_code, 502)
+        self.assertIn("Document indexing failed", response.json()["detail"])
+
     @patch("app.main.ask_llm", return_value="Grounded answer.")
     @patch("app.main.retrieve_relevant_chunks")
     def test_enabled_documents_are_retrieved_and_cited(
