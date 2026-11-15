@@ -522,7 +522,7 @@ def _load_indexed_chunks(document_ids: list[str]) -> tuple[list[dict], list[list
             "page": page,
             "chunk": chunk_number,
         }
-        for _, text, source, page, chunk_number, _ in rows
+        for document_id, text, source, page, chunk_number, _ in rows
     ]
     embeddings = [json.loads(row[5]) for row in rows]
     return chunks, embeddings

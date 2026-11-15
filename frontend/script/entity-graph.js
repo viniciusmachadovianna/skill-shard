@@ -453,6 +453,33 @@ async function openEntityGraph() {
     }
 }
 
+export function renderAnswerGraph(graph) {
+    try {
+        const validGraph = validateGraph(graph);
+        currentGraph = validGraph;
+        graphSummary.textContent = t('entity-graph-summary')
+            .replace('{nodes}', String(validGraph.nodes.length))
+            .replace('{edges}', String(validGraph.edges.length));
+        clearSelection();
+        updateNetwork(validGraph);
+        fitButton.disabled = validGraph.nodes.length === 0;
+
+        if (!validGraph.nodes.length) {
+            setGraphStatus(t('entity-graph-answer-empty'), 'empty');
+            showEmptyMessage(t('entity-graph-answer-empty'));
+            return;
+        }
+
+        graphEmpty.hidden = true;
+        setGraphStatus(t('entity-graph-answer-loaded'), 'ready');
+    } catch (error) {
+        console.error('Could not render the answer entity graph:', error);
+        const detail = error instanceof Error ? error.message : t('entity-graph-load-error');
+        setGraphStatus(`${t('entity-graph-load-error')} ${detail}`, 'error');
+        showEmptyMessage(t('entity-graph-load-error'));
+    }
+}
+
 export function initializeEntityGraph() {
     openButton.addEventListener('click', openEntityGraph);
     refreshButton.addEventListener('click', openEntityGraph);

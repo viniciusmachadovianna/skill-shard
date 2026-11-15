@@ -2,7 +2,7 @@ import { applyTheme } from './theme.js';
 import { applyLanguage, getCurrentLanguage, initializeLanguage, t } from './language.js';
 import { clearChat, initializeChat, cancelPendingResponse } from './chat.js';
 import { initializeKnowledgeBase } from './knowledge-base.js';
-import { initializeEntityGraph } from './entity-graph.js';
+import { initializeEntityGraph, renderAnswerGraph } from './entity-graph.js';
 import { $ } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -159,7 +159,12 @@ function deleteConversation(entry) {
 }
 
 const chat = initializeChat({
-    onEmptyExport: () => showToast('There are no messages to export yet.')
+    onEmptyExport: () => showToast('There are no messages to export yet.'),
+    onRelationalResponse: (graph) => {
+        rightPanel.classList.remove('is-collapsed');
+        syncSidebarState();
+        renderAnswerGraph(graph);
+    }
 });
 
 const knowledgeBase = initializeKnowledgeBase({

@@ -22,5 +22,5 @@ similarity_matrix = cosine_similarity(vetores)
 print("\n--- Matriz de similaridade ---\n")
 for i, text_i in enumerate(texts):
     for j, text_j in enumerate(texts):
-        if i < j:  # evita repetir pares e comparar texto com ele mesmo
+        if i < j:
             print(f"'{text_i}' vs '{text_j}': {similarity_matrix[i][j]:.4f}")
