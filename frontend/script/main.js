@@ -115,39 +115,14 @@ function createConversationEntry(name) {
     deleteIcon.setAttribute('aria-hidden', 'true');
     deleteButton.append(deleteIcon);
 
-    // const menuToggle = document.createElement('button');
-    // menuToggle.type = 'button';
-    // menuToggle.className = 'conversation-menu-toggle';
-    // menuToggle.setAttribute('aria-label', 'Conversation options');
-    // menuToggle.setAttribute('aria-haspopup', 'menu');
-    // menuToggle.setAttribute('aria-expanded', 'false');
-    // menuToggle.textContent = '···';
-
     const menu = document.createElement('div');
     menu.className = 'conversation-menu';
     menu.setAttribute('role', 'menu');
     menu.hidden = true;
-    // for (const [action, label] of [['rename', 'Rename'], ['delete', 'Delete']]) {
-    //     const button = document.createElement('button');
-    //     button.type = 'button';
-    //     button.setAttribute('role', 'menuitem');
-    //     button.dataset.conversationAction = action;
-    //     button.textContent = label;
-    //     menu.append(button);
-    // }
 
     entry.append(selectButton, deleteButton, menu);
-    // entry.append(selectButton, menuToggle, menu);
     return entry;
 }
-
-// function closeConversationMenus() {
-//     conversationList.querySelectorAll('.conversation-entry').forEach((entry) => {
-//         entry.classList.remove('menu-open');
-//         entry.querySelector('.conversation-menu').hidden = true;
-//         entry.querySelector('.conversation-menu-toggle').setAttribute('aria-expanded', 'false');
-//     });
-// }
 
 function activateConversation(entry) {
     conversationList.querySelectorAll('.conversation-entry').forEach((item) => {
@@ -309,7 +284,6 @@ conversationList.addEventListener('click', (event) => {
         const conversation = createConversationEntry('New investigation');
         conversationList.append(conversation);
         activateConversation(conversation);
-        // closeConversationMenus();
         updateConversationCount();
         showToast(t('new-conversation-toast'));
         return;
@@ -322,7 +296,6 @@ conversationList.addEventListener('click', (event) => {
     if (menuToggle) {
         const menu = entry.querySelector('.conversation-menu');
         const shouldOpen = menu.hidden;
-        // closeConversationMenus();
         menu.hidden = !shouldOpen;
         menuToggle.setAttribute('aria-expanded', String(shouldOpen));
         entry.classList.toggle('menu-open', shouldOpen);
@@ -333,7 +306,6 @@ conversationList.addEventListener('click', (event) => {
     if (actionButton) {
         const action = actionButton.dataset.conversationAction;
         const title = entry.querySelector('.conversation-item span:last-child');
-        // closeConversationMenus();
 
         if (action === 'rename') {
             const newName = window.prompt('Rename conversation:', title.textContent);
@@ -355,18 +327,7 @@ conversationList.addEventListener('click', (event) => {
         }
         return;
     }
-
-    // if (target.closest('.conversation-item')) {
-    //     activateConversation(entry);
-    //     closeConversationMenus();
-    // }
 });
-
-// document.addEventListener('click', (event) => {
-//     if (!(event.target instanceof Element) || !event.target.closest('.conversation-entry')) {
-//         closeConversationMenus();
-//     }
-// });
 
 document.addEventListener('keydown', (event) => {
     if (!(event.target instanceof Element)) return;
@@ -374,7 +335,6 @@ document.addEventListener('keydown', (event) => {
 
     if (event.key === 'Escape') {
         const openEntry = conversationList.querySelector('.conversation-entry.menu-open');
-        // closeConversationMenus();
         openEntry?.querySelector('.conversation-menu-toggle').focus();
         return;
     }

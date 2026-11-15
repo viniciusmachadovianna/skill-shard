@@ -184,8 +184,6 @@ button { color: inherit; }
     cursor: pointer;
     font-family: var(--mono);
 }
-/* .help-button { border: 1px solid #44515a; border-radius: 50%; width: 27px; height: 27px; font-size: 10px; }
-.help-button img { display: block; width: 16px; height: 16px; } */
 .language-toggle,
 .theme-toggle,
 .adjustments-toggle,

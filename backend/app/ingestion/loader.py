@@ -60,5 +60,5 @@ if __name__ == "__main__":
 
     print(f"Os primeiros 200 caracteres do texto com ({len(text)} caracteres foi extraído:)")
     print("\n --- \n")
-    print(text[:200])  # mostra só os primeiros 1000 caracteres como preview
+    print(text[:200])
     print("\n ---")

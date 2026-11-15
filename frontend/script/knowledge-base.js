@@ -1,4 +1,5 @@
 import { t } from './language.js';
+import { $ } from './utils.js';
 
 const DATABASE_NAME = 'skill-shard-knowledge-base';
 const DATABASE_VERSION = 1;
@@ -6,20 +7,20 @@ const STORE_NAME = 'documents';
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const SUPPORTED_EXTENSIONS = new Set(['txt', 'md', 'csv', 'json', 'pdf']);
 
-const dialog = document.querySelector('#knowledge-dialog');
-const knowledgeButton = document.querySelector('#knowledge-button');
-const closeButton = document.querySelector('#knowledge-close');
-const addButton = document.querySelector('#add-documents');
-const fileInput = document.querySelector('#file-input');
-const documentList = document.querySelector('#knowledge-document-list');
-const emptyState = document.querySelector('#knowledge-empty');
-const summary = document.querySelector('#knowledge-summary');
-const documentCount = document.querySelector('#document-count');
-const sourceMetric = document.querySelector('#source-metric');
-const previewSelect = document.querySelector('#assistant-document-select');
-const previewEmpty = document.querySelector('#assistant-document-empty');
-const previewText = document.querySelector('#assistant-document-text');
-const previewPdf = document.querySelector('#assistant-document-pdf');
+const dialog = $('#knowledge-dialog');
+const knowledgeButton = $('#knowledge-button');
+const closeButton = $('#knowledge-close');
+const addButton = $('#add-documents');
+const fileInput = $('#file-input');
+const documentList = $('#knowledge-document-list');
+const emptyState = $('#knowledge-empty');
+const summary = $('#knowledge-summary');
+const documentCount = $('#document-count');
+const sourceMetric = $('#source-metric');
+const previewSelect = $('#assistant-document-select');
+const previewEmpty = $('#assistant-document-empty');
+const previewText = $('#assistant-document-text');
+const previewPdf = $('#assistant-document-pdf');
 const PREVIEW_CHARACTER_LIMIT = 1200;
 
 let databasePromise;

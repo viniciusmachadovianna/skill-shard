@@ -6,13 +6,11 @@ from app.config import client
 from sklearn.metrics.pairwise import cosine_similarity
 
 texts = [
-  "What is the meaning of life?",
-  "Who is your purpose?",
-  "What is the meaning of living?",
-  "What is the meaning of living?",
+  "What is SYDLE ONE?",
+  "What is the purpose of SYDLE ONE?",
+  "What can I do with SYDLE ONE?",
 ]
 
-# result = embed_content(texts)
 result = client.models.embed_content(
     model="gemini-embedding-001",
     contents=texts,
