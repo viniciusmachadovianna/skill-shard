@@ -125,7 +125,8 @@ class AskDocumentsTests(unittest.TestCase):
 
         self.assertEqual(index_response.status_code, 200)
         self.assertEqual(ask_response.status_code, 200)
-        self.assertIn("project.txt", ask_response.json())
+        self.assertEqual(ask_response.json()["mode"], "rag")
+        self.assertIn("project.txt", ask_response.json()["answer"])
         self.assertEqual(stored_document[0], "The project started in 2024.")
         self.assertEqual(embed_contents.call_count, 2)
         ask_llm.assert_called_once()
@@ -183,6 +184,7 @@ class AskDocumentsTests(unittest.TestCase):
     ):
         retrieve_relevant_chunks.return_value = [
             {
+                "document_id": "project-1",
                 "text": "The project started in 2024.",
                 "source": "project.txt",
                 "page": None,
@@ -200,7 +202,8 @@ class AskDocumentsTests(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("project.txt", response.json())
+        self.assertIn("project.txt", response.json()["answer"])
+        self.assertIsNone(response.json()["graph"])
         retrieve_relevant_chunks.assert_called_once_with(
             "When did the project start?",
             ["project-1"],
@@ -214,12 +217,134 @@ class AskDocumentsTests(unittest.TestCase):
         retrieve_relevant_chunks,
         ask_llm,
     ):
-        response = self.client.post("/ask", json={"question": "A general question"})
+        response = self.client.post(
+            "/ask",
+            json={"question": "A general question", "mode": "llm", "document_ids": ["active-doc"]},
+        )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), "General answer.")
+        self.assertEqual(response.json()["answer"], "General answer.")
+        self.assertEqual(response.json()["mode"], "llm")
         ask_llm.assert_called_once_with("A general question", None)
         retrieve_relevant_chunks.assert_not_called()
+
+    @patch("app.main.ask_llm", return_value="Relational answer.")
+    @patch("app.main.get_indexed_document_graph")
+    @patch("app.main.retrieve_relevant_chunks")
+    def test_graph_rag_supplies_retrieved_relationships_to_answer_and_response(
+        self,
+        retrieve_relevant_chunks,
+        get_indexed_document_graph,
+        ask_llm,
+    ):
+        retrieve_relevant_chunks.return_value = [
+            {
+                "document_id": "project-1",
+                "text": "# Project guide **Tipo:** documentation **Projeto:** Alpha",
+                "source": "project.md",
+                "page": None,
+                "chunk": 1,
+                "score": 1.0,
+            }
+        ]
+        get_indexed_document_graph.return_value = {
+            "nodes": [
+                {"id": "document:project-1", "label": "project.md", "type": "document"},
+                {"id": "item:guide", "label": "Project guide", "type": "knowledge_item"},
+                {"id": "project:alpha", "label": "Alpha", "type": "project"},
+                {"id": "item:other", "label": "Unrelated guide", "type": "knowledge_item"},
+                {"id": "project:beta", "label": "Beta", "type": "project"},
+            ],
+            "edges": [
+                {
+                    "id": "contains:guide",
+                    "source": "document:project-1",
+                    "target": "item:guide",
+                    "label": "contains",
+                    "evidence": [
+                        {
+                            "document_id": "project-1",
+                            "document_name": "project.md",
+                            "title": "Project guide",
+                        }
+                    ],
+                },
+                {
+                    "id": "project:guide",
+                    "source": "item:guide",
+                    "target": "project:alpha",
+                    "label": "project",
+                    "evidence": [
+                        {
+                            "document_id": "project-1",
+                            "document_name": "project.md",
+                            "title": "Project guide",
+                        }
+                    ],
+                },
+                {
+                    "id": "project:other",
+                    "source": "item:other",
+                    "target": "project:beta",
+                    "label": "project",
+                    "evidence": [
+                        {
+                            "document_id": "project-1",
+                            "document_name": "project.md",
+                            "title": "Unrelated guide",
+                        }
+                    ],
+                },
+            ],
+        }
+
+        response = self.client.post(
+            "/ask",
+            json={
+                "question": "What is the project?",
+                "document_ids": ["project-1"],
+                "mode": "graphrag",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["mode"], "graphrag")
+        self.assertEqual(
+            [edge["id"] for edge in response.json()["graph"]["edges"]],
+            ["contains:guide", "project:guide"],
+        )
+        self.assertIn("Relevant entity relationships", ask_llm.call_args.args[1])
+        self.assertIn("Alpha", ask_llm.call_args.args[1])
+        self.assertNotIn("Beta", ask_llm.call_args.args[1])
+        get_indexed_document_graph.assert_called_once_with(["project-1"])
+
+    @patch("app.main.ask_llm", return_value="Answer.")
+    @patch("app.main.retrieve_relevant_chunks")
+    def test_rag_modes_require_enabled_documents(self, retrieve_relevant_chunks, ask_llm):
+        response = self.client.post(
+            "/ask",
+            json={"question": "Question", "mode": "rag"},
+        )
+
+        self.assertEqual(response.status_code, 422)
+        retrieve_relevant_chunks.assert_not_called()
+        ask_llm.assert_not_called()
+
+    @patch("app.main.ask_llm")
+    @patch("app.main.retrieve_relevant_chunks", return_value=[])
+    def test_rag_does_not_fall_back_to_direct_llm_without_retrieved_chunks(
+        self,
+        retrieve_relevant_chunks,
+        ask_llm,
+    ):
+        response = self.client.post(
+            "/ask",
+            json={"question": "Question", "mode": "rag", "document_ids": ["project-1"]},
+        )
+
+        self.assertEqual(response.status_code, 409)
+        ask_llm.assert_not_called()
+        retrieve_relevant_chunks.assert_called_once_with("Question", ["project-1"])
 
     @patch(
         "app.main.retrieve_relevant_chunks",
