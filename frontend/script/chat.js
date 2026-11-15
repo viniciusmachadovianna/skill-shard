@@ -6,6 +6,7 @@ const composer = $('#composer');
 const workArea = $('#work-area');
 const welcomeContent = $('.welcome-content');
 const promptInput = $('#prompt-input');
+const retrievalMode = $('#retrieval-mode');
 const conversationOutput = $('#conversation-output');
 const scrollCue = $('.scroll-cue');
 const backendStatus = $('#backend-status');
@@ -24,6 +25,63 @@ let modelStatus = 'backend-checking';
 let knowledgeIndexStatus = 'loading';
 let retryKnowledgeIndex = () => {};
 
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function formatInlineMarkdown(value) {
+    let html = escapeHtml(value);
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/(\*\*|__)(.+?)\1/g, '<strong>$2</strong>');
+    html = html.replace(/(\*|_)(.+?)\1/g, '<em>$2</em>');
+    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    return html;
+}
+
+function renderMarkdown(markdown) {
+    const blocks = String(markdown ?? '').replace(/\r/g, '').split(/\n{2,}/).filter((block) => block.trim());
+    if (!blocks.length) return '<p></p>';
+
+    return blocks.map((block) => {
+        const trimmed = block.trim();
+
+        if (trimmed.startsWith('```')) {
+            const code = trimmed
+                .replace(/^```[^\n]*\n/, '')
+                .replace(/```$/, '')
+                .trim();
+            return `<pre><code>${escapeHtml(code)}</code></pre>`;
+        }
+
+        if (/^#{1,6}\s+/.test(trimmed)) {
+            const match = trimmed.match(/^(#{1,6})\s+/);
+            const level = match[1].length;
+            const text = formatInlineMarkdown(trimmed.slice(match[0].length));
+            return `<h${level}>${text}</h${level}>`;
+        }
+
+        const lines = trimmed.split('\n');
+        const hasListItems = lines.length > 0 && lines.every((line) => /^([-*]|\d+\.)\s+/.test(line.trim()));
+        if (hasListItems) {
+            const ordered = lines.every((line) => /^\d+\.\s+/.test(line.trim()));
+            const listType = ordered ? 'ol' : 'ul';
+            const items = lines.map((line) => {
+                const item = line.trim().replace(/^(?:[-*]|\d+\.)\s+/, '');
+                return `<li>${formatInlineMarkdown(item)}</li>`;
+            }).join('');
+            return `<${listType}>${items}</${listType}>`;
+        }
+
+        return `<p>${formatInlineMarkdown(trimmed)}</p>`;
+    }).join('');
+}
+
 function addMessage(label, message, className = '') {
     const article = document.createElement('article');
     article.className = `chat-message ${className}`.trim();
@@ -39,7 +97,7 @@ function addMessage(label, message, className = '') {
     }).format(timestamp);
     caption.append(messageLabel, time);
     const body = document.createElement('div');
-    body.textContent = message;
+    body.innerHTML = className.includes('assistant-reply') ? renderMarkdown(message) : escapeHtml(message);
     article.append(caption, body);
     conversationOutput.append(article);
     scrollToLatestMessage();
@@ -62,11 +120,11 @@ export function clearChat() {
     updateScrollCue();
 }
 
-async function ask(question, documentIds, signal) {
+async function ask(question, mode, documentIds, signal) {
     const response = await fetch('http://127.0.0.1:8000/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, document_ids: documentIds }),
+        body: JSON.stringify({ question, mode, document_ids: documentIds }),
         signal
     });
 
@@ -77,12 +135,16 @@ async function ask(question, documentIds, signal) {
             : `Response status: ${response.status}`);
     }
 
-    const answer = result;
+    const answer = result.answer;
     if (typeof answer !== 'string' || !answer.trim()) {
         throw new Error('The API returned an invalid answer.');
     }
 
-    return answer;
+    if (result.mode !== mode) {
+        throw new Error('The API returned a response for a different retrieval mode.');
+    }
+
+    return { answer, graph: result.graph };
 }
 
 function scrollToLatestMessage() {
@@ -213,7 +275,7 @@ function exportConversation(onEmptyExport) {
     URL.revokeObjectURL(url);
 }
 
-export function initializeChat({ onEmptyExport }) {
+export function initializeChat({ onEmptyExport, onRelationalResponse }) {
     $$('.objective-card').forEach((card) => {
         card.addEventListener('click', () => {
             promptInput.value = card.dataset.prompt;
@@ -261,12 +323,14 @@ export function initializeChat({ onEmptyExport }) {
         updateScrollCue();
 
         try {
-            const documents = await getEnabledDocuments();
+            const mode = retrievalMode.value;
+            const documents = mode === 'llm' ? [] : await getEnabledDocuments();
             const documentIds = documents.map((document) => document.id);
-            const answer = await ask(message, documentIds, controller.signal);
+            const result = await ask(message, mode, documentIds, controller.signal);
             if (controller.signal.aborted) return;
             markBackendReady();
-            addMessage('SS-800 / SYSTEM', answer, 'assistant-reply');
+            addMessage('SS-800 / SYSTEM', result.answer, 'assistant-reply');
+            if (mode === 'graphrag') onRelationalResponse?.(result.graph);
         } catch (error) {
             if (controller.signal.aborted) return;
             console.error('Unable to get an answer from the API:', error);

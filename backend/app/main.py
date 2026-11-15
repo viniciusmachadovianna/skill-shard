@@ -55,6 +55,10 @@ class AskRequest(BaseModel):
         default_factory=list,
         description="IDs of previously indexed enabled documents to search.",
     )
+    mode: Literal["llm", "rag", "rag relacional"] = Field(
+        default="rag",
+        description="Answer directly, use retrieved chunks, or include their entity relationships.",
+    )
 
 
 class IndexRequest(BaseModel):
@@ -100,6 +104,77 @@ class GraphEdge(BaseModel):
 class GraphResponse(BaseModel):
     nodes: list[GraphNode]
     edges: list[GraphEdge]
+
+
+class AskResponse(BaseModel):
+    mode: Literal["llm", "rag", "graphrag"]
+    answer: str
+    graph: GraphResponse | None = None
+
+
+def graph_relationships_for_chunks(graph: dict, chunks: list[dict]) -> dict:
+    matching_items = set()
+    normalized_chunks = [
+        (
+            chunk.get("document_id"),
+            " ".join(chunk["text"].casefold().split()),
+        )
+        for chunk in chunks
+    ]
+
+    for edge in graph["edges"]:
+        if edge["label"] != "contains":
+            continue
+        for evidence in edge["evidence"]:
+            normalized_title = " ".join(evidence["title"].casefold().split())
+            if normalized_title and any(
+                document_id == evidence["document_id"] and normalized_title in text
+                for document_id, text in normalized_chunks
+            ):
+                matching_items.add((evidence["document_id"], evidence["title"], edge["target"]))
+
+    matching_titles = {
+        (document_id, title)
+        for document_id, title, _ in matching_items
+    }
+    matching_item_ids = {item_id for _, _, item_id in matching_items}
+    relevant_edges = []
+    for edge in graph["edges"]:
+        evidence = [
+            item for item in edge["evidence"]
+            if (item["document_id"], item["title"]) in matching_titles
+        ]
+        if evidence and (
+            edge["source"] in matching_item_ids
+            or edge["target"] in matching_item_ids
+        ):
+            relevant_edges.append({**edge, "evidence": evidence})
+
+    relevant_node_ids = {
+        node_id
+        for edge in relevant_edges
+        for node_id in (edge["source"], edge["target"])
+    }
+    return {
+        "nodes": [node for node in graph["nodes"] if node["id"] in relevant_node_ids],
+        "edges": relevant_edges,
+    }
+
+
+def build_relationship_context(graph: dict) -> str:
+    if not graph["edges"]:
+        return ""
+
+    nodes_by_id = {node["id"]: node["label"] for node in graph["nodes"]}
+    relationships = []
+    for edge in graph["edges"]:
+        for evidence in edge["evidence"]:
+            relationships.append(
+                f"[Relationship: {nodes_by_id[edge['source']]} --{edge['label']}--> "
+                f"{nodes_by_id[edge['target']]}; item: {evidence['title']}; "
+                f"source: {evidence['document_name']}]"
+            )
+    return "\n".join(dict.fromkeys(relationships))
 
 
 def count_document_chunks(document: IndexDocument | dict) -> int:
@@ -334,12 +409,18 @@ def ready(refresh: bool = False):
         ready_cache_until = monotonic() + READY_CACHE_SECONDS
         return {"ready": True, "cached": False}
 
-@app.post("/ask")
-def ask(request: AskRequest):
+@app.post("/ask", response_model=AskResponse)
+def ask(request: AskRequest) -> AskResponse:
     context = None
     sources = []
+    graph = None
 
-    if request.document_ids:
+    if request.mode != "llm":
+        if not request.document_ids:
+            raise HTTPException(
+                status_code=422,
+                detail="Enable at least one document for RAG modes.",
+            )
         try:
             relevant_chunks = retrieve_relevant_chunks(request.question, request.document_ids)
         except MissingIndexedDocumentsError as error:
@@ -354,6 +435,12 @@ def ask(request: AskRequest):
                 detail="Document search failed. Check the embedding model connection and retry.",
             ) from None
 
+        if not relevant_chunks:
+            raise HTTPException(
+                status_code=409,
+                detail="No indexed chunks are available for the enabled documents.",
+            )
+
         context_parts = []
         for chunk in relevant_chunks:
             page_label = f", page {chunk['page']}" if chunk["page"] is not None else ""
@@ -366,6 +453,34 @@ def ask(request: AskRequest):
             (chunk["source"], chunk["page"])
             for chunk in relevant_chunks
         ))
+
+        if request.mode == "graphrag":
+            relevant_document_ids = list(dict.fromkeys(
+                chunk["document_id"]
+                for chunk in relevant_chunks
+                if chunk.get("document_id")
+            ))
+            if relevant_document_ids:
+                try:
+                    indexed_graph = get_indexed_document_graph(relevant_document_ids)
+                except MissingIndexedDocumentsError as error:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="One or more retrieved documents are not indexed.",
+                    ) from error
+                except Exception:
+                    logger.exception("Entity relationship retrieval failed.")
+                    raise HTTPException(
+                        status_code=502,
+                        detail="Entity relationship search failed. Check the local document database and retry.",
+                    ) from None
+
+                graph = graph_relationships_for_chunks(indexed_graph, relevant_chunks)
+            else:
+                graph = {"nodes": [], "edges": []}
+            relationship_context = build_relationship_context(graph)
+            if relationship_context:
+                context = f"{context}\n\nRelevant entity relationships:\n{relationship_context}"
 
     try:
         answer = ask_llm(request.question, context)
@@ -389,4 +504,4 @@ def ask(request: AskRequest):
         ]
         answer = f"{answer}\n\nSources consulted / Fontes consultadas:\n" + "\n".join(citations)
 
-    return answer
+    return AskResponse(mode=request.mode, answer=answer, graph=graph)

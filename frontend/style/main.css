@@ -520,6 +520,48 @@ h1 em { color: var(--cyan); font-style: normal; }
     font: 10px var(--mono);
 }
 .chat-message time { color: var(--subtext); font-size: 9px; white-space: nowrap; }
+.chat-message > div {
+    overflow-wrap: anywhere;
+}
+.chat-message > div > :last-child { margin-bottom: 0; }
+.chat-message > div h1,
+.chat-message > div h2,
+.chat-message > div h3,
+.chat-message > div h4,
+.chat-message > div h5,
+.chat-message > div h6,
+.chat-message > div p,
+.chat-message > div ul,
+.chat-message > div ol,
+.chat-message > div pre {
+    margin: 0 0 10px;
+    line-height: 1.55;
+}
+.chat-message > div ul,
+.chat-message > div ol { padding-left: 1.35em; }
+.chat-message > div li + li { margin-top: 4px; }
+.chat-message > div code {
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: rgba(116, 150, 166, 0.12);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.9em;
+}
+.chat-message > div pre {
+    padding: 12px;
+    border: 1px solid var(--line);
+    background: rgba(1, 9, 13, 0.8);
+    overflow-x: auto;
+}
+.chat-message > div pre code {
+    padding: 0;
+    background: transparent;
+}
+.chat-message > div a {
+    color: var(--cyan);
+    text-decoration: underline;
+}
 .assistant-reply { border-left-color: var(--green); color: var(--muted); }
 .user-prompt {
     padding: 13px 0;

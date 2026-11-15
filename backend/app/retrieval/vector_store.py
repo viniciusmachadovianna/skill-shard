@@ -516,6 +516,7 @@ def _load_indexed_chunks(document_ids: list[str]) -> tuple[list[dict], list[list
 
     chunks = [
         {
+            "document_id": document_id,
             "text": text,
             "source": source,
             "page": page,
