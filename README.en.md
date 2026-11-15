@@ -28,9 +28,11 @@ frontend/ <br>
 ├── style/ <br>
 └── script/ <br>
 
-The local backend persists original documents, chunks, and embeddings in `backend/data/vectors.sqlite3`. Configure Live Server to ignore `backend/` so database changes do not reload the page. After synchronization, questions send only document IDs instead of full contents. Gemini is still required to generate embeddings and answers.
+The local backend persists original documents, chunks, and embeddings in `backend/data/vectors.sqlite3`. Configure Live Server to ignore `backend/` so database changes do not reload the page. RAG requests send document IDs, never full contents; LLM requests send no document IDs. Gemini is still required to generate embeddings and answers.
 
 When the interface loads, it syncs enabled documents to the backend for indexing before enabling chat. The status indicator shows this initial loading; use **Retry check** if indexing fails.
+
+The retrieval selector offers three modes: **LLM** sends only the question; **RAG** retrieves embedded chunks; and **Relational RAG** also supplies entity relationships found in those chunks to the model and displays those relationships in the graph.
 
 ## Stack
 
@@ -44,7 +46,7 @@ When the interface loads, it syncs enabled documents to the backend for indexing
 
 - `POST /index`: accepts `{"documents": [{"id": "...", "name": "...", "content": "...", "encoding": "text"}]}`, chunks enabled documents, and persists originals, chunks, and embeddings. Returns `{"indexed_chunks": n}`; responds with `422` for invalid documents or documents without readable text, and `502` if the embedding API fails. The interface calls it on startup and when the knowledge base changes.
 - `GET /graph`: returns `{"nodes": [...], "edges": [...]}` for indexed documents. Nodes have `id`, `label`, and `type`; edges have `id`, `source`, `target`, `label`, and `evidence` (document ID/name, item title, and optional source URL). Repeat `document_ids` to filter, for example `/graph?document_ids=id-1&document_ids=id-2`; omitting the filter returns all indexed documents. The local, token-free rules use structured Markdown metadata (`Tipo`, `Projeto`, `Produto`, `Hierarquia`, and `Tags`) and cache the result during indexing. This first version does not infer entities from arbitrary prose. Returns `409` if a requested document is not indexed.
-- `POST /ask`: accepts `{"question": "...", "document_ids": [...]}` and retrieves stored chunks; missing or unindexed documents return `409`.
+- `POST /ask`: accepts `{"question": "...", "mode": "llm|rag|graphrag", "document_ids": [...]}`; `mode` is optional and defaults to `rag`. `llm` ignores documents; `rag` uses only retrieved embedded chunks; `graphrag` also includes metadata relationships for items present in retrieved chunks in the model context and returns that subgraph for display. `rag` and `graphrag` require at least one enabled document. Returns `{"mode": "...", "answer": "...", "graph": null|{"nodes": [...], "edges": [...]}}`; `graph` is `null` for LLM and RAG. Missing or unindexed IDs return `409`.
 - `DELETE /documents?document_id=...`: removes a document, its chunks, and its associated vectors from the local database.
 
 ## Evaluation Methodology
