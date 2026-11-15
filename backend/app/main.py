@@ -107,7 +107,7 @@ class GraphResponse(BaseModel):
 
 
 class AskResponse(BaseModel):
-    mode: Literal["llm", "rag", "graphrag"]
+    mode: Literal["llm", "rag", "rag relacional"]
     answer: str
     graph: GraphResponse | None = None
 
@@ -178,24 +178,12 @@ def build_relationship_context(graph: dict) -> str:
 
 
 def count_document_chunks(document: IndexDocument | dict) -> int:
+    
     document_data = document.model_dump() if isinstance(document, IndexDocument) else document
-    extension = Path(document_data["name"]).suffix.lower()
-    if extension not in {".txt", ".md", ".csv", ".json", ".pdf"}:
+    try:
+        return len(build_document_chunks([IndexDocument(**document_data)]))
+    except ValueError:
         return 0
-
-    pages = []
-    if extension == ".pdf":
-        if document_data.get("encoding") != "base64":
-            return 0
-        pdf_content = base64.b64decode(document_data["content"], validate=True)
-        pages = load_pdf_pages_from_bytes(pdf_content)
-    else:
-        if document_data.get("encoding") != "text":
-            return 0
-        pages = [{"page": None, "text": document_data["content"]}]
-
-    return sum(len(chunk_text_by_words(page["text"])) for page in pages)
-
 
 def build_document_chunks(documents: list[IndexDocument]) -> list[dict]:
     chunks = []
@@ -214,21 +202,23 @@ def build_document_chunks(documents: list[IndexDocument]) -> list[dict]:
                 )
             try:
                 pdf_content = base64.b64decode(document.content, validate=True)
-                pages = load_pdf_pages_from_bytes(pdf_content)
+                pages = load_pdf_pages_from_bytes(pdf_content, document.name)
             except (binascii.Error, ValueError, PdfReadError) as error:
                 raise ValueError(f"{document.name}: could not read this PDF ({error}).") from error
         else:
             if document.encoding != "text":
                 raise ValueError(f"{document.name}: invalid text encoding.")
-            pages = [{"page": None, "text": document.content}]
+            pages = [{"page": None, "text": document.content, "source_file": document.name}]
 
         chunk_index = 0
         for page in pages:
-            for text in chunk_text_by_words(page["text"]):
+            # for text in chunk_text_by_words(page["text"]):
+            for piece in chunk_text_by_words(page["text"], page["source_file"]):
                 chunk_index += 1
                 chunks.append(
                     {
-                        "text": text,
+                        # "text": text,
+                        "text": piece["text"],
                         "source": document.name,
                         "page": page["page"],
                         "chunk": chunk_index,
@@ -454,7 +444,7 @@ def ask(request: AskRequest) -> AskResponse:
             for chunk in relevant_chunks
         ))
 
-        if request.mode == "graphrag":
+        if request.mode == "rag relacional":
             relevant_document_ids = list(dict.fromkeys(
                 chunk["document_id"]
                 for chunk in relevant_chunks

@@ -3,15 +3,17 @@ from io import BytesIO
 from pathlib import Path
 from pypdf import PdfReader
 
-
-def load_pdf_pages_from_bytes(pdf_content: bytes) -> list[dict]:
+def load_pdf_pages_from_bytes(pdf_content: bytes, source_file: str) -> list[dict]:
     reader = PdfReader(BytesIO(pdf_content))
 
     return [
-        {"page": page_number, "text": page.extract_text() or ""}
+        {
+            "page": page_number,
+            "text": page.extract_text() or "",
+            "source_file": source_file,
+        }
         for page_number, page in enumerate(reader.pages, start=1)
     ]
-
 
 def load_pdf_text(pdf_path: str) -> str:
 
@@ -43,10 +45,14 @@ def load_pdf_pages(pdf_path: str) -> list[dict]:
     reader = PdfReader(str(path))
 
     pages = []
+
     for page_number, page in enumerate(reader.pages, start=1):
         text = page.extract_text() or ""
-        pages.append({"page": page_number, "text": text})
-
+        pages.append({
+            "page": page_number,
+            "text": text,
+            "source_file": path.name,
+        })
     return pages
 
 
