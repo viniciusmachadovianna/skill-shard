@@ -699,7 +699,7 @@ h1 em { color: var(--cyan); font-style: normal; }
     height: 30px;
     margin-left: auto;
     border: 0;
-    background: var(--cyan);
+    background: #35c3ed;
     color: #071015;
     font-size: 20px;
     cursor: pointer;
