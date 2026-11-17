@@ -55,7 +55,7 @@ class AskRequest(BaseModel):
         default_factory=list,
         description="IDs of previously indexed enabled documents to search.",
     )
-    mode: Literal["llm", "rag", "rag relacional"] = Field(
+    mode: Literal["llm", "rag", "graphrag"] = Field(
         default="rag",
         description="Answer directly, use retrieved chunks, or include their entity relationships.",
     )
@@ -107,7 +107,7 @@ class GraphResponse(BaseModel):
 
 
 class AskResponse(BaseModel):
-    mode: Literal["llm", "rag", "rag relacional"]
+    mode: Literal["llm", "rag", "graphrag"]
     answer: str
     graph: GraphResponse | None = None
 
@@ -444,7 +444,7 @@ def ask(request: AskRequest) -> AskResponse:
             for chunk in relevant_chunks
         ))
 
-        if request.mode == "rag relacional":
+        if request.mode == "graphrag":
             relevant_document_ids = list(dict.fromkeys(
                 chunk["document_id"]
                 for chunk in relevant_chunks
