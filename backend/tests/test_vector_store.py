@@ -1,6 +1,4 @@
-# Testing - Open /backend on terminal:
-# python -m app.tests.test_vector_store
-from app.retrieval.vector_store import embed_content
+# Testing - Open /backend on terminal: python -m tests.test_vector_store
 from app.config import client
 
 from sklearn.metrics.pairwise import cosine_similarity

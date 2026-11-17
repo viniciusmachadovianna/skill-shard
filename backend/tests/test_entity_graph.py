@@ -1,3 +1,4 @@
+# Testing - Open /backend on terminal: python -m tests.test_entity_graph
 import os
 import tempfile
 import unittest

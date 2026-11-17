@@ -1,7 +1,6 @@
-import sqlite3
+# Testing - Open /backend on terminal: python -m tests.test_retrieval
 import tempfile
 import unittest
-from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 

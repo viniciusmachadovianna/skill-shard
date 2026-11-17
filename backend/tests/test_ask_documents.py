@@ -1,3 +1,4 @@
+# Testing - Open /backend on terminal: python -m tests.test_ask_documents
 import base64
 import os
 import sqlite3
