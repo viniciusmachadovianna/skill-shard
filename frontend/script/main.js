@@ -21,7 +21,6 @@ const informationClose = $('#information-close');
 const adjustmentsToggle = $('#adjustments-toggle');
 const adjustmentsDialog = $('#adjustments-dialog');
 const adjustmentsClose = $('#adjustments-close');
-const adjustmentsRetrievalMode = $('#adjustments-retrieval-mode');
 const assistantCopy = $('#assistant-copy');
 const entityGraphDialog = $('#entity-graph-dialog');
 $('#right-panel-preview').append($('#assistant-document-preview'));
@@ -56,7 +55,6 @@ let conversationPendingDeletion;
 function updateRetrievalModeIcon() {
     const icon = retrievalMode.selectedOptions[0]?.dataset.icon;
     if (icon) retrievalModeIcon.src = icon;
-    adjustmentsRetrievalMode.value = retrievalMode.value;
 }
 
 export function showToast(message) {
@@ -263,10 +261,6 @@ window.addEventListener('resize', () => {
 
 syncSidebarState();
 retrievalMode.addEventListener('change', updateRetrievalModeIcon);
-adjustmentsRetrievalMode.addEventListener('change', () => {
-    retrievalMode.value = adjustmentsRetrievalMode.value;
-    retrievalMode.dispatchEvent(new Event('change'));
-});
 updateRetrievalModeIcon();
 
 conversationDeleteCancel.addEventListener('click', () => conversationDeleteDialog.close());
@@ -369,7 +363,6 @@ informationDialog.addEventListener('click', (event) => {
 
 adjustmentsToggle.addEventListener('click', () => {
     adjustmentsDialog.showModal();
-    adjustmentsRetrievalMode.focus();
 });
 
 adjustmentsClose.addEventListener('click', () => {
