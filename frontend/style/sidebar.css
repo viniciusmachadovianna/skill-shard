@@ -20,7 +20,7 @@
     border: 1px solid #234351;
     background: var(--surface-accent);
     color: var(--cyan);
-    font: 11px var(--mono);
+    font: 12px var(--mono);
     cursor: pointer;
     transition: border-color .18s, background .18s;
 }
@@ -40,7 +40,7 @@
     background: var(--surface-selected);
     text-align: left;
     color: #d8e2e7;
-    font-size: 15px;
+    font-size: 16px;
     cursor: pointer;
 }
 .conversation-entries {
@@ -102,8 +102,8 @@
 .knowledge-row { min-height: 65px; gap: 12px; cursor: pointer; }
 .database-icon { display: block; width: 19px; height: 19px; }
 .knowledge-copy { display: flex; flex: 1; flex-direction: column; gap: 4px; }
-.knowledge-copy strong { font-size: 15px; font-weight: 400; }
-.knowledge-copy small { font: 10px var(--mono); color: var(--subtext); }
+.knowledge-copy strong { font-size: 16px; font-weight: 400; }
+.knowledge-copy small { font: 12px var(--mono); color: var(--subtext); }
 .chevron { color: var(--text); font-size: 22px; }
 .operator-row { min-height: 62px; gap: 10px; }
 .operator-avatar {
@@ -114,7 +114,7 @@
     background: linear-gradient(135deg, #697684, #252d38 65%, #a5b0b7);
     border: 1px solid #45515c;
     color: #d7e0e5;
-    font: 9px var(--mono);
+    font: 12px var(--mono);
 }
 .operator-row .language-toggle,
 .operator-row .theme-toggle { flex: 0 0 auto; }

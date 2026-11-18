@@ -295,7 +295,7 @@ function makeNetworkData(graph) {
                 highlight: { background: color, border: colors.text },
                 hover: { background: color, border: colors.text }
             },
-            font: { color: colors.text, face: 'IBM Plex Mono', size: 10 },
+            font: { color: colors.text, face: 'IBM Plex Mono', size: 12 },
             borderWidth: 2,
             size: node.type === 'knowledge_item' ? 10 : 14
         };

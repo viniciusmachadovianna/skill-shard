@@ -41,10 +41,10 @@
 .information-dialog .information-description {
     margin: 22px 0 24px;
     color: #7893a3;
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.65;
 }
-.information-dialog .information-version { margin: 0; color: var(--cyan); font: 10px var(--mono); }
+.information-dialog .information-version { margin: 0; color: var(--cyan); font: 12px var(--mono); }
 .adjustments-dialog {
     width: min(460px, calc(100vw - 32px));
     max-width: none;
@@ -64,7 +64,7 @@
 .adjustments-dialog .knowledge-close { position: absolute; top: 0; right: -7px; margin: 0; }
 .conversation-delete-dialog::backdrop { background: #000b; }
 .conversation-delete-dialog h2 { margin: 0; font-size: 22px; font-weight: 500; }
-.conversation-delete-dialog p { margin: 12px 0 22px; color: var(--muted); font-size: 15px; }
+.conversation-delete-dialog p { margin: 12px 0 22px; color: var(--muted); font-size: 16px; }
 .conversation-delete-actions { display: flex; justify-content: flex-end; gap: 10px; }
 .conversation-delete-actions button {
     min-width: 82px;
@@ -72,7 +72,7 @@
     border: 1px solid var(--line);
     background: transparent;
     color: var(--text);
-    font: 11px var(--mono);
+    font: 12px var(--mono);
     cursor: pointer;
 }
 .conversation-delete-actions button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
@@ -107,7 +107,7 @@
 .knowledge-dialog::backdrop { background: #000b; }
 .knowledge-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .knowledge-dialog-header h2 { margin: 0; font-size: 25px; font-weight: 500; line-height: 1.2; }
-.knowledge-dialog-header p { margin: 9px 0 0; color: var(--muted); font-size: 15px; }
+.knowledge-dialog-header p { margin: 9px 0 0; color: var(--muted); font-size: 16px; }
 .knowledge-close {
     display: grid;
     width: 28px;
@@ -139,9 +139,9 @@
 .knowledge-add:hover { border-color: var(--cyan); background: var(--surface-hover); }
 .knowledge-add span:first-child { font-size: 20px; line-height: 1; }
 .knowledge-dialog-hint,
-.knowledge-dialog-note { color: var(--muted); font: 9px var(--mono); letter-spacing: .04em; }
+.knowledge-dialog-note { color: var(--muted); font: 12px var(--mono); letter-spacing: .04em; }
 .knowledge-dialog-hint { margin: 20px 0 0; }
-.knowledge-dialog-note { margin: 6px 0 2px; font: 11px var(--display); letter-spacing: 0; }
+.knowledge-dialog-note { margin: 6px 0 2px; font: 12px var(--display); letter-spacing: 0; }
 .knowledge-document-list {
     max-height: min(43vh, 330px);
     margin: 12px 0 0;
@@ -158,8 +158,8 @@
 .knowledge-document { display: flex; min-height: 72px; align-items: center; gap: 16px; margin-bottom: 8px; padding: 10px 14px; border: 1px solid transparent; border-bottom-color: var(--line); }
 .knowledge-document-icon { width: 20px; height: 20px; flex: 0 0 29px; object-fit: contain; text-align: left; }
 .knowledge-document-copy { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; }
-.knowledge-document-name { min-width: 0; overflow: hidden; color: var(--text); font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
-.knowledge-document-meta { color: var(--muted); font: 11px var(--mono); letter-spacing: .04em; }
+.knowledge-document-name { min-width: 0; overflow: hidden; color: var(--text); font-size: 16px; text-overflow: ellipsis; white-space: nowrap; }
+.knowledge-document-meta { color: var(--muted); font: 12px var(--mono); letter-spacing: .04em; }
 .knowledge-switch { position: relative; display: inline-flex; width: 22px; height: 22px; flex: 0 0 22px; cursor: pointer; }
 .knowledge-switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .knowledge-switch-track { position: absolute; inset: 0; border: 1px solid var(--muted); background: transparent; transition: background .18s, border-color .18s; }
@@ -195,7 +195,7 @@
 }
 .knowledge-delete img { display: block; width: 18px; height: 18px; margin: auto; transition: filter .18s; }
 .knowledge-delete:hover img { filter: brightness(0) saturate(100%) invert(43%) sepia(54%) saturate(2271%) hue-rotate(326deg) brightness(96%) contrast(91%); }
-.knowledge-empty { margin: 20px 0 8px; color: var(--muted); font-size: 14px; text-align: center; }
+.knowledge-empty { margin: 20px 0 8px; color: var(--muted); font-size: 15px; text-align: center; }
 .knowledge-empty[hidden] { display: none; }
 .document-preview-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .knowledge-dialog .document-preview-title {
@@ -205,4 +205,4 @@
     letter-spacing: 0;
     text-transform: none;
 }
-.knowledge-dialog .document-preview-empty { padding: 28px 24px; font: 13px/1.6 var(--display); text-align: center; }
+.knowledge-dialog .document-preview-empty { padding: 28px 24px; font: 14px/1.6 var(--display); text-align: center; }

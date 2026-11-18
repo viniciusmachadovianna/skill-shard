@@ -37,8 +37,8 @@
     .right-panel { top: 0; }
     .brand-mark { width: 24px; height: 24px; }
     .brand-copy strong { font-size: 19px; }
-    .brand-copy small { font-size: 6px; }
-    .unit-label { font-size: 7px; padding-left: 9px; }
+    .brand-copy small { font-size: 12px; }
+    .unit-label { font-size: 12px; padding-left: 9px; }
     .sidebar { display: none; }
     .app-shell.sidebar-collapsed .workspace-heading { padding-left: 21px; }
     .main-panel { min-height: 100dvh; }
@@ -47,9 +47,9 @@
     .welcome-content { width: calc(100% - 38px); margin-top: 43px; }
     h1 { font-size: clamp(40px, 13vw, 52px); }
     .objective-card { height: 83px; padding: 10px; }
-    .objective-name { font-size: 12px; }
+    .objective-name { font-size: 13px; }
     .composer-area { padding: 0 15px 14px; }
-    .composer-footnote { font-size: 10px; }
+    .composer-footnote { font-size: 12px; }
     .knowledge-dialog { padding: 22px 18px 14px; }
     .knowledge-dialog[open] { grid-template-columns: minmax(0, 1fr); }
     .knowledge-dialog[open] > .document-preview,

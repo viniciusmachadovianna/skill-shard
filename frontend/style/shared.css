@@ -23,11 +23,11 @@
 .brand-mark span { width: 11px; height: 11px; background: var(--cyan); }
 .brand-copy { display: flex; flex: 0 0 auto; width: max-content; flex-direction: column; gap: 3px; white-space: nowrap; }
 .brand-copy strong { font: 500 22px/1 var(--display); letter-spacing: .04em; }
-.brand-copy small { font: 8px/1.2 var(--mono); color: #82909b; letter-spacing: .06em; }
+.brand-copy small { font: 12px/1.2 var(--mono); color: #82909b; letter-spacing: .06em; }
 .unit-label, .section-caption, .objective-label, .eyebrow,
 .composer-meta, .awaiting, .telemetry-title, .metric {
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: .02em;
 }
 .status-dot { display: inline-block; width: 4px; height: 4px; margin: 0 6px 1px 0; background: var(--green); box-shadow: 0 0 8px #58dba055; }

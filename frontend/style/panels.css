@@ -96,7 +96,7 @@
 .right-panel-graph { min-width: 0; }
 .right-panel-graph .knowledge-dialog-header { align-items: flex-start; gap: 8px; }
 .right-panel-graph .knowledge-dialog-header h2 { font-size: 19px; }
-.right-panel-graph .knowledge-dialog-header p { margin-top: 4px; font-size: 12px; }
+.right-panel-graph .knowledge-dialog-header p { margin-top: 4px; font-size: 13px; }
 .right-panel-graph .entity-graph-toolbar {
     min-height: 0;
     flex-wrap: wrap;
@@ -114,16 +114,16 @@
     border: 1px dashed var(--line);
     background: var(--surface-selected);
 }
-.graph-mode-notice strong { font-size: 15px; font-weight: 500; }
-.graph-mode-notice p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
-.graph-mode-badge { color: var(--cyan); font: 10px var(--mono); letter-spacing: .08em; }
+.graph-mode-notice strong { font-size: 16px; font-weight: 500; }
+.graph-mode-notice p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.graph-mode-badge { color: var(--cyan); font: 12px var(--mono); letter-spacing: .08em; }
 .graph-mode-switch {
     align-self: flex-start;
     padding: 8px 12px;
     border: 1px solid var(--cyan);
     background: transparent;
     color: var(--cyan);
-    font: 10px var(--mono);
+    font: 12px var(--mono);
     letter-spacing: .06em;
     cursor: pointer;
 }
@@ -138,7 +138,7 @@
     border: 1px solid var(--line);
     background: var(--surface);
     color: var(--text);
-    font: 10px var(--mono);
+    font: 12px var(--mono);
     cursor: pointer;
 }
 .entity-graph-refresh:hover { border-color: var(--cyan); color: var(--cyan); }
@@ -193,7 +193,7 @@
     padding: 0 14px;
     border-bottom: 1px solid var(--line);
     color: #788b98;
-    font: 10px var(--mono);
+    font: 12px var(--mono);
     letter-spacing: .04em;
 }
 .graph-mode-icon { width: 24px; height: 24px; object-fit: contain; }

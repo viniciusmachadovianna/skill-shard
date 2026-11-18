@@ -9,7 +9,7 @@
     padding: 0 21px;
     border-bottom: 1px solid var(--line);
 }
-.heading-title { display: flex; align-items: center; gap: 9px; font-size: 13px; }
+.heading-title { display: flex; align-items: center; gap: 9px; font-size: 14px; }
 .outline-chat { display: block; width: 18px; height: 18px; }
 .export-button img { display: block; width: 18px; height: 18px; }
 .work-area {
@@ -40,7 +40,7 @@ h1 {
     letter-spacing: .015em;
 }
 h1 em { color: var(--cyan); font-style: normal; }
-.objective-label { margin-bottom: 10px; color: #8c9ba5; font-size: 11px; }
+.objective-label { margin-bottom: 10px; color: #8c9ba5; font-size: 12px; }
 .objective-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .objective-card {
     position: relative;
@@ -58,7 +58,7 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .objective-card:hover { border-color: var(--cyan); background: var(--surface-hover); transform: translateY(-1px); }
 .objective-icon { display: block; width: 19px; height: 19px; }
-.objective-name { color: var(--text); font-size: 15px; }
+.objective-name { color: var(--text); font-size: 16px; }
 .card-arrow { position: absolute; top: 10px; right: 12px; color: #71818d; font-size: 17px; }
 .scroll-cue {
     position: sticky;
@@ -77,7 +77,7 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .scroll-cue[hidden] { display: none; }
 .conversation-output { width: min(546px, calc(100% - 64px)); margin: 8px auto 24px; }
-.chat-message { margin: 10px 0; padding: 13px 15px; border-left: 2px solid var(--cyan); background: var(--surface); font-size: 15px; }
+.chat-message { margin: 10px 0; padding: 13px 15px; border-left: 2px solid var(--cyan); background: var(--surface); font-size: 16px; }
 .chat-message small {
     display: flex;
     align-items: center;
@@ -85,9 +85,9 @@ h1 em { color: var(--cyan); font-style: normal; }
     gap: 12px;
     margin-bottom: 6px;
     color: var(--cyan);
-    font: 10px var(--mono);
+    font: 12px var(--mono);
 }
-.chat-message time { color: var(--subtext); font-size: 9px; white-space: nowrap; }
+.chat-message time { color: var(--subtext); font-size: 12px; white-space: nowrap; }
 .chat-message > div {
     overflow-wrap: anywhere;
 }
@@ -183,13 +183,13 @@ h1 em { color: var(--cyan); font-style: normal; }
     border: 1px solid currentColor;
     background: transparent;
     color: #ec5748;
-    font: 9px var(--mono);
+    font: 12px var(--mono);
     cursor: pointer;
 }
 .backend-retry:hover:not(:disabled) { background: #ec574822; }
 .backend-retry:disabled { cursor: wait; opacity: .6; }
 .backend-retry:focus-visible { outline: 2px solid #ec5748; outline-offset: 2px; }
-.composer-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: #80909b; font-size: 10px; }
+.composer-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: #80909b; font-size: 12px; }
 .composer-meta > span:first-child { display: flex; align-items: center; gap: 7px; }
 .composer-meta b { color: var(--cyan); font-weight: 400; }
 .mode-select-control { display: flex; align-items: center; gap: 6px; }
@@ -201,7 +201,7 @@ h1 em { color: var(--cyan); font-style: normal; }
     border-radius: 2px;
     background-color: var(--surface);
     color: var(--cyan);
-    font: 10px var(--mono);
+    font: 12px var(--mono);
     cursor: pointer;
 }
 .mode-select:hover,
@@ -289,4 +289,4 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .composer-actions .adjustments-toggle:hover { border-color: var(--cyan); }
 .composer-actions .adjustments-toggle + .send-button { margin-left: 0; }
-.composer-footnote { margin: 10px 0 0; color: #657681; text-align: center; font-size: 12px; font-weight: 300; }
+.composer-footnote { margin: 10px 0 0; color: #657681; text-align: center; font-size: 13px; font-weight: 300; }
