@@ -1,3 +1,53 @@
+"""
+Armazenamento local de documentos, trechos e embeddings, e busca por similaridade.
+
+Este módulo é a "memória" do sistema. Ele guarda em um banco SQLite
+(`backend/data/vectors.sqlite3`) os documentos enviados, os trechos (chunks)
+em que cada um foi dividido e o embedding de cada trecho. Na hora da pergunta,
+encontra os trechos mais relacionados a ela.
+
+Dois conceitos usados aqui:
+    Embedding: lista de números (um vetor) que representa o significado de um
+        texto. Textos com significado parecido geram vetores parecidos. Os
+        vetores são gerados pelo modelo `gemini-embedding-001`.
+    Similaridade de cosseno: medida de quão parecidos são dois vetores, pelo
+        ângulo entre eles. Quanto mais próxima de 1, mais parecidos.
+
+Tabelas do banco:
+    documents: os documentos como foram recebidos (`id`, `name`, `content`,
+        `encoding`). Servem para verificar se o índice está atualizado e para
+        reconstruir grafos.
+    chunks: cache de embeddings. O `id` é um hash SHA-256 do modelo, do
+        documento, do arquivo, da página, da posição e do texto do trecho
+        (veja `_chunk_id`). Se qualquer um desses valores mudar, o trecho é
+        tratado como novo e recebe um novo embedding; trechos que não mudaram
+        nunca são enviados de novo à API, o que economiza cota.
+    document_chunks: liga cada documento aos seus trechos, em ordem
+        (`ordinal`).
+    document_graphs: grafo de relações de cada documento, em JSON, gerado por
+        `entity_graph` e usado no modo graphrag.
+
+Formato de um trecho (dicionário):
+    document_id: ID do documento. É `repository:<caminho>` para arquivos da
+        pasta `data/` e um UUID para arquivos enviados pelo usuário.
+    source: nome do arquivo de origem.
+    page: número da página, a partir de 1, ou `None` nos formatos sem páginas
+        (TXT, MD, CSV e JSON).
+    chunk: posição do trecho no documento, em sequência a partir de 1. A
+        contagem continua de uma página para a outra.
+    text: texto do trecho.
+    Os resultados de `retrieve_relevant_chunks` trazem também `score`.
+
+Funções públicas:
+    persist_documents: indexa documentos (gera os embeddings que faltam e
+        grava tudo no banco).
+    retrieve_relevant_chunks: devolve os trechos mais parecidos com a pergunta.
+    get_indexed_document_graph: devolve o grafo dos documentos indexados.
+    delete_indexed_document: remove um documento e os dados ligados a ele.
+    MissingIndexedDocumentsError: erro levantado quando um documento pedido
+        ainda não foi indexado.
+"""
+
 import hashlib
 import json
 import sqlite3
@@ -16,10 +66,23 @@ VECTOR_STORE_PATH = Path(__file__).resolve().parents[2] / "data" / "vectors.sqli
 
 
 class MissingIndexedDocumentsError(ValueError):
-    pass
+    """
+    Algum documento pedido ainda não foi indexado.
+
+    O endpoint correspondente converte este erro em uma resposta HTTP 409.
+    """
 
 
 def embed_content(contents: str | list[str]) -> types.EmbedContentResponse:
+    """
+    Pede à API do Gemini os embeddings de um texto ou de uma lista de textos.
+
+    É um envoltório fino sobre a API. Dentro do módulo, use `_embed_contents`,
+    que divide listas grandes em lotes.
+
+    Returns:
+        A resposta bruta da API, com um embedding por texto em `.embeddings`.
+    """
     return client.models.embed_content(
         model=EMBEDDING_MODEL,
         contents=contents,
@@ -27,6 +90,18 @@ def embed_content(contents: str | list[str]) -> types.EmbedContentResponse:
 
 
 def _embed_contents(texts: list[str]) -> list[list[float]]:
+    """
+    Gera embeddings para uma lista de textos, em lotes de `EMBEDDING_BATCH_SIZE`.
+
+    Os lotes evitam ultrapassar o limite de textos por requisição da API.
+
+    Returns:
+        Um vetor por texto, na mesma ordem da entrada.
+
+    Raises:
+        RuntimeError: se a API devolver uma quantidade de vetores diferente
+            da quantidade de textos.
+    """
     embeddings = []
 
     for start in range(0, len(texts), EMBEDDING_BATCH_SIZE):
@@ -41,6 +116,14 @@ def _embed_contents(texts: list[str]) -> list[list[float]]:
 
 
 def _chunk_id(chunk: dict) -> str:
+    """
+    Calcula o identificador estável de um trecho.
+
+    O ID é o SHA-256 de uma lista com o modelo de embedding, o documento, o
+    arquivo, a página, a posição e o texto. O mesmo trecho sempre gera o mesmo
+    ID, o que permite reaproveitar o embedding em cache; qualquer alteração
+    (inclusive trocar `EMBEDDING_MODEL`) gera um ID novo e um novo embedding.
+    """
     identity = json.dumps(
         [
             EMBEDDING_MODEL,
@@ -166,6 +249,13 @@ def _index_is_current(
     chunks: list[dict],
     chunk_ids: list[str],
 ) -> bool:
+    """
+    Informa se o banco já contém exatamente estes documentos e estes trechos.
+
+    Compara nome, conteúdo e codificação de cada documento e também os
+    vínculos entre documentos e trechos. Quando tudo coincide, não há o que
+    reindexar.
+    """
     if not VECTOR_STORE_PATH.exists():
         return False
 
@@ -227,6 +317,12 @@ def _index_is_current(
 
 
 def _get_chunk_embeddings(chunks: list[dict]) -> list[list[float]]:
+    """
+    Devolve o embedding de cada trecho, na mesma ordem da entrada.
+
+    Lê primeiro do cache (tabela `chunks`) e chama a API apenas para os
+    trechos que ainda não têm embedding, guardando os novos no cache.
+    """
     chunk_ids = [_chunk_id(chunk) for chunk in chunks]
     cached_embeddings = _load_cached_embeddings(chunk_ids)
     missing_chunks = [
@@ -246,6 +342,30 @@ def _get_chunk_embeddings(chunks: list[dict]) -> list[list[float]]:
 
 
 def persist_documents(documents: list[dict], chunks: list[dict]) -> int:
+    """
+    Indexa documentos: garante os embeddings dos trechos e grava tudo no banco.
+
+    Passo a passo:
+        1. Gera embeddings apenas para os trechos que ainda não estão no
+           cache.
+        2. Se o banco já contém exatamente estes documentos e trechos (veja
+           `_index_is_current`), só atualiza os grafos.
+        3. Caso contrário, substitui os documentos e os vínculos com seus
+           trechos e remove os embeddings de trechos que deixaram de existir.
+
+    Args:
+        documents: dicionários com `id`, `name`, `content` e `encoding`.
+        chunks: trechos desses documentos, no formato descrito no módulo.
+
+    Returns:
+        A quantidade de trechos indexados. Retorna 0, sem alterar o banco,
+        quando `documents` ou `chunks` está vazio; para remover documentos,
+        use `delete_indexed_document`.
+
+    Raises:
+        Exception: falhas da API de embeddings ou do SQLite não são tratadas
+            aqui; o endpoint `/index` as converte em erro 502.
+    """
     if not documents or not chunks:
         return 0
 
@@ -331,6 +451,14 @@ def persist_documents(documents: list[dict], chunks: list[dict]) -> int:
 
 
 def delete_indexed_document(document_id: str) -> None:
+    """
+    Remove um documento do banco, com seus vínculos, embeddings e grafo.
+
+    Não faz nada se o banco ainda não existe ou se o ID não está indexado.
+
+    Args:
+        document_id: ID do documento a remover.
+    """
     if not VECTOR_STORE_PATH.exists():
         return
 
@@ -367,6 +495,23 @@ def delete_indexed_document(document_id: str) -> None:
 
 
 def get_indexed_document_graph(document_ids: list[str] | None = None) -> dict:
+    """
+    Devolve o grafo de relações dos documentos indexados, já unido em um só.
+
+    Se o grafo de algum documento não estiver guardado, ele é reconstruído a
+    partir do conteúdo original e guardado para as próximas consultas.
+
+    Args:
+        document_ids: documentos a incluir. Com `None` ou lista vazia, inclui
+            todos os documentos indexados.
+
+    Returns:
+        `{"nodes": [...], "edges": [...]}`. O grafo vem vazio quando nenhum
+        documento está indexado e nenhum ID foi pedido.
+
+    Raises:
+        MissingIndexedDocumentsError: se algum ID pedido não estiver indexado.
+    """
     if not VECTOR_STORE_PATH.exists():
         if document_ids:
             raise MissingIndexedDocumentsError("One or more documents have not been indexed.")
@@ -475,6 +620,17 @@ def get_indexed_document_graph(document_ids: list[str] | None = None) -> dict:
 
 
 def _load_indexed_chunks(document_ids: list[str]) -> tuple[list[dict], list[list[float]]]:
+    """
+    Carrega do banco os trechos e os embeddings dos documentos pedidos.
+
+    Returns:
+        Uma tupla `(trechos, embeddings)`, com um embedding por trecho, na
+        mesma ordem, agrupados por documento e ordenados pela posição.
+
+    Raises:
+        MissingIndexedDocumentsError: se algum documento não estiver
+            indexado.
+    """
     if not document_ids:
         return [], []
 
@@ -533,6 +689,28 @@ def retrieve_relevant_chunks(
     document_ids: list[str],
     top_k: int = 5,
 ) -> list[dict]:
+    """
+    Encontra os trechos mais parecidos com a pergunta, entre os documentos dados.
+
+    Gera o embedding da pergunta (uma chamada à API do Gemini) e o compara,
+    por similaridade de cosseno, com o embedding de cada trecho dos
+    documentos. Em caso de empate, vem primeiro o trecho que aparece antes.
+
+    Args:
+        question: pergunta do usuário.
+        document_ids: documentos em que buscar.
+        top_k: quantos trechos devolver.
+
+    Returns:
+        Até `top_k` trechos, do mais para o menos parecido. Cada um segue o
+        formato descrito no módulo e traz também `score`, a similaridade de
+        cosseno. Retorna lista vazia se `document_ids` estiver vazio ou se
+        `top_k` for zero ou negativo.
+
+    Raises:
+        MissingIndexedDocumentsError: se algum documento não estiver
+            indexado.
+    """
     if not document_ids or top_k <= 0:
         return []
 

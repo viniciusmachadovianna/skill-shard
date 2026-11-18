@@ -1,3 +1,51 @@
+r"""
+Construção do grafo de relações entre entidades de um documento.
+
+O grafo alimenta o modo `graphrag`: além dos trechos recuperados, o modelo
+recebe as relações entre itens e entidades (projeto, produto, tags etc.) que
+aparecem nesses trechos. A extração usa apenas regras locais sobre metadados
+estruturados em Markdown, sem chamar nenhum modelo de linguagem e, portanto,
+sem gastar tokens. Texto livre sem esses metadados não gera relações.
+
+Formato esperado do documento (Markdown):
+    Cada item de conhecimento é um registro. Os registros são separados por
+    uma linha de hífens escapados (`\-----`, com cinco ou mais hífens). Em
+    cada registro, a primeira linha com texto é o título e uma linha traz os
+    metadados, todos na mesma linha:
+
+        \-----
+        ## Título do item
+        **Tipo:** Artigo **Projeto:** Skill Shard **Tags:** rag, grafos
+
+    Campos reconhecidos (maiúsculas e minúsculas não importam):
+        Tipo: vira um nó `document_type`, ligado pela relação `type`.
+        Projeto: nó `project`, relação `project`.
+        Produto: nó `product`, relação `product`.
+        Hierarquia: nó `topic`, relação `topic`.
+        Tags: um nó `tag` para cada valor, separados por vírgula ou ponto e
+            vírgula, relação `tag`.
+        URL Fonte: não vira nó; fica como `source_url` na evidência.
+    Registros sem título, sem uma linha com o campo `**Tipo:**` ou sem nenhum
+    campo reconhecido são ignorados.
+
+Estrutura do grafo:
+    Nós: `{"id", "label", "type"}`, com `type` entre `document`,
+        `knowledge_item`, `document_type`, `project`, `product`, `topic` e
+        `tag`.
+    Arestas: `{"id", "source", "target", "label", "evidence"}`. A relação
+        `contains` liga o documento a cada item; as demais (`type`,
+        `project`, `product`, `topic`, `tag`) ligam o item a uma entidade.
+    Evidência: cada aresta guarda a lista de itens de onde veio
+        (`document_id`, `document_name`, `title` e, se houver, `source_url`).
+        É isso que permite mostrar de qual documento cada relação foi tirada.
+
+Os IDs são estáveis: derivam de um hash do tipo e do rótulo (ignorando
+maiúsculas e espaços extras). Assim, a mesma entidade recebe o mesmo ID em
+documentos diferentes, e é isso que permite unir os grafos de vários
+documentos. Documentos que não são texto (PDF, com codificação `base64`)
+geram apenas o nó do documento, sem arestas.
+"""
+
 import hashlib
 import json
 import re
@@ -21,6 +69,7 @@ def _clean_metadata_value(value: str) -> str:
 
 
 def _parse_metadata(line: str) -> dict[str, str]:
+    """Lê os pares `**Campo:** valor` de uma linha e devolve `{campo: valor}`, com o campo em minúsculas e sem valores vazios."""
     markers = list(_FIELD_MARKER.finditer(line))
     metadata = {}
 
@@ -49,6 +98,18 @@ def _graph_node(kind: str, label: str, identity: str | None = None) -> dict:
 
 
 def build_document_graph(document: dict) -> dict:
+    """
+    Constrói o grafo de um documento a partir dos seus metadados.
+
+    Args:
+        document: dicionário com `id`, `name` e, opcionalmente, `content` e
+            `encoding` (padrão `"text"`).
+
+    Returns:
+        `{"nodes": [...], "edges": [...]}`, ordenados por `id` para que a
+        mesma entrada gere sempre o mesmo resultado. O nó do documento está
+        sempre presente, mesmo quando não há nenhuma aresta.
+    """
     document_id = document["id"]
     document_name = document["name"]
     document_node = {
@@ -145,6 +206,18 @@ def _add_edge(
 
 
 def merge_document_graphs(graphs: list[dict]) -> dict:
+    """
+    Une os grafos de vários documentos em um só.
+
+    Nós com o mesmo `id` aparecem uma única vez. Arestas com o mesmo `id` são
+    unificadas e suas evidências são somadas, sem repetição.
+
+    Args:
+        graphs: resultados de `build_document_graph`.
+
+    Returns:
+        O grafo unido, com nós e arestas ordenados por `id`.
+    """
     nodes = {}
     edges = {}
 
@@ -164,6 +237,18 @@ def merge_document_graphs(graphs: list[dict]) -> dict:
 
 
 def serialize_document_graph(document: dict) -> str:
+    """
+    Gera o grafo do documento já em JSON compacto, pronto para guardar no banco.
+
+    O resultado é gravado na tabela `document_graphs` durante a indexação.
+
+    Args:
+        document: mesmo formato aceito por `build_document_graph`.
+
+    Returns:
+        O grafo serializado como texto JSON, sem espaços extras e mantendo
+        os acentos.
+    """
     return json.dumps(
         build_document_graph(document),
         ensure_ascii=False,
