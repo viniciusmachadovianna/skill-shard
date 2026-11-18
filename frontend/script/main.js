@@ -98,8 +98,8 @@ function syncSidebarState() {
     rightPanelToggle.dataset.i18nAria = rightHidden ? 'right-panel-expand' : 'right-panel-collapse';
     rightPanelToggle.dataset.i18nTitle = rightHidden ? 'right-panel-expand' : 'right-panel-collapse';
 
-    sidebarToggleIcon.src = leftHidden ? 'assets/icons/left_panel_open.svg' : 'assets/icons/left_panel_close.svg';
-    rightPanelToggleIcon.src = rightHidden ? 'assets/icons/right_panel_open.svg' : 'assets/icons/right_panel_close.svg';
+    sidebarToggleIcon.src = leftHidden ? 'assets/icons/right.svg' : 'assets/icons/left.svg';
+    rightPanelToggleIcon.src = rightHidden ? 'assets/icons/left.svg' : 'assets/icons/right.svg';
 
     applyLanguage(getCurrentLanguage());
 }

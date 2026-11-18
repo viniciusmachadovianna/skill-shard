@@ -36,16 +36,27 @@
 .app-shell.is-resizing .panel-resize-handle::after { opacity: .8; }
 .panel-resize-handle:focus-visible { outline: none; }
 .panel-resize-handle[hidden] { display: none; }
-.sidebar.is-collapsed { overflow: hidden; }
 .sidebar.is-collapsed {
-    width: 32px;
-    min-width: 32px;
+    overflow: visible;
+    width: 0;
+    min-width: 0;
+    border-right: 0;
 }
-.sidebar.is-collapsed .brand { display: none; }
-.sidebar.is-collapsed .sidebar-top > :not(.panel-bar),
+/* Collapsed: only the logotype stays, floating over the workspace heading. */
+.sidebar.is-collapsed .brand {
+    position: absolute;
+    z-index: 4;
+    top: 0;
+    left: 0;
+    height: 51px;
+    padding: 0 21px;
+    border-bottom: 0;
+}
+.sidebar.is-collapsed .sidebar-top > :not(.panel-bar):not(.brand),
 .sidebar.is-collapsed .sidebar-bottom {
-    visibility: hidden;
+    display: none;
 }
+.sidebar.is-collapsed .panel-bar { border-bottom: 0; }
 .sidebar.is-collapsed .panel-bar {
     justify-content: center;
     padding: 0;
@@ -64,7 +75,7 @@
     background: var(--panel);
 }
 .right-panel-bar { justify-content: flex-start; gap: 12px; }
-.right-panel.is-collapsed { overflow: hidden; }
+.right-panel.is-collapsed { overflow: visible; border-left: 0; }
 .right-panel.is-collapsed .panel-bar {
     justify-content: center;
     padding: 0;
@@ -142,29 +153,40 @@
 .right-panel-graph .entity-graph-inspector { max-height: 160px; padding: 10px; }
 .right-panel-preview .document-preview { margin-top: 0; }
 .right-panel-preview .document-preview-content { height: min(28vh, 240px); min-height: 160px; }
+/* Floating edge tab straddling the inner edge of each side panel. */
 .panel-toggle {
+    position: absolute;
+    z-index: 5;
+    top: 50%;
     display: grid;
     place-items: center;
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 56px;
     padding: 0;
     border: 1px solid var(--line);
-    border-radius: 50%;
-    background: var(--surface);
-    color: var(--text);
+    background: #1b252d;
     cursor: pointer;
-    font-family: var(--mono);
-    font-size: 14px;
-    line-height: 1;
+    transform: translateY(-50%);
+    transition: border-color .15s ease, background .15s ease;
+}
+.sidebar-toggle {
+    right: -18px;
+    border-left: 0;
+    border-radius: 0 8px 8px 0;
+}
+.right-panel-toggle {
+    left: -18px;
+    border-right: 0;
+    border-radius: 8px 0 0 8px;
 }
 .panel-toggle img {
     display: block;
-    width: 17px;
-    height: 17px;
+    width: 18px;
+    height: 18px;
     object-fit: contain;
     pointer-events: none;
 }
-.panel-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.panel-toggle:hover { border-color: var(--cyan); background: #24323c; }
 .panel-bar {
     display: flex;
     height: 44px;
