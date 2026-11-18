@@ -52,19 +52,11 @@
     border-bottom: 0;
 }
 .sidebar.is-collapsed .brand-copy { display: none; }
-.sidebar.is-collapsed .sidebar-top > :not(.panel-bar):not(.brand),
+.sidebar.is-collapsed .sidebar-top > :not(.brand),
 .sidebar.is-collapsed .sidebar-bottom {
     display: none;
 }
-.sidebar.is-collapsed .panel-bar { border-bottom: 0; }
-.sidebar.is-collapsed .panel-bar {
-    justify-content: center;
-    padding: 0;
-}
 .sidebar.is-collapsed .sidebar-top { padding: 0; }
-.sidebar.is-collapsed .panel-bar > span {
-    display: none;
-}
 .right-panel {
     position: fixed;
     z-index: 20;

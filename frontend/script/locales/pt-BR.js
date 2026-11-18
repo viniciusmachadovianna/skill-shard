@@ -1,7 +1,6 @@
 /** Textos da interface em português do Brasil. Toda chave aqui precisa existir em en.js. */
 export default {
     'system-status': 'SISTEMA LOCAL ONLINE',
-    'workspace': 'ESPAÇO DE TRABALHO',
     'conversations': 'CONVERSAS',
     'new-conversation': 'NOVA CONVERSA',
     'new-investigation': 'Nova investigação',

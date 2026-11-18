@@ -1,7 +1,6 @@
 /** Textos da interface em inglês. Toda chave aqui precisa existir em pt-BR.js. */
 export default {
     'system-status': 'LOCAL SYSTEM ONLINE',
-    'workspace': 'WORKSPACE',
     'conversations': 'CONVERSATIONS',
     'new-conversation': 'NEW CONVERSATION',
     'new-investigation': 'New investigation',
