@@ -47,10 +47,11 @@
     z-index: 4;
     top: 0;
     left: 0;
-    height: 51px;
+    height: 64px;
     padding: 0 21px;
     border-bottom: 0;
 }
+.sidebar.is-collapsed .brand-copy { display: none; }
 .sidebar.is-collapsed .sidebar-top > :not(.panel-bar):not(.brand),
 .sidebar.is-collapsed .sidebar-bottom {
     display: none;
