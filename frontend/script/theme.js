@@ -42,7 +42,7 @@ try {
     if (savedTheme === 'light' || savedTheme === 'dark') applyTheme(savedTheme);
 } catch (error) {
     console.error('Could not load the saved theme preference.', error);
-    showToast(t('theme-load-error'));
+    showToast(t('theme-load-error'), 'error');
 }
 
 themeToggle.addEventListener('click', () => {
@@ -52,6 +52,6 @@ themeToggle.addEventListener('click', () => {
         localStorage.setItem('skill-shard-theme', theme);
     } catch (error) {
         console.error('Could not save the theme preference.', error);
-        showToast(t('theme-save-error'));
+        showToast(t('theme-save-error'), 'error');
     }
 });

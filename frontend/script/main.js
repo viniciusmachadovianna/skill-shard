@@ -12,6 +12,8 @@ import { applyLanguage, getCurrentLanguage, initializeLanguage, onLanguageChange
 import { clearChat, initializeChat, cancelPendingResponse } from './chat.js';
 import { initializeKnowledgeBase } from './knowledge-base.js';
 import { initializeEntityGraph, renderAnswerGraph } from './entity-graph.js';
+import { showToast } from './toast.js';
+import { listModels } from './api.js';
 import { $ } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,10 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const appShell = $('.app-shell');
 
-const toast = $('#toast');
-let toastTimeout;
-
-const informationModal = $('.information-modal');
+const informationModal = $('#brand');
 const informationDialog = $('#information-dialog');
 const informationClose = $('#information-close');
 const adjustmentsToggle = $('#adjustments-toggle');
@@ -168,7 +167,7 @@ function deleteConversation(entry) {
 }
 
 const chat = initializeChat({
-    onEmptyExport: () => showToast(t('export-empty')),
+    onEmptyExport: () => showToast(t('export-empty'), 'alert'),
     onRelationalResponse: (graph) => {
         rightPanel.classList.remove('is-collapsed');
         syncSidebarState();
@@ -323,7 +322,7 @@ conversationList.addEventListener('click', (event) => {
             if (newName === null) return;
             const trimmedName = newName.trim();
             if (!trimmedName) {
-                showToast(t('conversation-name-empty'));
+                showToast(t('conversation-name-empty'), 'alert');
                 return;
             }
             delete title.dataset.i18n;

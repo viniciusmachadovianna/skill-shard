@@ -381,7 +381,7 @@ function renderAssistantPreview(documents) {
 
 function reportStorageError(error, showToast) {
     console.error('Could not update the local knowledge base:', error);
-    showToast(t('knowledge-storage-error'));
+    showToast(t('knowledge-storage-error'), 'error');
 }
 
 /**
@@ -424,7 +424,7 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
             await indexEnabledDocuments();
         } catch (error) {
             console.error('Could not index enabled documents:', error);
-            showToast(t('document-indexing-error'));
+            showToast(t('document-indexing-error'), 'error');
         }
     }
 
@@ -440,7 +440,7 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
                 repositoryDocumentsChanged = await synchronizeRepositoryDocuments();
             } catch (error) {
                 console.error('Could not load repository documents:', error);
-                showToast(t('repository-documents-error'));
+                showToast(t('repository-documents-error'), 'error');
             }
         }
 
@@ -457,7 +457,7 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
                 await indexEnabledDocuments();
             } catch (error) {
                 console.error('Could not index enabled documents:', error);
-                showToast(t('document-indexing-error'));
+                showToast(t('document-indexing-error'), 'error');
             }
         }
     }
@@ -509,7 +509,7 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
         fileInput.value = '';
         await refreshDocuments({ index: true });
 
-        if (errors.length) showToast(errors.join(' '));
+        if (errors.length) showToast(errors.join(' '), 'error');
         else if (addedCount) showToast(t('documents-added').replace('{count}', String(addedCount)));
     });
 
@@ -545,7 +545,7 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
             showToast(t('document-deleted'));
         } catch (error) {
             console.error('Could not delete the document from the local knowledge base:', error);
-            showToast(t('document-backend-delete-error'));
+            showToast(t('document-backend-delete-error'), 'error');
         }
     });
 
