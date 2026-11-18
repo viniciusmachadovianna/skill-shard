@@ -134,7 +134,7 @@ export default {
     'system-telemetry': 'TELEMETRIA DO SISTEMA',
     'inference-engine': 'Motor de inferência',
     'chunking-overlap': 'Sobreposição de chunks',
-    'theme': 'Tema',
+    'language': 'Idioma',
     'lm-model': 'Modelo de IA',
     'lm-model-loading': 'Carregando…',
     'lm-model-unavailable': 'Modelos indisponíveis',

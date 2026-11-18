@@ -134,7 +134,7 @@ export default {
     'system-telemetry': 'SYSTEM TELEMETRY',
     'inference-engine': 'Inference engine',
     'chunking-overlap': 'Chunking overlap',
-    'theme': 'Theme',
+    'language': 'Language',
     'lm-model': 'LM Model',
     'lm-model-loading': 'Loading…',
     'lm-model-unavailable': 'Models unavailable',

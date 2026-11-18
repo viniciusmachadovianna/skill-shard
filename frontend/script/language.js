@@ -159,11 +159,15 @@ export function initializeLanguage() {
     const savedLanguage = getStoredLanguage();
     applyLanguage(savedLanguage);
 
-    const languageToggle = document.getElementById('language-toggle');
-    if (!languageToggle) return;
+    const languageSelect = document.getElementById('language-select');
+    if (!languageSelect) return;
 
-    languageToggle.addEventListener('click', () => {
-        toggleLanguage();
+    languageSelect.value = getCurrentLanguage();
+    languageSelect.addEventListener('change', () => {
+        const next = normalizeLanguage(languageSelect.value);
+        if (next === getCurrentLanguage()) return;
+        applyLanguage(next);
+        languageChangeListeners.forEach((listener) => listener(next));
     });
 }
 
