@@ -1,9 +1,5 @@
-refs/
-backend/data/
 .env
 .vscode/
 venv/
-temp.md
 *.pyc
-doc.md
 data/

@@ -29,7 +29,7 @@ O sistema permite:
 2. No Windows, ative o ambiente virtual com `.\venv\Scripts\Activate`.
 3. No Debian ou Ubuntu, ative o ambiente virtual com `source venv/bin/activate`.
 4. Instale as dependências do projeto com `python3 -m pip install -r requirements.txt`.
-5. Na raiz do repositório, configure `LLM_API_KEY` e `LLM_MODEL_ID` no arquivo `.env`. Use o arquivo `env.example` como referência. [Consulte as chaves API do Gemini](https://aistudio.google.com/api-keys)
+5. Na raiz do repositório, configure `LLM_API_KEY` e `LLM_MODEL_ID` no arquivo `.env`. Use o arquivo `.env.example` como referência. [Consulte as chaves API do Gemini](https://aistudio.google.com/api-keys)
 6. Em um terminal na raiz do repositório, entre na pasta `backend` com `cd backend` e inicie o backend com `python -m uvicorn app.main:app --reload`. O caminho `app.main:app` é necessário porque os módulos do backend importam a partir de `app`.
 7. Em outro terminal, inicie o servidor da interface na pasta `frontend` com `python -m http.server 5500` e abra `http://localhost:5500` no navegador.
 8. Ao carregar a interface, os documentos habilitados são sincronizados com o backend para armazenamento e indexação. O seletor de modo oferece: **LLM**, que envia somente a pergunta; **RAG**, que recupera trechos por embeddings; e **graphrag**, que também fornece ao modelo as relações de entidades encontradas nos trechos recuperados e exibe essas relações no gráfico.
@@ -52,21 +52,39 @@ Depois de ativar e indexar documentos, abra **Base de conhecimento → Visualiza
 
 ## Arquitetura
 
+Estrutura planejada para o backend. Os arquivos marcados com **[planejado]** ainda não existem e fazem parte da refatoração prevista; os comentários descrevem a responsabilidade planejada de cada módulo.
+
 backend/ <br>
 ├── app/ <br>
-│ ├── ingestion/ # extração de documentos, divisão em trechos e embeddings <br>
-
-frontend/ <br>
-├── index.html <br>
-├── style/ <br>
-└── script/ <br>
+│   ├── main.py              # FastAPI app + routes only <br>
+│   ├── config.py            # all env vars, constants (models, top_k, timeouts), one client <br>
+│   ├── schemas.py           # [planejado] Pydantic request/response models <br>
+│   ├── pipeline.py          # [planejado] answer_llm / answer_rag / answer_graphrag: one function per mode <br>
+│   ├── ingestion/ <br>
+│   │   ├── loader.py <br>
+│   │   ├── chunker.py <br>
+│   │   └── documents.py     # [planejado] build_document_chunks, load_repository_documents <br>
+│   ├── storage/             # [planejado] <br>
+│   │   └── database.py      # [planejado] connection + schema creation in one place <br>
+│   ├── retrieval/ <br>
+│   │   ├── embeddings.py    # [planejado] Gemini embedding calls + caching <br>
+│   │   ├── vector_store.py  # persist/load/delete chunks <br>
+│   │   ├── search.py        # [planejado] similarity ranking (top_k, future threshold) <br>
+│   │   └── entity_graph.py  # graph extraction + filtering to retrieved chunks <br>
+│   └── generation/ <br>
+│       ├── llm_client.py <br>
+│       └── prompt_builder.py  # all context formatting: chunks, relationships, citations <br>
+├── tests/ <br>
+└── data/
 
 ## Tecnologias
 
 - **Interface:** HTML, CSS e JavaScript puro
-- **Backend:** Python
-- **LLM:** Gemini (API)
+- **Backend:** Python, [Uvicorn ASGI server](https://uvicorn.dev/)
+- **LLM:** [Gemini API](https://aistudio.google.com/docs),[Python genai](https://googleapis.github.io/python-genai/)
 - **Armazenamento vetorial:** SQLite local (`backend/data/vectors.sqlite3`)
+- **Cálculo de cosseno de similaridade:** [Scikit-learn](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise.cosine_similarity.html)
+- **Visualização do grafo:** vis-network 10.1.5, incluído localmente
 
 ### Recursos visuais
 
