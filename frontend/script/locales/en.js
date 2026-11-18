@@ -34,7 +34,7 @@ export default {
     'knowledge-local-note': 'Repository documents from data/ are listed automatically and start disabled. Enabled originals, text chunks, and embeddings are stored in the local backend. Gemini generates embeddings and answers.',
     'document-preview-title': 'DOCUMENT PREVIEW',
     'document-preview-select-label': 'Select an enabled document to preview',
-    'document-preview-empty': 'Enable a document in the knowledge base to preview it here.',
+    'document-preview-empty': 'Select a document',
     'document-preview-pdf-readd': 'Remove and add this PDF again to preview it.',
     'document-preview-error': 'This document preview could not be loaded.',
     'document-preview-no-text': 'This document does not contain readable text.',

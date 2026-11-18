@@ -30,7 +30,6 @@ const documentList = $('#knowledge-document-list');
 const emptyState = $('#knowledge-empty');
 const summary = $('#knowledge-summary');
 const knowledgeStatus = $('#knowledge-status');
-const previewSelect = $('#assistant-document-select');
 const previewEmpty = $('#assistant-document-empty');
 const previewText = $('#assistant-document-text');
 const previewPager = $('#assistant-document-pager');
@@ -281,6 +280,7 @@ function createDocumentRow(document) {
     const row = documentList.ownerDocument.createElement('li');
     row.className = 'knowledge-document';
     row.dataset.documentId = document.id;
+    row.classList.toggle('is-selected', document.id === selectedPreviewDocumentId);
 
     const icon = documentList.ownerDocument.createElement('img');
     icon.className = 'knowledge-document-icon';
@@ -377,27 +377,15 @@ function showPreviewMessage(key) {
 }
 
 async function renderAssistantPreview(documents, { resetChunk = false } = {}) {
-    const enabledDocuments = documents.filter((document) => document.enabled);
-    const selectedDocument = enabledDocuments.find((document) => document.id === selectedPreviewDocumentId)
-        ?? enabledDocuments[0];
-    const documentChanged = selectedDocument?.id !== selectedPreviewDocumentId;
-
-    selectedPreviewDocumentId = selectedDocument?.id;
-    previewSelect.replaceChildren(...enabledDocuments.map((document) => {
-        const option = documentList.ownerDocument.createElement('option');
-        option.value = document.id;
-        option.textContent = document.name;
-        return option;
-    }));
-    previewSelect.hidden = enabledDocuments.length === 0;
-    if (selectedDocument) previewSelect.value = selectedDocument.id;
+    const selectedDocument = documents.find((document) => document.id === selectedPreviewDocumentId);
+    if (!selectedDocument) selectedPreviewDocumentId = undefined;
 
     previewChunks = [];
     if (!selectedDocument) {
         showPreviewMessage('document-preview-empty');
         return;
     }
-    if (documentChanged || resetChunk) previewChunkIndex = 0;
+    if (resetChunk) previewChunkIndex = 0;
 
     if (selectedDocument.name.toLowerCase().endsWith('.pdf') && selectedDocument.encoding !== 'base64') {
         showPreviewMessage('document-preview-pdf-readd');
@@ -479,10 +467,6 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
         }
     }
 
-    previewSelect.addEventListener('change', () => {
-        selectedPreviewDocumentId = previewSelect.value;
-        renderAssistantPreview(currentDocuments, { resetChunk: true });
-    });
     previewPrevious.addEventListener('click', () => stepPreviewChunk(-1));
     previewNext.addEventListener('click', () => stepPreviewChunk(1));
 
@@ -588,7 +572,17 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
     documentList.addEventListener('click', async (event) => {
         if (!(event.target instanceof Element)) return;
         const deleteButton = event.target.closest('.knowledge-delete');
-        const row = deleteButton?.closest('.knowledge-document');
+        if (!deleteButton) {
+            const selectedRow = event.target.closest('.knowledge-document');
+            if (!selectedRow || event.target.closest('.knowledge-switch')) return;
+            selectedPreviewDocumentId = selectedRow.dataset.documentId;
+            documentList.querySelectorAll('.knowledge-document').forEach((item) => {
+                item.classList.toggle('is-selected', item === selectedRow);
+            });
+            renderAssistantPreview(currentDocuments, { resetChunk: true });
+            return;
+        }
+        const row = deleteButton.closest('.knowledge-document');
         if (!row) return;
 
         try {

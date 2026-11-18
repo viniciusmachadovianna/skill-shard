@@ -34,7 +34,7 @@ export default {
     'knowledge-local-note': 'Documentos da pasta data/ são listados automaticamente e começam desativados. Originais ativados, trechos e embeddings ficam no backend local. O Gemini gera os embeddings e as respostas.',
     'document-preview-title': 'PRÉVIA DO DOCUMENTO',
     'document-preview-select-label': 'Selecione um documento ativado para visualizar',
-    'document-preview-empty': 'Ative um documento na base de conhecimento para visualizá-lo aqui.',
+    'document-preview-empty': 'Selecione um documento',
     'document-preview-pdf-readd': 'Remova e adicione este PDF novamente para visualizá-lo.',
     'document-preview-error': 'Não foi possível carregar a prévia deste documento.',
     'document-preview-no-text': 'Este documento não contém texto legível.',

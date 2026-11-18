@@ -152,6 +152,9 @@
     scrollbar-width: thin;
 }
 .knowledge-document-list[hidden] { display: none; }
+.knowledge-document { cursor: pointer; }
+.knowledge-document:hover,
+.knowledge-document.is-selected { background: var(--surface-selected); }
 .knowledge-document { display: flex; min-height: 78px; align-items: center; gap: 20px; border-bottom: 1px solid var(--line); }
 .knowledge-document-icon { width: 20px; height: 20px; flex: 0 0 29px; object-fit: contain; text-align: left; }
 .knowledge-document-copy { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; }
