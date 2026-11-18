@@ -45,6 +45,7 @@ const sidebarToggle = $('.sidebar-toggle');
 const sidebarToggleIcon = sidebarToggle.querySelector('img');
 const sidebarResizeHandle = $('.sidebar-resize-handle');
 const rightPanel = $('.right-panel');
+const rightPanelResizeHandle = $('.right-panel-resize-handle');
 const rightPanelToggle = $('.right-panel-toggle');
 const rightPanelToggleIcon = rightPanelToggle.querySelector('img');
 if (window.matchMedia('(max-width: 800px)').matches) rightPanel.classList.add('is-collapsed');
@@ -78,6 +79,7 @@ function syncSidebarState() {
     appShell.classList.toggle('sidebar-collapsed', leftHidden);
     appShell.classList.toggle('right-panel-collapsed', rightHidden);
     sidebarResizeHandle.hidden = leftHidden;
+    rightPanelResizeHandle.hidden = rightHidden;
 
     sidebarToggle.dataset.i18nAria = leftHidden ? 'sidebar-expand' : 'sidebar-collapse';
     sidebarToggle.dataset.i18nTitle = leftHidden ? 'sidebar-expand' : 'sidebar-collapse';
@@ -184,6 +186,7 @@ initializeEntityGraph();
 
 sidebarToggle.addEventListener('click', () => {
     sidebar.classList.toggle('is-collapsed');
+    enforceSidebarMinimum();
     syncSidebarState();
 });
 
@@ -192,17 +195,36 @@ rightPanelToggle.addEventListener('click', () => {
     syncSidebarState();
 });
 
+const sidebarBrand = sidebar.querySelector('.brand');
+const sidebarBrandMark = sidebar.querySelector('.brand-mark');
+const sidebarBrandCopy = sidebar.querySelector('.brand-copy');
+
+function getBrandMinimumWidth() {
+    const copyWidth = sidebarBrandCopy.offsetWidth;
+    if (!copyWidth) return 0;
+    const brandStyle = getComputedStyle(sidebarBrand);
+    const topStyle = getComputedStyle(sidebarBrand.parentElement);
+    const horizontal = (style, ...sides) => sides.reduce((sum, side) => sum + parseFloat(style[side]) || 0, 0);
+    return Math.ceil(
+        sidebarBrandMark.offsetWidth + (parseFloat(brandStyle.columnGap) || 0) + copyWidth
+        + horizontal(brandStyle, 'paddingLeft', 'paddingRight')
+        + horizontal(topStyle, 'paddingLeft', 'paddingRight') + 1
+    );
+}
+
+function enforceSidebarMinimum() {
+    if (sidebar.classList.contains('is-collapsed')) return;
+    const { minimum } = getSidebarWidthBounds();
+    if (sidebar.getBoundingClientRect().width < minimum) setSidebarWidth(minimum);
+}
+
 function getSidebarWidthBounds() {
     const compactLayout = window.matchMedia('(max-width: 800px)').matches;
     const narrowLayout = window.matchMedia('(max-width: 1050px)').matches;
     const minimumMainWidth = compactLayout ? 0 : narrowLayout ? 380 : 420;
-    const rightPanelWidth = compactLayout
-        ? 32
-        : rightPanel.classList.contains('is-collapsed')
-            ? 32
-            : narrowLayout ? 260 : 306;
+    const rightPanelWidth = compactLayout ? 32 : rightPanel.getBoundingClientRect().width;
     const defaultWidth = compactLayout ? 190 : narrowLayout ? 205 : 232;
-    const minimum = 160;
+    const minimum = Math.max(160, getBrandMinimumWidth());
     const maximum = Math.max(defaultWidth, minimum, Math.min(420, appShell.clientWidth - minimumMainWidth - rightPanelWidth));
     return { minimum, maximum };
 }
@@ -263,11 +285,87 @@ sidebarResizeHandle.addEventListener('keydown', (event) => {
     setSidebarWidth(currentWidth + direction * (event.shiftKey ? 30 : 10));
 });
 
+function getRightPanelWidthBounds() {
+    const compactLayout = window.matchMedia('(max-width: 800px)').matches;
+    const narrowLayout = window.matchMedia('(max-width: 1050px)').matches;
+    const minimumMainWidth = narrowLayout ? 380 : 420;
+    const defaultWidth = narrowLayout ? 260 : 306;
+    const minimum = 260;
+    const sidebarWidth = compactLayout ? 0 : sidebar.getBoundingClientRect().width;
+    const maximum = Math.max(defaultWidth, minimum, Math.min(560, appShell.clientWidth - minimumMainWidth - sidebarWidth));
+    return { minimum, maximum };
+}
+
+function setRightPanelWidth(width, bounds = getRightPanelWidthBounds()) {
+    const { minimum, maximum } = bounds;
+    const boundedWidth = Math.round(Math.min(maximum, Math.max(minimum, width)));
+    appShell.style.setProperty('--right-panel-width', `${boundedWidth}px`);
+    rightPanelResizeHandle.setAttribute('aria-valuemin', String(minimum));
+    rightPanelResizeHandle.setAttribute('aria-valuemax', String(maximum));
+    rightPanelResizeHandle.setAttribute('aria-valuenow', String(boundedWidth));
+}
+
+let rightPanelWidthAdjusted = false;
+
+function updateRightPanelResizeHandle() {
+    const { minimum, maximum } = getRightPanelWidthBounds();
+    rightPanelResizeHandle.setAttribute('aria-valuemin', String(minimum));
+    rightPanelResizeHandle.setAttribute('aria-valuemax', String(maximum));
+    rightPanelResizeHandle.setAttribute('aria-valuenow', String(Math.round(rightPanel.getBoundingClientRect().width)));
+}
+
+rightPanelResizeHandle.addEventListener('pointerdown', (event) => {
+    if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    event.preventDefault();
+    const startX = event.clientX;
+    const startWidth = rightPanel.getBoundingClientRect().width;
+    const widthBounds = getRightPanelWidthBounds();
+    appShell.classList.add('is-resizing');
+    rightPanelResizeHandle.setPointerCapture(event.pointerId);
+
+    const resize = (pointerEvent) => {
+        if (pointerEvent.pointerId === event.pointerId) {
+            rightPanelWidthAdjusted = true;
+            // The handle is on the panel's left edge, so dragging left widens it.
+            setRightPanelWidth(startWidth - (pointerEvent.clientX - startX), widthBounds);
+        }
+    };
+    const stopResizing = (pointerEvent) => {
+        if (pointerEvent.pointerId !== event.pointerId) return;
+        rightPanelResizeHandle.removeEventListener('pointermove', resize);
+        rightPanelResizeHandle.removeEventListener('pointerup', stopResizing);
+        rightPanelResizeHandle.removeEventListener('pointercancel', stopResizing);
+        appShell.classList.remove('is-resizing');
+    };
+
+    rightPanelResizeHandle.addEventListener('pointermove', resize);
+    rightPanelResizeHandle.addEventListener('pointerup', stopResizing);
+    rightPanelResizeHandle.addEventListener('pointercancel', stopResizing);
+});
+
+rightPanelResizeHandle.addEventListener('keydown', (event) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    const direction = event.key === 'ArrowLeft' ? 1 : -1;
+    rightPanelWidthAdjusted = true;
+    setRightPanelWidth(rightPanel.getBoundingClientRect().width + direction * (event.shiftKey ? 30 : 10));
+});
+
+enforceSidebarMinimum();
 updateSidebarResizeHandle();
+updateRightPanelResizeHandle();
 window.addEventListener('resize', () => {
     if (sidebarWidthAdjusted) setSidebarWidth(sidebar.getBoundingClientRect().width);
+    if (rightPanelWidthAdjusted) setRightPanelWidth(rightPanel.getBoundingClientRect().width);
+    enforceSidebarMinimum();
     updateSidebarResizeHandle();
+    updateRightPanelResizeHandle();
 });
+
+new ResizeObserver(() => {
+    enforceSidebarMinimum();
+    updateSidebarResizeHandle();
+}).observe(sidebarBrandCopy);
 
 syncSidebarState();
 retrievalMode.addEventListener('change', updateRetrievalModeIcon);
