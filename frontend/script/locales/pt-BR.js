@@ -143,7 +143,6 @@ export default {
     'sidebar-collapse': 'Ocultar barra lateral',
     'sidebar-expand': 'Mostrar barra lateral',
     'sidebar-resize': 'Redimensionar barra lateral',
-    'right-panel-resize': 'Redimensionar painel do explorador de dados',
     'language-toggle': 'Alternar idioma',
     'prompt-analyze': 'Analise os principais achados dos meus documentos.',
     'prompt-connect': 'Conecte os pontos ao longo da minha base de conhecimento.',

@@ -3,38 +3,21 @@
     .welcome-content { margin-top: 95px; }
 }
 @media (max-width: 1050px) {
-    .app-shell { --sidebar-width: 205px; --right-panel-width: 260px; grid-template-columns: var(--sidebar-width) minmax(380px, 1fr) var(--right-panel-width); }
-    .app-shell.sidebar-collapsed { grid-template-columns: 0 minmax(380px, 1fr) var(--right-panel-width); }
-    .app-shell.right-panel-collapsed { grid-template-columns: var(--sidebar-width) minmax(380px, 1fr) 0; }
-    .app-shell.sidebar-collapsed.right-panel-collapsed { grid-template-columns: 0 minmax(380px, 1fr) 0; }
+    .app-shell { --sidebar-width: 205px; grid-template-columns: var(--sidebar-width) minmax(380px, 1fr); }
+    .app-shell.sidebar-collapsed { grid-template-columns: 0 minmax(380px, 1fr); }
     .assistant-copy { padding-right: 14px; padding-left: 14px; }
 }
 @media (max-width: 800px) {
     .app-shell { --sidebar-width: 190px; grid-template: minmax(0, 1fr) / var(--sidebar-width) minmax(0, 1fr); }
     .app-shell.sidebar-collapsed { grid-template: minmax(0, 1fr) / 0 minmax(0, 1fr); }
-    .app-shell.right-panel-collapsed { grid-template: minmax(0, 1fr) / var(--sidebar-width) minmax(0, 1fr); }
-    .app-shell.sidebar-collapsed.right-panel-collapsed { grid-template: minmax(0, 1fr) / 0 minmax(0, 1fr); }
-    .right-panel-resize-handle { display: none; }
-    .right-panel {
-        position: fixed;
-        z-index: 3;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: min(85vw, 320px);
-        max-width: calc(100vw - 16px);
-        box-shadow: 0 0 36px #0008;
-    }
-    .right-panel.is-collapsed { width: 0; border-left: 0; }    .welcome-content { margin-top: 48px; }
+    .welcome-content { margin-top: 48px; }
 }
 @media (max-width: 560px) {
     html, body { height: 100%; }
     body { overflow: auto; }
     .app-shell { min-height: 100dvh; height: auto; grid-template: auto / 1fr; }
-    .app-shell.sidebar-collapsed,
-    .app-shell.right-panel-collapsed,
-    .app-shell.sidebar-collapsed.right-panel-collapsed { grid-template: auto / 1fr; }
-    .right-panel { top: 0; }
+    .app-shell.sidebar-collapsed { grid-template: auto / 1fr; }
+    .right-panel { top: 8px; right: 8px; }
     .brand-mark { width: 24px; height: 24px; }
     .brand-copy strong { font-size: 19px; }
     .brand-copy small { font-size: 12px; }

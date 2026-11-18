@@ -143,7 +143,6 @@ export default {
     'sidebar-collapse': 'Hide workspace sidebar',
     'sidebar-expand': 'Show workspace sidebar',
     'sidebar-resize': 'Resize workspace sidebar',
-    'right-panel-resize': 'Resize data explorer panel',
     'language-toggle': 'Switch language',
     'prompt-analyze': 'Analyze the key findings in my documents.',
     'prompt-connect': 'Connect the dots across my knowledge base.',

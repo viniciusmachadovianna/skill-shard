@@ -1,22 +1,16 @@
 /* App shell grid and its collapsed / resizing states. */
 .app-shell {
     --sidebar-width: 232px;
-    --right-panel-width: 306px;
+    --right-panel-width: 380px;
     display: grid;
     width: 100%;
     height: 100dvh;
     min-height: 540px;
-    grid-template: minmax(0, 1fr) / var(--sidebar-width) minmax(420px, 1fr) var(--right-panel-width);
+    grid-template: minmax(0, 1fr) / var(--sidebar-width) minmax(420px, 1fr);
     background: var(--bg);
 }
 .app-shell.sidebar-collapsed {
-    grid-template-columns: 0 minmax(420px, 1fr) var(--right-panel-width);
-}
-.app-shell.right-panel-collapsed {
-    grid-template-columns: var(--sidebar-width) minmax(420px, 1fr) 0;
-}
-.app-shell.sidebar-collapsed.right-panel-collapsed {
-    grid-template-columns: 0 minmax(420px, 1fr) 0;
+    grid-template-columns: 0 minmax(420px, 1fr);
 }
 /* Leave room for the floating logotype when the sidebar is collapsed. */
 .app-shell.sidebar-collapsed .workspace-heading { padding-left: 260px; }
