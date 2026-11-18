@@ -31,6 +31,7 @@ const documentList = $('#knowledge-document-list');
 const emptyState = $('#knowledge-empty');
 const summary = $('#knowledge-summary');
 const knowledgeStatus = $('#knowledge-status');
+const previewTitle = $('#document-preview-title');
 const previewEmpty = $('#assistant-document-empty');
 const previewText = $('#assistant-document-text');
 const previewPager = $('#assistant-document-pager');
@@ -383,6 +384,8 @@ function showPreviewMessage(key) {
 async function renderAssistantPreview(documents, { resetChunk = false } = {}) {
     const selectedDocument = documents.find((document) => document.id === selectedPreviewDocumentId);
     if (!selectedDocument) selectedPreviewDocumentId = undefined;
+    previewTitle.textContent = selectedDocument?.name ?? t('document-preview-title');
+    previewTitle.title = selectedDocument?.name ?? '';
 
     previewChunks = [];
     if (!selectedDocument) {
