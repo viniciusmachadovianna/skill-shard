@@ -270,7 +270,7 @@ function exportConversation(onEmptyExport) {
     const url = URL.createObjectURL(file);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'deviant-investigation.txt';
+    link.download = 'skill-shard.txt';
     link.click();
     URL.revokeObjectURL(url);
 }

@@ -297,7 +297,7 @@ function normalizeLanguage(language) {
 
 function getStoredLanguage() {
     try {
-        const stored = localStorage.getItem('deviant-language');
+        const stored = localStorage.getItem('skill-shard-language');
         return normalizeLanguage(stored);
     } catch (error) {
         return FALLBACK_LANGUAGE;
@@ -356,7 +356,7 @@ export function applyLanguage(language = getStoredLanguage()) {
     });
 
     try {
-        localStorage.setItem('deviant-language', current);
+        localStorage.setItem('skill-shard-language', current);
     } catch (error) {
         console.warn('Could not save language preference.', error);
     }
