@@ -19,6 +19,7 @@ const DATABASE_NAME = 'skill-shard-knowledge-base';
 const DATABASE_VERSION = 1;
 const STORE_NAME = 'documents';
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
+const DOCUMENT_ICON_EXTENSIONS = new Set(['CSV', 'JSON', 'MD', 'PDF', 'TXT']);
 const SUPPORTED_EXTENSIONS = new Set(['txt', 'md', 'csv', 'json', 'pdf']);
 
 const dialog = $('#knowledge-dialog');
@@ -284,7 +285,10 @@ function createDocumentRow(document) {
 
     const icon = documentList.ownerDocument.createElement('img');
     icon.className = 'knowledge-document-icon';
-    icon.src = 'assets/icons/database.svg';
+    const extension = document.name.split('.').pop().toUpperCase();
+    icon.src = DOCUMENT_ICON_EXTENSIONS.has(extension)
+        ? `assets/icons/file${extension}.svg`
+        : 'assets/icons/database.svg';
     icon.alt = '';
     icon.setAttribute('aria-hidden', 'true');
 
