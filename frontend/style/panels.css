@@ -93,8 +93,7 @@
     scrollbar-color: var(--scrollbar-thumb) transparent;
     scrollbar-width: thin;
 }
-.right-panel-graph,
-.right-panel-preview { min-width: 0; }
+.right-panel-graph { min-width: 0; }
 .right-panel-graph .knowledge-dialog-header { align-items: flex-start; gap: 8px; }
 .right-panel-graph .knowledge-dialog-header h2 { font-size: 19px; }
 .right-panel-graph .knowledge-dialog-header p { margin-top: 4px; font-size: 12px; }
@@ -151,8 +150,6 @@
     min-height: 200px;
 }
 .right-panel-graph .entity-graph-inspector { max-height: 160px; padding: 10px; }
-.right-panel-preview .document-preview { margin-top: 0; }
-.right-panel-preview .document-preview-content { height: min(28vh, 240px); min-height: 160px; }
 /* Floating edge tab straddling the inner edge of each side panel. */
 .panel-toggle {
     position: absolute;

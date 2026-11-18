@@ -31,7 +31,7 @@ const adjustmentsDialog = $('#adjustments-dialog');
 const adjustmentsClose = $('#adjustments-close');
 const assistantCopy = $('#assistant-copy');
 const entityGraphDialog = $('#entity-graph-dialog');
-$('#right-panel-preview').append($('#assistant-document-preview'));
+$('#knowledge-dialog').append($('#assistant-document-preview'));
 const entityGraphHeader = entityGraphDialog.querySelector('.knowledge-dialog-header');
 entityGraphHeader.querySelector('#entity-graph-close').remove();
 entityGraphHeader.remove();
