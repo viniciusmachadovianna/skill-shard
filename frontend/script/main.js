@@ -342,6 +342,7 @@ function syncRightPanelMaxHeight() {
     const natural = rightPanelBar.offsetHeight + getNaturalContentHeight() + frame;
     const viewportCap = Math.min(window.innerHeight * 0.8, 720);
     rightPanel.style.maxHeight = `${Math.ceil(Math.min(natural, viewportCap))}px`;
+    clampFloatingPanel();
 }
 
 const rightPanelContentObserver = new ResizeObserver(syncRightPanelMaxHeight);
@@ -355,6 +356,17 @@ window.addEventListener('resize', syncRightPanelMaxHeight);
 const COLLAPSED_ICON_SIZE = 44;
 const WORK_AREA_EDGE_GAP = 24;
 const WORK_AREA_VERTICAL_GAP = 16;
+const VIEWPORT_MARGIN = 8;
+
+// Keeps the expanded panel fully on screen, with a small margin on every side.
+function clampToViewport(left, top, width, height) {
+    const maxLeft = Math.max(VIEWPORT_MARGIN, window.innerWidth - width - VIEWPORT_MARGIN);
+    const maxTop = Math.max(VIEWPORT_MARGIN, window.innerHeight - height - VIEWPORT_MARGIN);
+    return {
+        left: Math.min(Math.max(VIEWPORT_MARGIN, left), maxLeft),
+        top: Math.min(Math.max(VIEWPORT_MARGIN, top), maxTop),
+    };
+}
 
 function placeCollapsedIcon(requestedTop) {
     const area = workArea.getBoundingClientRect();
@@ -374,8 +386,7 @@ function placeFloatingPanelAfterToggle() {
     const iconRect = rightPanel.getBoundingClientRect();
     const width = rightPanel.offsetWidth;
     const height = rightPanel.offsetHeight;
-    const left = Math.min(Math.max(0, iconRect.right - width), Math.max(0, window.innerWidth - width));
-    const top = Math.min(Math.max(0, iconRect.top), Math.max(0, window.innerHeight - height));
+    const { left, top } = clampToViewport(iconRect.right - width, iconRect.top, width, height);
     rightPanel.style.left = `${Math.round(left)}px`;
     rightPanel.style.top = `${Math.round(top)}px`;
 }
@@ -387,8 +398,7 @@ function clampFloatingPanel() {
     }
     if (!rightPanel.style.left) return;
     const rect = rightPanel.getBoundingClientRect();
-    const left = Math.min(Math.max(0, rect.left), Math.max(0, window.innerWidth - rect.width));
-    const top = Math.min(Math.max(0, rect.top), Math.max(0, window.innerHeight - 44));
+    const { left, top } = clampToViewport(rect.left, rect.top, rect.width, rect.height);
     rightPanel.style.left = `${Math.round(left)}px`;
     rightPanel.style.top = `${Math.round(top)}px`;
 }
@@ -419,8 +429,12 @@ rightPanelBar.addEventListener('pointerdown', (event) => {
             return;
         }
         const width = rightPanel.offsetWidth;
-        const left = Math.min(Math.max(0, rect.left + pointerEvent.clientX - startX), Math.max(0, window.innerWidth - width));
-        const top = Math.min(Math.max(0, rect.top + pointerEvent.clientY - startY), Math.max(0, window.innerHeight - 44));
+        const { left, top } = clampToViewport(
+            rect.left + pointerEvent.clientX - startX,
+            rect.top + pointerEvent.clientY - startY,
+            width,
+            rightPanel.offsetHeight,
+        );
         rightPanel.style.left = `${left}px`;
         rightPanel.style.top = `${top}px`;
     };
