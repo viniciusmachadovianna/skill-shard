@@ -86,26 +86,11 @@ function removeDocument(id) {
 }
 
 async function removeIndexedDocument(id) {
-    const response = await fetch(
-        `http://127.0.0.1:8000/documents?document_id=${encodeURIComponent(id)}`,
-        { method: 'DELETE' }
-    );
-    const result = await response.json();
-    if (!response.ok) {
-        throw new Error(typeof result.detail === 'string'
-            ? result.detail
-            : `Response status: ${response.status}`);
-    }
+    await api.deleteDocument(id);
 }
 
 async function synchronizeRepositoryDocuments() {
-    const response = await fetch('http://127.0.0.1:8000/documents?include_chunk_counts=true');
-    const repositoryDocuments = await response.json();
-    if (!response.ok) {
-        throw new Error(typeof repositoryDocuments.detail === 'string'
-            ? repositoryDocuments.detail
-            : `Response status: ${response.status}`);
-    }
+    const repositoryDocuments = await api.listRepositoryDocuments();
     if (!Array.isArray(repositoryDocuments) || repositoryDocuments.some((document) => (
         typeof document.id !== 'string'
         || !document.id.startsWith('repository:')
@@ -201,18 +186,7 @@ export async function getEnabledDocuments() {
 }
 
 async function requestDocumentIndex(documents) {
-    const response = await fetch('http://127.0.0.1:8000/index?include_chunk_counts=true', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ documents })
-    });
-
-    const result = await response.json();
-    if (!response.ok) {
-        throw new Error(typeof result.detail === 'string'
-            ? result.detail
-            : `Response status: ${response.status}`);
-    }
+    const result = await api.indexDocuments(documents);
     if (!Number.isInteger(result.indexed_chunks) || result.indexed_chunks < 0) {
         throw new Error('The API returned an invalid document indexing result.');
     }

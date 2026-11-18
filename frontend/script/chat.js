@@ -1,4 +1,5 @@
 import { $, $$ } from './utils.js';
+import * as api from './api.js';
 import { t } from './language.js';
 import { getEnabledDocuments } from './knowledge-base.js';
 
@@ -121,27 +122,15 @@ export function clearChat() {
 }
 
 async function ask(question, mode, documentIds, signal) {
-    const response = await fetch('http://127.0.0.1:8000/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, mode, document_ids: documentIds }),
-        signal
-    });
-
-    const result = await response.json();
-    if (!response.ok) {
-        throw new Error(typeof result.detail === 'string'
-            ? result.detail
-            : `Response status: ${response.status}`);
-    }
+    const result = await api.askQuestion({ question, mode, documentIds, signal });
 
     const answer = result.answer;
     if (typeof answer !== 'string' || !answer.trim()) {
-        throw new Error('The API returned an invalid answer.');
+        throw new Error(t('api-invalid-answer'));
     }
 
     if (result.mode !== mode) {
-        throw new Error('The API returned a response for a different retrieval mode.');
+        throw new Error(t('api-mode-mismatch'));
     }
 
     return { answer, graph: result.graph };
@@ -219,14 +208,10 @@ async function checkBackendReadiness({ refresh = false } = {}) {
     updateBackendStatus();
 
     try {
-        const response = await fetch(
-            `http://127.0.0.1:8000/ready${refresh ? '?refresh=true' : ''}`,
-            { cache: 'no-store', signal: controller.signal }
-        );
-        const result = await response.json();
+        const { ok, result } = await api.fetchReadiness({ refresh, signal: controller.signal });
         const reason = result.detail?.reason ?? result.reason;
 
-        if (response.ok && result.ready) {
+        if (ok && result.ready) {
             modelReady = true;
             modelStatus = 'backend-ready';
         } else if (reason === 'configuration_missing') {
@@ -313,7 +298,7 @@ export function initializeChat({ onEmptyExport, onRelationalResponse }) {
         if (pendingRequestController) return;
 
         welcomeContent.hidden = true;
-        addMessage('OPERATOR / SS-800', message, 'user-prompt');
+        addMessage(t('message-operator'), message, 'user-prompt');
         promptInput.value = '';
         const controller = new AbortController();
         pendingRequestController = controller;
@@ -329,13 +314,13 @@ export function initializeChat({ onEmptyExport, onRelationalResponse }) {
             const result = await ask(message, mode, documentIds, controller.signal);
             if (controller.signal.aborted) return;
             markBackendReady();
-            addMessage('SS-800 / SYSTEM', result.answer, 'assistant-reply');
+            addMessage(t('message-system'),result.answer, 'assistant-reply');
             if (mode === 'graphrag') onRelationalResponse?.(result.graph);
         } catch (error) {
             if (controller.signal.aborted) return;
             console.error('Unable to get an answer from the API:', error);
             const detail = error instanceof Error ? `\n${error.message}` : '';
-            addMessage('SS-800 / SYSTEM', `${t('request-failed')}${detail}`, 'assistant-reply');
+            addMessage(t('message-system'),`${t('request-failed')}${detail}`, 'assistant-reply');
             checkBackendReadiness({ refresh: true });
         } finally {
             if (pendingRequestController === controller) {

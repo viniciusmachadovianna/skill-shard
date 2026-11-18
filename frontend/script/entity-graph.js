@@ -1,3 +1,4 @@
+import * as api from './api.js';
 import { t } from './language.js';
 import { $ } from './utils.js';
 
@@ -103,15 +104,14 @@ function validateGraph(graph) {
 }
 
 async function fetchGraph(documentIds) {
-    const url = new URL('http://127.0.0.1:8000/graph');
-    documentIds.forEach((documentId) => url.searchParams.append('document_ids', documentId));
-    const response = await fetch(url);
-    const result = await response.json();
-
-    if (!response.ok) {
-        throw new Error(typeof result.detail === 'string'
-            ? result.detail
-            : `${t('entity-graph-load-error')} (${response.status})`);
+    let result;
+    try {
+        result = await api.getGraph(documentIds);
+    } catch (error) {
+        if (error instanceof api.ApiError && typeof error.detail !== 'string') {
+            throw new Error(`${t('entity-graph-load-error')} (${error.status})`);
+        }
+        throw error;
     }
 
     return validateGraph(result);
