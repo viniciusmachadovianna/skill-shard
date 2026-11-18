@@ -17,8 +17,6 @@ Format: `[type] short summary in lowercase, imperative mood`
 | `[docs]` | README, this file, comments |
 | `[chore]` | Dependencies, ignore files, tooling |
 
-Use these exact spellings. Older commits also contain `[tests]`, `[refact]`, `[backend]` and `[readme]`; do not copy them.
-
 ## Running the tests
 
 The tests use `unittest` and live in `backend/tests/`. Activate the virtual environment, then run from `backend/`:

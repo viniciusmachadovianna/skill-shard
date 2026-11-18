@@ -1,8 +1,9 @@
 #python==3.15.2
-pip==26.3
 pypdf==6.20.1
 python-dotenv==1.2.4
 google-genai==2.31.0
 uvicorn==0.54.0
 fastapi==0.162.0
+pydantic==2.14.2
+httpx==0.28.1  # exigido pelo TestClient do FastAPI nos testes
 scikit-learn==1.9.1

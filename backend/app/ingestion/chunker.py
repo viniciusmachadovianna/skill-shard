@@ -25,9 +25,6 @@ trechos de um PDF, o que ajuda a inspecionar o resultado da divisão.
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent))
-from loader import load_pdf_text
-
 
 def chunk_text(
     text: str, source_file: str, chunk_size: int = 500, overlap: int = 50
@@ -125,6 +122,10 @@ def chunk_text_by_words(
 
 
 if __name__ == "__main__":
+    # Só para a execução direta: no topo do módulo, isto carregaria um segundo
+    # módulo "loader" dentro do servidor.
+    sys.path.append(str(Path(__file__).parent))
+    from loader import load_pdf_text
 
     if len(sys.argv) < 2:
         print("Uso: python chunker.py caminho/para/arquivo.pdf")

@@ -54,7 +54,6 @@ import sqlite3
 from contextlib import closing
 from pathlib import Path
 
-from sklearn.metrics.pairwise import cosine_similarity
 from google.genai import types
 from app.config import client
 from app.retrieval.entity_graph import merge_document_graphs, serialize_document_graph
@@ -713,6 +712,10 @@ def retrieve_relevant_chunks(
     """
     if not document_ids or top_k <= 0:
         return []
+
+    # Importado aqui para não pagar cerca de 1 s de importação do scikit-learn
+    # a cada inicialização do servidor.
+    from sklearn.metrics.pairwise import cosine_similarity
 
     chunks, chunk_embeddings = _load_indexed_chunks(document_ids)
     question_embedding = _embed_contents([question])[0]
