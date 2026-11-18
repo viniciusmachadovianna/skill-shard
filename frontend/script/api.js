@@ -97,6 +97,16 @@ export async function fetchReadiness({ refresh = false, signal } = {}) {
 }
 
 /**
+ * Lista os modelos Gemini disponíveis para geração de texto (`GET /models`).
+ *
+ * @returns {Promise<{models: Array<{id: string, display_name: string, default: boolean}>}>}
+ * @throws {ApiError} 503 se a chave não estiver configurada; 502 se a consulta falhar.
+ */
+export function listModels() {
+    return request('/models');
+}
+
+/**
  * Lista os documentos da pasta `data/` do repositório (`GET /documents`).
  *
  * @returns {Promise<Array<IndexDocument & {chunk_count: number}>>} Documentos
