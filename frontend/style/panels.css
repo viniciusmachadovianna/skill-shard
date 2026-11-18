@@ -79,7 +79,7 @@
     flex-direction: column;
     overflow: hidden;
     resize: both;
-    border: 1px solid var(--line);
+    border: 1px solid var(--cyan);
     background: var(--panel);
     box-shadow: 0 18px 60px #0009;
 }
