@@ -8,7 +8,7 @@
  */
 
 import { applyTheme } from './theme.js';
-import { applyLanguage, getCurrentLanguage, initializeLanguage, t } from './language.js';
+import { applyLanguage, getCurrentLanguage, initializeLanguage, onLanguageChange, t } from './language.js';
 import { clearChat, initializeChat, cancelPendingResponse } from './chat.js';
 import { initializeKnowledgeBase } from './knowledge-base.js';
 import { initializeEntityGraph, renderAnswerGraph } from './entity-graph.js';
