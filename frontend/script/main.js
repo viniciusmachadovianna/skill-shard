@@ -49,6 +49,7 @@ const rightPanelToggle = $('.right-panel-toggle');
 const rightPanelToggleIcon = rightPanelToggle.querySelector('img');
 if (window.matchMedia('(max-width: 800px)').matches) rightPanel.classList.add('is-collapsed');
 const rightPanelBar = $('.right-panel-bar');
+const workArea = $('#work-area');
 
 const conversationList = $('.sidebar-top');
 const conversationEntries = $('#conversation-entries');
@@ -200,6 +201,7 @@ sidebarToggle.addEventListener('click', () => {
 rightPanelToggle.addEventListener('click', () => {
     if (suppressPanelToggleClick) return;
     rightPanel.classList.toggle('is-collapsed');
+    placeFloatingPanelAfterToggle();
     syncSidebarState();
 });
 
@@ -318,7 +320,40 @@ new ResizeObserver(() => {
     panelSaveTimer = setTimeout(() => { clampFloatingPanel(); saveFloatingPanel(); }, 200);
 }).observe(rightPanel);
 
+// The collapsed icon only slides vertically, along the right edge of the work area.
+const COLLAPSED_ICON_SIZE = 44;
+const WORK_AREA_EDGE_GAP = 24;
+const WORK_AREA_VERTICAL_GAP = 16;
+
+function placeCollapsedIcon(requestedTop) {
+    const area = workArea.getBoundingClientRect();
+    const currentTop = requestedTop ?? rightPanel.getBoundingClientRect().top;
+    const minTop = area.top + WORK_AREA_VERTICAL_GAP;
+    const maxTop = Math.max(minTop, area.bottom - WORK_AREA_VERTICAL_GAP - COLLAPSED_ICON_SIZE);
+    rightPanel.style.left = `${Math.round(area.right - WORK_AREA_EDGE_GAP - COLLAPSED_ICON_SIZE)}px`;
+    rightPanel.style.top = `${Math.round(Math.min(Math.max(minTop, currentTop), maxTop))}px`;
+}
+
+function placeFloatingPanelAfterToggle() {
+    if (rightPanel.classList.contains('is-collapsed')) {
+        placeCollapsedIcon();
+        return;
+    }
+    // Expanding: keep the panel's right edge where the icon was.
+    const iconRect = rightPanel.getBoundingClientRect();
+    const width = rightPanel.offsetWidth;
+    const height = rightPanel.offsetHeight;
+    const left = Math.min(Math.max(0, iconRect.right - width), Math.max(0, window.innerWidth - width));
+    const top = Math.min(Math.max(0, iconRect.top), Math.max(0, window.innerHeight - height));
+    rightPanel.style.left = `${Math.round(left)}px`;
+    rightPanel.style.top = `${Math.round(top)}px`;
+}
+
 function clampFloatingPanel() {
+    if (rightPanel.classList.contains('is-collapsed')) {
+        placeCollapsedIcon();
+        return;
+    }
     if (!rightPanel.style.left) return;
     const rect = rightPanel.getBoundingClientRect();
     const left = Math.min(Math.max(0, rect.left), Math.max(0, window.innerWidth - rect.width));
@@ -347,6 +382,10 @@ rightPanelBar.addEventListener('pointerdown', (event) => {
             dragging = true;
             rightPanel.classList.add('is-dragging');
             rightPanelBar.setPointerCapture(event.pointerId);
+        }
+        if (rightPanel.classList.contains('is-collapsed')) {
+            placeCollapsedIcon(rect.top + pointerEvent.clientY - startY);
+            return;
         }
         const width = rightPanel.offsetWidth;
         const left = Math.min(Math.max(0, rect.left + pointerEvent.clientX - startX), Math.max(0, window.innerWidth - width));
