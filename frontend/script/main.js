@@ -62,17 +62,28 @@ const conversationDeleteCancel = $('#conversation-delete-cancel');
 const conversationDeleteConfirm = $('#conversation-delete-confirm');
 let conversationPendingDeletion;
 
+const graphSection = $('#right-panel-graph');
+const graphModeSwitch = $('#graph-mode-switch');
+const graphOpenButton = $('#entity-graph-open');
+
+function updateGraphAvailability() {
+    const available = retrievalMode.value === 'graphrag';
+    graphSection.classList.toggle('is-locked', !available);
+    graphOpenButton.disabled = !available;
+    graphOpenButton.title = available ? '' : t('graph-open-locked');
+}
+
 function updateRetrievalModeIcon() {
     const icon = retrievalMode.selectedOptions[0]?.dataset.icon;
     if (icon) retrievalModeIcon.src = icon;
+    updateGraphAvailability();
 }
 
-export function showToast(message) {
-    toast.textContent = message;
-    toast.classList.add('visible');
-    window.clearTimeout(toastTimeout);
-    toastTimeout = window.setTimeout(() => toast.classList.remove('visible'), 3200);
-}
+graphModeSwitch.addEventListener('click', () => {
+    retrievalMode.value = 'graphrag';
+    retrievalMode.dispatchEvent(new Event('change'));
+    retrievalMode.focus();
+});
 
 function syncSidebarState() {
     const leftHidden = sidebar.classList.contains('is-collapsed');
@@ -370,6 +381,7 @@ new ResizeObserver(() => {
 
 syncSidebarState();
 retrievalMode.addEventListener('change', updateRetrievalModeIcon);
+onLanguageChange(updateGraphAvailability);
 updateRetrievalModeIcon();
 
 conversationDeleteCancel.addEventListener('click', () => conversationDeleteDialog.close());

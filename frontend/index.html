@@ -198,6 +198,12 @@
             <div class="right-panel-content">
                 <section class="right-panel-graph" id="right-panel-graph"
                     aria-label="Entity relationship graph" data-i18n-aria="entity-graph-title">
+                    <div class="graph-mode-notice" id="graph-mode-notice" role="note">
+                        <strong data-i18n="entity-graph-title">Entity relationship graph</strong>
+                        <span class="graph-mode-badge" data-i18n="graph-mode-badge">RELATIONAL RAG ONLY</span>
+                        <p data-i18n="graph-mode-text">This graph is only available in Relational RAG mode, which has its own parameters: entities and relationships are extracted from your enabled documents, and each answer draws its subgraph from the passages it retrieved.</p>
+                        <button class="graph-mode-switch" id="graph-mode-switch" type="button" data-i18n="graph-mode-switch">Switch to Relational RAG</button>
+                    </div>
                     <button class="entity-graph-refresh" id="entity-graph-refresh" type="button"
                         data-i18n="entity-graph-refresh">Refresh graph</button>
                 </section>
