@@ -1,0 +1,102 @@
+/* Entity relationship graph and its legend. */
+.entity-graph-open { margin-top: 8px; }
+.entity-graph-open img { flex: 0 0 18px; }
+.entity-graph-toolbar {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 14px 0 10px;
+}
+.entity-graph-status,
+.entity-graph-summary { margin: 0; font-size: 13px; }
+.entity-graph-status { color: var(--muted); }
+.entity-graph-status[data-state="error"] { color: #e77f73; }
+.entity-graph-status[data-state="ready"] { color: var(--green); }
+.entity-graph-summary { color: var(--subtext); font: 10px var(--mono); }
+.entity-graph-fit {
+    min-height: 34px;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font: 10px var(--mono);
+    cursor: pointer;
+}
+.entity-graph-fit:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); }
+.entity-graph-fit:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.entity-graph-fit:disabled { cursor: not-allowed; opacity: .5; }
+.entity-graph-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 250px;
+    gap: 12px;
+}
+.entity-graph-plot {
+    position: relative;
+    min-width: 0;
+    height: min(58vh, 660px);
+    max-height: calc(94vh - 210px);
+    min-height: 260px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface);
+}
+.entity-graph-canvas { width: 100%; height: 100%; }
+.entity-graph-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    margin: 0;
+    padding: 24px;
+    place-items: center;
+    color: var(--muted);
+    font-size: 15px;
+    text-align: center;
+    pointer-events: none;
+}
+.entity-graph-empty[hidden] { display: none; }
+.entity-graph-inspector {
+    max-height: min(58vh, 660px);
+    padding: 14px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+    scrollbar-width: thin;
+}
+.entity-graph-inspector h3 { margin: 0 0 10px; font-size: 17px; font-weight: 500; }
+.entity-graph-inspector h4 { margin: 17px 0 8px; color: var(--muted); font: 9px var(--mono); }
+.entity-graph-selection-empty,
+.entity-graph-selection > p { color: var(--muted); font-size: 13px; }
+.entity-graph-selection-empty { margin: 0; }
+.entity-graph-selection[hidden] { display: none; }
+.entity-graph-selection > strong { display: block; overflow-wrap: anywhere; font-size: 15px; font-weight: 500; }
+.entity-graph-selection > p { margin: 5px 0; font: 10px var(--mono); }
+.entity-graph-selection ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.entity-graph-selection li { display: grid; gap: 3px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.entity-graph-selection li strong { overflow-wrap: anywhere; font-size: 12px; font-weight: 500; }
+.entity-graph-selection li span,
+.entity-graph-selection li a { color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.entity-graph-selection li a { color: var(--cyan); }
+.entity-graph-more { margin: 10px 0 0; color: var(--muted); font: 10px var(--mono); }
+.entity-graph-more[hidden] { display: none; }
+.entity-graph-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    margin-top: 12px;
+    color: var(--muted);
+    font: 9px var(--mono);
+}
+.entity-graph-legend > span { display: inline-flex; align-items: center; gap: 5px; }
+.entity-graph-legend > span:first-child { color: var(--subtext); }
+.graph-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.graph-type-document { background: var(--graph-document); }
+.graph-type-knowledge_item { background: var(--graph-item); }
+.graph-type-document_type { background: var(--graph-type); }
+.graph-type-project { background: var(--graph-project); }
+.graph-type-product { background: var(--graph-product); }
+.graph-type-topic { background: var(--graph-topic); }
+.graph-type-tag { background: var(--graph-tag); }

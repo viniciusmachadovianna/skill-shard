@@ -1,0 +1,179 @@
+/* Side panel frames: sidebar, right panel, resize handles, panel bars and graph notice. */
+.sidebar {
+    position: relative;
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid var(--line);
+    background: var(--panel);
+    transition: width .2s ease, min-width .2s ease, opacity .2s ease, border-width .2s ease;
+}
+.panel-resize-handle {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    cursor: col-resize;
+    touch-action: none;
+}
+.sidebar-resize-handle { right: -5px; }
+.right-panel-resize-handle { left: -5px; }
+.panel-resize-handle::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 4px;
+    width: 2px;
+    background: var(--cyan);
+    content: "";
+    opacity: 0;
+    transition: opacity .15s ease;
+}
+.panel-resize-handle:hover::after,
+.panel-resize-handle:focus-visible::after,
+.app-shell.is-resizing .panel-resize-handle::after { opacity: .8; }
+.panel-resize-handle:focus-visible { outline: none; }
+.panel-resize-handle[hidden] { display: none; }
+.sidebar.is-collapsed { overflow: hidden; }
+.sidebar.is-collapsed {
+    width: 32px;
+    min-width: 32px;
+}
+.sidebar.is-collapsed .brand { display: none; }
+.sidebar.is-collapsed .sidebar-top > :not(.panel-bar),
+.sidebar.is-collapsed .sidebar-bottom {
+    visibility: hidden;
+}
+.sidebar.is-collapsed .panel-bar {
+    justify-content: center;
+    padding: 0;
+}
+.sidebar.is-collapsed .sidebar-top { padding: 0; }
+.sidebar.is-collapsed .panel-bar > span {
+    display: none;
+}
+.right-panel {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex-direction: column;
+    border-left: 1px solid var(--line);
+    background: var(--panel);
+}
+.right-panel-bar { justify-content: flex-start; gap: 12px; }
+.right-panel.is-collapsed { overflow: hidden; }
+.right-panel.is-collapsed .panel-bar {
+    justify-content: center;
+    padding: 0;
+}
+.right-panel.is-collapsed .panel-bar > span { display: none; }
+.right-panel.is-collapsed .right-panel-content { visibility: hidden; }
+.right-panel-content {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 20px;
+    padding: 14px;
+    overflow-y: auto;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+    scrollbar-width: thin;
+}
+.right-panel-graph,
+.right-panel-preview { min-width: 0; }
+.right-panel-graph .knowledge-dialog-header { align-items: flex-start; gap: 8px; }
+.right-panel-graph .knowledge-dialog-header h2 { font-size: 19px; }
+.right-panel-graph .knowledge-dialog-header p { margin-top: 4px; font-size: 12px; }
+.right-panel-graph .entity-graph-toolbar {
+    min-height: 0;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+}
+.right-panel-graph .entity-graph-toolbar > div { min-width: 0; flex: 1 1 100%; }
+.right-panel-graph.is-locked > :not(.graph-mode-notice) { display: none; }
+.right-panel-graph:not(.is-locked) > .graph-mode-notice { display: none; }
+.graph-mode-notice {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px dashed var(--line);
+    background: var(--surface-selected);
+}
+.graph-mode-notice strong { font-size: 15px; font-weight: 500; }
+.graph-mode-notice p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.graph-mode-badge { color: var(--cyan); font: 10px var(--mono); letter-spacing: .08em; }
+.graph-mode-switch {
+    align-self: flex-start;
+    padding: 8px 12px;
+    border: 1px solid var(--cyan);
+    background: transparent;
+    color: var(--cyan);
+    font: 10px var(--mono);
+    letter-spacing: .06em;
+    cursor: pointer;
+}
+.graph-mode-switch:hover { background: var(--cyan); color: #071015; }
+.graph-mode-switch:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.entity-graph-open:disabled { opacity: .45; cursor: not-allowed; }
+.entity-graph-refresh {
+    width: 100%;
+    min-height: 32px;
+    margin-bottom: 12px;
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font: 10px var(--mono);
+    cursor: pointer;
+}
+.entity-graph-refresh:hover { border-color: var(--cyan); color: var(--cyan); }
+.entity-graph-refresh:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.right-panel-graph .entity-graph-layout { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.right-panel-graph .entity-graph-plot {
+    height: min(30vh, 280px);
+    max-height: none;
+    min-height: 200px;
+}
+.right-panel-graph .entity-graph-inspector { max-height: 160px; padding: 10px; }
+.right-panel-preview .document-preview { margin-top: 0; }
+.right-panel-preview .document-preview-content { height: min(28vh, 240px); min-height: 160px; }
+.panel-toggle {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1;
+}
+.panel-toggle img {
+    display: block;
+    width: 17px;
+    height: 17px;
+    object-fit: contain;
+    pointer-events: none;
+}
+.panel-toggle:hover { border-color: var(--cyan); color: var(--cyan); }
+.panel-bar {
+    display: flex;
+    height: 44px;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--line);
+    color: #788b98;
+    font: 10px var(--mono);
+    letter-spacing: .04em;
+}

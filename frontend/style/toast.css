@@ -1,0 +1,20 @@
+/* Toast notifications. */
+.toast {
+    position: fixed;
+    z-index: 5;
+    right: 24px;
+    bottom: 24px;
+    max-width: min(360px, calc(100vw - 48px));
+    padding: 11px 15px;
+    border: 1px solid #2a758a;
+    background: #0e1b22;
+    color: #c9e9f2;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity .2s, transform .2s;
+}
+.toast.visible { opacity: 1; transform: translateY(0); }
+.toast.toast-error { border-color: #e5484d; }
+.toast.toast-alert { border-color: #d4a017; }

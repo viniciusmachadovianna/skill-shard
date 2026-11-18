@@ -1,0 +1,83 @@
+/* Design tokens, light theme tokens, reset and base typography. */
+@font-face {
+    font-family: 'Barlow Condensed';
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+    src: url('../assets/fonts/BarlowCondensed-Regular.ttf') format('truetype');
+}
+
+:root {
+    color-scheme: dark;
+    --bg: #080b0e;
+    --panel: #0a0e12;
+    --surface: #0b1014;
+    --surface-hover: #0d171c;
+    --surface-selected: #10212a;
+    --surface-accent: #0e1c23;
+    --line: #1a232a;
+    --muted: #70808d;
+    --subtext: #80909b;
+    --text: #dce4e9;
+    --cyan: #35c3ed;
+    --green: #58dba0;
+    --scrollbar-thumb: #286477;
+    --scrollbar-thumb-hover: #35c3ed;
+    --skeleton-highlight: #35434b;
+    --graph-edge: #53636c;
+    --graph-document: #97a9b5;
+    --graph-item: #35c3ed;
+    --graph-type: #ff9f70;
+    --graph-project: #dfb06e;
+    --graph-product: #58dba0;
+    --graph-topic: #b093ef;
+    --graph-tag: #75bed8;
+    --mono: 'IBM Plex Mono', 'Consolas', monospace;
+    --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --base-font-size: 16px;
+}
+
+html[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f1f5f7;
+    --panel: #ffffff;
+    --surface: #f8fafb;
+    --surface-hover: #eaf5f8;
+    --surface-selected: #e5f3f7;
+    --surface-accent: #edf7fa;
+    --line: #d6e0e4;
+    --muted: #607681;
+    --subtext: #657b86;
+    --text: #192a33;
+    --cyan: #007894;
+    --green: #168553;
+    --scrollbar-thumb: #72aebb;
+    --scrollbar-thumb-hover: #007894;
+    --skeleton-highlight: #eaf5f8;
+    --graph-edge: #81939a;
+    --graph-document: #506873;
+    --graph-item: #007894;
+    --graph-type: #c25127;
+    --graph-project: #946013;
+    --graph-product: #168553;
+    --graph-topic: #6949a4;
+    --graph-tag: #176c9a;
+}
+
+* { box-sizing: border-box; }
+
+html, body { width: 100%; height: 100%; margin: 0; }
+
+body {
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--display);
+    font-size: var(--base-font-size);
+    font-weight: 400;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+button, textarea { font: inherit; }
+button { color: inherit; }

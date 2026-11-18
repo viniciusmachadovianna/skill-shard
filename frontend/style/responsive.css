@@ -1,0 +1,56 @@
+/* Breakpoints. Must load after every component file. */
+@media (min-width: 1500px) {
+    .welcome-content { margin-top: 95px; }
+}
+@media (max-width: 1050px) {
+    .app-shell { --sidebar-width: 205px; --right-panel-width: 260px; grid-template-columns: var(--sidebar-width) minmax(380px, 1fr) var(--right-panel-width); }
+    .app-shell.sidebar-collapsed { grid-template-columns: 32px minmax(380px, 1fr) var(--right-panel-width); }
+    .app-shell.right-panel-collapsed { grid-template-columns: var(--sidebar-width) minmax(380px, 1fr) 32px; }
+    .app-shell.sidebar-collapsed.right-panel-collapsed { grid-template-columns: 32px minmax(380px, 1fr) 32px; }
+    .assistant-copy { padding-right: 14px; padding-left: 14px; }
+}
+@media (max-width: 800px) {
+    .app-shell { --sidebar-width: 190px; grid-template: minmax(0, 1fr) / var(--sidebar-width) minmax(0, 1fr); }
+    .app-shell.sidebar-collapsed { grid-template: minmax(0, 1fr) / 32px minmax(0, 1fr); }
+    .app-shell.right-panel-collapsed { grid-template: minmax(0, 1fr) / var(--sidebar-width) minmax(0, 1fr); }
+    .app-shell.sidebar-collapsed.right-panel-collapsed { grid-template: minmax(0, 1fr) / 32px minmax(0, 1fr); }
+    .right-panel-resize-handle { display: none; }
+    .right-panel {
+        position: fixed;
+        z-index: 3;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(85vw, 320px);
+        max-width: calc(100vw - 16px);
+        box-shadow: 0 0 36px #0008;
+    }
+    .right-panel.is-collapsed { width: 32px; }
+    .welcome-content { margin-top: 48px; }
+}
+@media (max-width: 560px) {
+    html, body { height: 100%; }
+    body { overflow: auto; }
+    .app-shell { min-height: 100dvh; height: auto; grid-template: auto / 1fr; }
+    .app-shell.sidebar-collapsed,
+    .app-shell.right-panel-collapsed,
+    .app-shell.sidebar-collapsed.right-panel-collapsed { grid-template: auto / 1fr; }
+    .right-panel { top: 0; }
+    .brand-mark { width: 24px; height: 24px; }
+    .brand-copy strong { font-size: 19px; }
+    .brand-copy small { font-size: 6px; }
+    .unit-label { font-size: 7px; padding-left: 9px; }
+    .sidebar { display: none; }
+    .main-panel { min-height: 100dvh; }
+    .workspace-heading { height: 46px; flex-basis: 46px; }
+    .work-area { min-height: 420px; }
+    .welcome-content { width: calc(100% - 38px); margin-top: 43px; }
+    h1 { font-size: clamp(40px, 13vw, 52px); }
+    .objective-card { height: 83px; padding: 10px; }
+    .objective-name { font-size: 12px; }
+    .composer-area { padding: 0 15px 14px; }
+    .composer-footnote { font-size: 10px; }
+    .knowledge-dialog { padding: 22px 18px 14px; }
+    .knowledge-dialog-header h2 { font-size: 23px; }
+    .knowledge-document { gap: 12px; }
+}
