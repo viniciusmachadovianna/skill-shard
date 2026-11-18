@@ -61,7 +61,6 @@ logger = logging.getLogger(__name__)
 
 READY_CACHE_SECONDS = 15
 READY_TIMEOUT_MS = 3_000
-ASK_TIMEOUT_MS = 45_000
 DATA_DIRECTORY = Path(__file__).resolve().parents[2] / "data"
 SUPPORTED_REPOSITORY_EXTENSIONS = {".txt", ".md", ".csv", ".json", ".pdf"}
 
@@ -373,10 +372,6 @@ app.add_middleware(
 
 api_key = os.getenv("LLM_API_KEY")
 llm_model = os.getenv("LLM_MODEL_ID")
-client = genai.Client(
-    api_key=api_key,
-    http_options=types.HttpOptions(timeout=ASK_TIMEOUT_MS),
-)
 readiness_client: genai.Client | None = None
 ready_cache_until: float = 0.0
 readiness_lock = Lock()
