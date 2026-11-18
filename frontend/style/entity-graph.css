@@ -1,6 +1,4 @@
 /* Entity relationship graph and its legend. */
-.entity-graph-open { margin-top: 8px; }
-.entity-graph-open img { flex: 0 0 18px; }
 .entity-graph-toolbar {
     display: flex;
     min-height: 48px;

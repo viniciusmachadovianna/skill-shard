@@ -259,14 +259,18 @@
             <span aria-hidden="true">＋</span>
             <span data-i18n="add-documents">Add documents</span>
         </button>
-        <button class="knowledge-add entity-graph-open" id="entity-graph-open" type="button">
-            <span data-i18n="entity-graph-open">View entity graph</span>
-        </button>
+        <div class="knowledge-search-field">
+            <img src="./assets/icons/search.svg" alt="" width="20" height="20" aria-hidden="true">
+            <input class="knowledge-search" id="knowledge-search" type="search" autocomplete="off"
+                placeholder="Search documents by name" aria-label="Search documents by name"
+                data-i18n-placeholder="knowledge-search-placeholder" data-i18n-aria="knowledge-search-placeholder">
+        </div>
         <input id="file-input" type="file"
             accept=".txt,text/plain,.md,text/markdown,.csv,text/csv,.json,application/json,.pdf,application/pdf" multiple hidden>
         <p class="knowledge-dialog-hint" data-i18n="supported-document-formats">TXT / MARKDOWN / CSV / JSON · UP TO 2 MB EACH</p>
         <p class="knowledge-dialog-note" data-i18n="knowledge-local-note">Stored in this browser. Document retrieval is not connected yet.</p>
         <ul class="knowledge-document-list" id="knowledge-document-list" aria-label="Knowledge base documents" data-i18n-aria="knowledge-documents"></ul>
+        <p class="knowledge-empty" id="knowledge-no-results" data-i18n="knowledge-no-results" hidden>No documents match your search.</p>
         <p class="knowledge-empty" id="knowledge-empty" data-i18n="knowledge-empty">No documents yet. Add a file to get started.</p>
     </dialog>
     <dialog class="entity-graph-dialog" id="entity-graph-dialog" aria-labelledby="entity-graph-title">

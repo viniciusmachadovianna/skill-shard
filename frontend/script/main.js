@@ -64,13 +64,10 @@ let conversationPendingDeletion;
 
 const graphSection = $('#right-panel-graph');
 const graphModeSwitch = $('#graph-mode-switch');
-const graphOpenButton = $('#entity-graph-open');
 
 function updateGraphAvailability() {
     const available = retrievalMode.value === 'graphrag';
     graphSection.classList.toggle('is-locked', !available);
-    graphOpenButton.disabled = !available;
-    graphOpenButton.title = available ? '' : t('graph-open-locked');
 }
 
 function updateRetrievalModeIcon() {

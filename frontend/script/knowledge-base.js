@@ -31,6 +31,8 @@ const documentList = $('#knowledge-document-list');
 const emptyState = $('#knowledge-empty');
 const summary = $('#knowledge-summary');
 const knowledgeStatus = $('#knowledge-status');
+const searchInput = $('#knowledge-search');
+const noResults = $('#knowledge-no-results');
 const previewTitle = $('#document-preview-title');
 const previewEmpty = $('#assistant-document-empty');
 const previewText = $('#assistant-document-text');
@@ -278,6 +280,17 @@ function updateDocumentCounters(documents) {
     emptyState.hidden = documents.length !== 0;
 }
 
+function applyDocumentSearch() {
+    const term = searchInput.value.trim().toLocaleLowerCase();
+    let visible = 0;
+    documentList.querySelectorAll('.knowledge-document').forEach((row) => {
+        const matches = !term || row.querySelector('.knowledge-document-name').textContent.toLocaleLowerCase().includes(term);
+        row.hidden = !matches;
+        if (matches) visible += 1;
+    });
+    noResults.hidden = !(term && currentDocuments.length > 0 && visible === 0);
+}
+
 function createDocumentRow(document) {
     const row = documentList.ownerDocument.createElement('li');
     row.className = 'knowledge-document';
@@ -341,6 +354,7 @@ async function renderDocuments() {
     currentDocuments = documents;
     documentList.replaceChildren(...documents.map(createDocumentRow));
     updateDocumentCounters(documents);
+    applyDocumentSearch();
     renderAssistantPreview(documents);
     return documents;
 }
@@ -474,6 +488,7 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
         }
     }
 
+    searchInput.addEventListener('input', applyDocumentSearch);
     previewPrevious.addEventListener('click', () => stepPreviewChunk(-1));
     previewNext.addEventListener('click', () => stepPreviewChunk(1));
 

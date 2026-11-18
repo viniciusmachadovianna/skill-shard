@@ -129,7 +129,6 @@
 }
 .graph-mode-switch:hover { background: var(--cyan); color: #071015; }
 .graph-mode-switch:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-.entity-graph-open:disabled { opacity: .45; cursor: not-allowed; }
 .entity-graph-refresh {
     width: 100%;
     min-height: 32px;

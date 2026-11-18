@@ -2,10 +2,10 @@
 .knowledge-dialog {
     width: min(980px, calc(100vw - 32px));
     max-width: none;
-    max-height: min(86vh, 680px);
+    height: min(86vh, 680px);
+    max-height: none;
     padding: 28px 29px 18px;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 4px;
     background: var(--panel);
@@ -100,10 +100,11 @@
     padding: 0 0 0 28px;
     border-top: 0;
     border-left: 1px solid var(--line);
+    height: calc(min(86vh, 680px) - 150px);
     min-height: 0;
 }
-.knowledge-dialog[open] .document-preview-content { flex: 1; height: auto; min-height: 220px; }
-.knowledge-dialog[open] .knowledge-document-list { max-height: min(40vh, 300px); }
+.knowledge-dialog[open] .document-preview-content { flex: 1; height: auto; min-height: 0; }
+.knowledge-dialog[open] .knowledge-document-list { height: calc(min(86vh, 680px) - 380px); min-height: 120px; max-height: none; }
 .knowledge-dialog::backdrop { background: #000b; }
 .knowledge-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .knowledge-dialog-header h2 { margin: 0; font-size: 25px; font-weight: 500; line-height: 1.2; }
@@ -206,3 +207,18 @@
     text-transform: none;
 }
 .knowledge-dialog .document-preview-empty { padding: 28px 24px; font: 14px/1.6 var(--display); text-align: center; }
+.knowledge-search {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px 0 42px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--surface);
+    color: var(--text);
+    font: 16px var(--display);
+}
+.knowledge-search::placeholder { color: var(--muted); }
+.knowledge-search:focus-visible { border-color: var(--cyan); outline: 2px solid var(--cyan); outline-offset: 2px; }
+.knowledge-document[hidden] { display: none; }
+.knowledge-search-field { position: relative; margin-top: 20px; }
+.knowledge-search-field img { position: absolute; top: 50%; left: 14px; width: 20px; height: 20px; transform: translateY(-50%); pointer-events: none; }

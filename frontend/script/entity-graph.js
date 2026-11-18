@@ -46,7 +46,6 @@ import { t } from './language.js';
 import { $ } from './utils.js';
 
 const knowledgeDialog = $('#knowledge-dialog');
-const openButton = $('#entity-graph-open');
 const refreshButton = $('#entity-graph-refresh');
 const fitButton = $('#entity-graph-fit');
 const graphCanvas = $('#entity-graph-canvas');
@@ -542,7 +541,6 @@ export function renderAnswerGraph(graph) {
  * lista no DOM.
  */
 export function initializeEntityGraph() {
-    openButton.addEventListener('click', openEntityGraph);
     refreshButton.addEventListener('click', openEntityGraph);
     fitButton.addEventListener('click', () => network?.fit({
         nodes: currentGraph?.nodes.map((node) => node.id),
