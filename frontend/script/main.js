@@ -94,7 +94,7 @@ function syncSidebarState() {
     rightPanelToggle.dataset.i18nTitle = rightHidden ? 'right-panel-expand' : 'right-panel-collapse';
 
     sidebarToggleIcon.src = leftHidden ? 'assets/icons/right.svg' : 'assets/icons/left.svg';
-    rightPanelToggleIcon.src = rightHidden ? 'assets/icons/left.svg' : 'assets/icons/right.svg';
+    rightPanelToggleIcon.src = rightHidden ? 'assets/icons/connections.svg' : 'assets/icons/collapse.svg';
 
     applyLanguage(getCurrentLanguage());
 }
@@ -198,6 +198,7 @@ sidebarToggle.addEventListener('click', () => {
 });
 
 rightPanelToggle.addEventListener('click', () => {
+    if (suppressPanelToggleClick) return;
     rightPanel.classList.toggle('is-collapsed');
     syncSidebarState();
 });
@@ -291,6 +292,32 @@ sidebarResizeHandle.addEventListener('keydown', (event) => {
     setSidebarWidth(currentWidth + direction * (event.shiftKey ? 30 : 10));
 });
 
+function saveFloatingPanel() {
+    try {
+        const saved = {};
+        for (const property of ['left', 'top', 'width', 'height']) {
+            if (rightPanel.style[property]) saved[property] = rightPanel.style[property];
+        }
+        localStorage.setItem(PANEL_STORAGE_KEY, JSON.stringify(saved));
+    } catch { /* storage unavailable: the position just won't persist */ }
+}
+
+function restoreFloatingPanel() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(PANEL_STORAGE_KEY) ?? '{}');
+        for (const property of ['left', 'top', 'width', 'height']) {
+            if (/^-?\d+(\.\d+)?px$/.test(saved[property] ?? '')) rightPanel.style[property] = saved[property];
+        }
+    } catch { /* ignore a corrupt or unavailable saved layout */ }
+}
+
+let panelSaveTimer;
+new ResizeObserver(() => {
+    if (rightPanel.classList.contains('is-collapsed') || !rightPanel.style.width) return;
+    clearTimeout(panelSaveTimer);
+    panelSaveTimer = setTimeout(() => { clampFloatingPanel(); saveFloatingPanel(); }, 200);
+}).observe(rightPanel);
+
 function clampFloatingPanel() {
     if (!rightPanel.style.left) return;
     const rect = rightPanel.getBoundingClientRect();
@@ -300,24 +327,30 @@ function clampFloatingPanel() {
     rightPanel.style.top = `${Math.round(top)}px`;
 }
 
-// The data explorer is a floating window: drag it by its title bar.
+// The data explorer is a floating window: drag it by its title bar, or by the
+// collapsed icon. Movement under the threshold still counts as a click.
+const PANEL_STORAGE_KEY = 'skill-shard.right-panel';
+const DRAG_THRESHOLD = 4;
+let suppressPanelToggleClick = false;
+
 rightPanelBar.addEventListener('pointerdown', (event) => {
     if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
-    if (event.target.closest('button')) return;
-    event.preventDefault();
+    const startX = event.clientX;
+    const startY = event.clientY;
     const rect = rightPanel.getBoundingClientRect();
-    const offsetX = event.clientX - rect.left;
-    const offsetY = event.clientY - rect.top;
-    rightPanel.style.left = `${rect.left}px`;
-    rightPanel.style.top = `${rect.top}px`;
-    rightPanel.classList.add('is-dragging');
-    rightPanelBar.setPointerCapture(event.pointerId);
+    let dragging = false;
 
     const move = (pointerEvent) => {
         if (pointerEvent.pointerId !== event.pointerId) return;
+        if (!dragging) {
+            if (Math.hypot(pointerEvent.clientX - startX, pointerEvent.clientY - startY) < DRAG_THRESHOLD) return;
+            dragging = true;
+            rightPanel.classList.add('is-dragging');
+            rightPanelBar.setPointerCapture(event.pointerId);
+        }
         const width = rightPanel.offsetWidth;
-        const left = Math.min(Math.max(0, pointerEvent.clientX - offsetX), Math.max(0, window.innerWidth - width));
-        const top = Math.min(Math.max(0, pointerEvent.clientY - offsetY), Math.max(0, window.innerHeight - 44));
+        const left = Math.min(Math.max(0, rect.left + pointerEvent.clientX - startX), Math.max(0, window.innerWidth - width));
+        const top = Math.min(Math.max(0, rect.top + pointerEvent.clientY - startY), Math.max(0, window.innerHeight - 44));
         rightPanel.style.left = `${left}px`;
         rightPanel.style.top = `${top}px`;
     };
@@ -327,12 +360,19 @@ rightPanelBar.addEventListener('pointerdown', (event) => {
         rightPanelBar.removeEventListener('pointerup', stop);
         rightPanelBar.removeEventListener('pointercancel', stop);
         rightPanel.classList.remove('is-dragging');
+        if (dragging) {
+            saveFloatingPanel();
+            suppressPanelToggleClick = true;
+            setTimeout(() => { suppressPanelToggleClick = false; }, 0);
+        }
     };
     rightPanelBar.addEventListener('pointermove', move);
     rightPanelBar.addEventListener('pointerup', stop);
     rightPanelBar.addEventListener('pointercancel', stop);
 });
 
+restoreFloatingPanel();
+clampFloatingPanel();
 enforceSidebarMinimum();
 updateSidebarResizeHandle();
 window.addEventListener('resize', () => {

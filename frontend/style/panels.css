@@ -86,6 +86,7 @@
 .right-panel.is-dragging { user-select: none; }
 .right-panel-bar { justify-content: flex-start; gap: 12px; cursor: grab; user-select: none; touch-action: none; }
 .right-panel.is-dragging .right-panel-bar { cursor: grabbing; }
+.right-panel.is-dragging .right-panel-toggle { cursor: grabbing; }
 .right-panel .right-panel-toggle {
     position: static;
     width: 28px;
@@ -96,8 +97,23 @@
     transform: none;
     cursor: pointer;
 }
-.right-panel.is-collapsed { height: auto; min-height: 0; resize: none; }
-.right-panel.is-collapsed .panel-bar { border-bottom: 0; }
+.right-panel.is-collapsed {
+    width: 44px !important;
+    min-width: 0;
+    height: 44px !important;
+    min-height: 0;
+    resize: none;
+}
+.right-panel.is-collapsed .panel-bar { height: 44px; padding: 0; border-bottom: 0; }
+.right-panel.is-collapsed .panel-bar > span { display: none; }
+.right-panel.is-collapsed {
+    border-color: var(--cyan);
+    background: var(--cyan);
+    box-shadow: 0 0 0 4px rgba(53, 195, 237, .22), 0 0 22px rgba(53, 195, 237, .45), 0 8px 24px #0007;
+}
+.right-panel.is-collapsed .right-panel-toggle { width: 44px; height: 44px; flex-basis: 44px; border: 0; background: transparent; }
+.right-panel.is-collapsed .right-panel-toggle:hover { background: rgba(255, 255, 255, .22); }
+.right-panel.is-collapsed .right-panel-toggle img { width: 24px; height: 24px; filter: brightness(0) opacity(.85); }
 .right-panel.is-collapsed .right-panel-content { display: none; }
 .right-panel-content {
     display: flex;
