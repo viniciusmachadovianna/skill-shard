@@ -51,6 +51,7 @@ const rightPanelToggleIcon = rightPanelToggle.querySelector('img');
 if (window.matchMedia('(max-width: 800px)').matches) rightPanel.classList.add('is-collapsed');
 
 const conversationList = $('.sidebar-top');
+const conversationEntries = $('#conversation-entries');
 const conversationCount = $('#conversation-count');
 const workspaceTitle = $('#workspace-title');
 const retrievalMode = $('#retrieval-mode');
@@ -390,7 +391,8 @@ conversationList.addEventListener('click', (event) => {
         clearChat();
         const conversation = createConversationEntry(t('new-investigation'));
         conversation.querySelector('.conversation-item span:last-child').dataset.i18n = 'new-investigation';
-        conversationList.append(conversation);
+        conversationEntries.append(conversation);
+        conversation.scrollIntoView({ block: 'nearest' });
         activateConversation(conversation);
         updateConversationCount();
         showToast(t('new-conversation-toast'));
