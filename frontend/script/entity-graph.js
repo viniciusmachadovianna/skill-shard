@@ -47,8 +47,9 @@ function setGraphStatus(message, state) {
     graphStatus.dataset.state = state;
 }
 
-function showEmptyMessage(message) {
-    graphEmpty.textContent = message;
+function showEmptyMessage(key) {
+    graphEmpty.dataset.i18n = key;
+    graphEmpty.textContent = t(key);
     graphEmpty.hidden = false;
 }
 
@@ -411,13 +412,13 @@ async function openEntityGraph() {
     fitButton.disabled = true;
     graphSummary.textContent = '';
     clearSelection();
-    showEmptyMessage(t('entity-graph-loading'));
+    showEmptyMessage('entity-graph-loading');
     setGraphStatus(t('entity-graph-loading'), 'loading');
 
     const documentIds = getEnabledDocumentIds();
     if (!documentIds.length) {
         setGraphStatus(t('entity-graph-no-documents'), 'empty');
-        showEmptyMessage(t('entity-graph-no-documents'));
+        showEmptyMessage('entity-graph-no-documents');
         return;
     }
 
@@ -428,7 +429,7 @@ async function openEntityGraph() {
 
         if (!graph.nodes.length) {
             setGraphStatus(t('entity-graph-empty-result'), 'empty');
-            showEmptyMessage(t('entity-graph-empty-result'));
+            showEmptyMessage('entity-graph-empty-result');
             return;
         }
 
@@ -449,7 +450,7 @@ async function openEntityGraph() {
         console.error('Could not render the entity graph:', error);
         const detail = error instanceof Error ? error.message : t('entity-graph-load-error');
         setGraphStatus(`${t('entity-graph-load-error')} ${detail}`, 'error');
-        showEmptyMessage(t('entity-graph-load-error'));
+        showEmptyMessage('entity-graph-load-error');
     }
 }
 
@@ -466,7 +467,7 @@ export function renderAnswerGraph(graph) {
 
         if (!validGraph.nodes.length) {
             setGraphStatus(t('entity-graph-answer-empty'), 'empty');
-            showEmptyMessage(t('entity-graph-answer-empty'));
+            showEmptyMessage('entity-graph-answer-empty');
             return;
         }
 
@@ -476,7 +477,7 @@ export function renderAnswerGraph(graph) {
         console.error('Could not render the answer entity graph:', error);
         const detail = error instanceof Error ? error.message : t('entity-graph-load-error');
         setGraphStatus(`${t('entity-graph-load-error')} ${detail}`, 'error');
-        showEmptyMessage(t('entity-graph-load-error'));
+        showEmptyMessage('entity-graph-load-error');
     }
 }
 

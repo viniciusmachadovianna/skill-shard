@@ -143,7 +143,32 @@ const translations = {
         'prompt-analyze': 'Analyze the key findings in my documents.',
         'prompt-connect': 'Connect the dots across my knowledge base.',
         'prompt-summary': 'Give me a concise summary of my documents.',
-        'prompt-search': 'Search my knowledge base for a specific topic.'
+        'prompt-search': 'Search my knowledge base for a specific topic.',
+        'brand-home': 'Skill Shard home',
+        'information-open': 'About this interface',
+        'retrieval-mode-label': 'Select retrieval mode',
+        'mode-graphrag': 'Relational RAG',
+        'export-conversation': 'Export conversation',
+        'export-empty': 'There are no messages to export yet.',
+        'scroll-to-composer': 'Scroll to the message box',
+        'response-loading': 'Assistant is processing your question',
+        'send-message': 'Send message',
+        'add-documents': 'Add documents',
+        'entity-graph-empty': 'Enable documents in the knowledge base to see their graph.',
+        'chunk-singular': 'chunk',
+        'chunk-plural': 'chunks',
+        'message-operator': 'OPERATOR / SS-800',
+        'message-system': 'SS-800 / SYSTEM',
+        'api-invalid-answer': 'The API returned an invalid answer.',
+        'api-mode-mismatch': 'The API returned a response for a different retrieval mode.',
+        'no-conversation-selected': 'No conversation selected',
+        'rename-conversation-prompt': 'Rename conversation:',
+        'conversation-name-empty': 'Conversation name cannot be empty.',
+        'conversation-renamed': 'Conversation renamed.',
+        'theme-switch-to-light': 'Switch to light theme',
+        'theme-switch-to-dark': 'Switch to dark theme',
+        'theme-load-error': 'Theme preference could not be loaded. Using dark theme.',
+        'theme-save-error': 'Theme changed, but your preference could not be saved.'
     },
     'pt-BR': {
         'system-status': 'SISTEMA LOCAL ONLINE',
@@ -286,7 +311,32 @@ const translations = {
         'prompt-analyze': 'Analise os principais achados dos meus documentos.',
         'prompt-connect': 'Conecte os pontos ao longo da minha base de conhecimento.',
         'prompt-summary': 'Me dê um resumo conciso dos meus documentos.',
-        'prompt-search': 'Pesquise minha base de conhecimento por um tópico específico.'
+        'prompt-search': 'Pesquise minha base de conhecimento por um tópico específico.',
+        'brand-home': 'Página inicial do Skill Shard',
+        'information-open': 'Sobre esta interface',
+        'retrieval-mode-label': 'Selecione o modo de recuperação',
+        'mode-graphrag': 'RAG relacional',
+        'export-conversation': 'Exportar conversa',
+        'export-empty': 'Ainda não há mensagens para exportar.',
+        'scroll-to-composer': 'Rolar até a caixa de mensagem',
+        'response-loading': 'O assistente está processando sua pergunta',
+        'send-message': 'Enviar mensagem',
+        'add-documents': 'Adicionar documentos',
+        'entity-graph-empty': 'Ative documentos na base de conhecimento para ver o grafo.',
+        'chunk-singular': 'trecho',
+        'chunk-plural': 'trechos',
+        'message-operator': 'OPERADOR / SS-800',
+        'message-system': 'SS-800 / SISTEMA',
+        'api-invalid-answer': 'A API retornou uma resposta inválida.',
+        'api-mode-mismatch': 'A API retornou uma resposta para outro modo de recuperação.',
+        'no-conversation-selected': 'Nenhuma conversa selecionada',
+        'rename-conversation-prompt': 'Renomear conversa:',
+        'conversation-name-empty': 'O nome da conversa não pode ficar vazio.',
+        'conversation-renamed': 'Conversa renomeada.',
+        'theme-switch-to-light': 'Mudar para o tema claro',
+        'theme-switch-to-dark': 'Mudar para o tema escuro',
+        'theme-load-error': 'Não foi possível carregar a preferência de tema. Usando o tema escuro.',
+        'theme-save-error': 'O tema foi alterado, mas a preferência não pôde ser salva.'
     }
 };
 
@@ -362,9 +412,16 @@ export function applyLanguage(language = getStoredLanguage()) {
     }
 }
 
+const languageChangeListeners = [];
+
+export function onLanguageChange(listener) {
+    languageChangeListeners.push(listener);
+}
+
 export function toggleLanguage() {
     const nextLanguage = getCurrentLanguage() === 'pt-BR' ? 'en' : 'pt-BR';
     applyLanguage(nextLanguage);
+    languageChangeListeners.forEach((listener) => listener(nextLanguage));
     return nextLanguage;
 }
 

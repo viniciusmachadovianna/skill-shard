@@ -77,9 +77,7 @@ function syncSidebarState() {
     rightPanelToggle.dataset.i18nTitle = rightHidden ? 'right-panel-expand' : 'right-panel-collapse';
 
     sidebarToggleIcon.src = leftHidden ? 'assets/icons/left_panel_open.svg' : 'assets/icons/left_panel_close.svg';
-    sidebarToggleIcon.alt = leftHidden ? 'Show workspace sidebar' : 'Hide workspace sidebar';
     rightPanelToggleIcon.src = rightHidden ? 'assets/icons/right_panel_open.svg' : 'assets/icons/right_panel_close.svg';
-    rightPanelToggleIcon.alt = rightHidden ? 'Show data explorer panel' : 'Hide data explorer panel';
 
     applyLanguage(getCurrentLanguage());
 }
@@ -126,7 +124,10 @@ function activateConversation(entry) {
     conversationList.querySelectorAll('.conversation-entry').forEach((item) => {
         item.classList.toggle('active', item === entry);
     });
-    workspaceTitle.textContent = entry.querySelector('.conversation-item span:last-child').textContent;
+    const title = entry.querySelector('.conversation-item span:last-child');
+    workspaceTitle.textContent = title.textContent;
+    if (title.dataset.i18n) workspaceTitle.dataset.i18n = title.dataset.i18n;
+    else delete workspaceTitle.dataset.i18n;
 }
 
 function updateConversationCount() {
@@ -149,7 +150,8 @@ function deleteConversation(entry) {
         if (nextEntry) {
             activateConversation(nextEntry);
         } else {
-            workspaceTitle.textContent = 'No conversation selected';
+            workspaceTitle.dataset.i18n = 'no-conversation-selected';
+            workspaceTitle.textContent = t('no-conversation-selected');
             clearChat();
         }
     }
@@ -157,7 +159,7 @@ function deleteConversation(entry) {
 }
 
 const chat = initializeChat({
-    onEmptyExport: () => showToast('There are no messages to export yet.'),
+    onEmptyExport: () => showToast(t('export-empty')),
     onRelationalResponse: (graph) => {
         rightPanel.classList.remove('is-collapsed');
         syncSidebarState();
@@ -280,7 +282,8 @@ conversationList.addEventListener('click', (event) => {
 
     if (newConversationButton) {
         clearChat();
-        const conversation = createConversationEntry('New investigation');
+        const conversation = createConversationEntry(t('new-investigation'));
+        conversation.querySelector('.conversation-item span:last-child').dataset.i18n = 'new-investigation';
         conversationList.append(conversation);
         activateConversation(conversation);
         updateConversationCount();
@@ -307,16 +310,20 @@ conversationList.addEventListener('click', (event) => {
         const title = entry.querySelector('.conversation-item span:last-child');
 
         if (action === 'rename') {
-            const newName = window.prompt('Rename conversation:', title.textContent);
+            const newName = window.prompt(t('rename-conversation-prompt'), title.textContent);
             if (newName === null) return;
             const trimmedName = newName.trim();
             if (!trimmedName) {
-                showToast('Conversation name cannot be empty.');
+                showToast(t('conversation-name-empty'));
                 return;
             }
+            delete title.dataset.i18n;
             title.textContent = trimmedName;
-            if (entry.classList.contains('active')) workspaceTitle.textContent = trimmedName;
-            showToast('Conversation renamed.');
+            if (entry.classList.contains('active')) {
+                delete workspaceTitle.dataset.i18n;
+                workspaceTitle.textContent = trimmedName;
+            }
+            showToast(t('conversation-renamed'));
         } else if (action === 'delete') {
             conversationPendingDeletion = entry;
             conversationDeleteMessage.textContent = t('delete-conversation-confirm')

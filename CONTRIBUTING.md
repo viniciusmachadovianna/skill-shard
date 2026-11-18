@@ -64,6 +64,8 @@ Add new tests as `unittest.TestCase` classes and mock every call to Gemini.
 - Plain HTML, CSS and JavaScript modules. No build step.
 - Every user-visible string goes through the translation system in `frontend/script/language.js`: use `t('key')` in JavaScript, or the `data-i18n`, `data-i18n-placeholder`, `data-i18n-aria` and `data-i18n-title` attributes in HTML.
 - Add each new key to both the `en` and `pt-BR` blocks of `translations`. A key present in only one language shows up untranslated.
+- Do not put `data-i18n` on an element whose text JavaScript sets at runtime: `applyLanguage` runs often (every panel toggle) and would overwrite it. Either set `element.dataset.i18n` to the current key together with the text, or leave the attribute off and re-render the text from `onLanguageChange(callback)`.
+- Icons inside a button that already has an `aria-label` use `alt=""`.
 
 ## Documentation
 

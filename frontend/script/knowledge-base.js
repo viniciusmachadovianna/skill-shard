@@ -1,4 +1,5 @@
-import { t } from './language.js';
+import * as api from './api.js';
+import { onLanguageChange, t } from './language.js';
 import { $ } from './utils.js';
 
 const DATABASE_NAME = 'skill-shard-knowledge-base';
@@ -274,7 +275,7 @@ function createDocumentRow(document) {
     const metadata = documentList.ownerDocument.createElement('span');
     metadata.className = 'knowledge-document-meta';
     const chunkCount = Number(document.chunk_count ?? 0);
-    metadata.textContent = `${chunkCount} chunk${chunkCount === 1 ? '' : 's'}`;
+    metadata.textContent = `${chunkCount} ${t(chunkCount === 1 ? 'chunk-singular' : 'chunk-plural')}`;
 
     copy.append(name, metadata);
 
@@ -542,6 +543,12 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
 
     onIndexingState('loading');
     refreshDocuments({ synchronize: true, index: true });
+
+    onLanguageChange(() => {
+        renderDocuments().catch((error) => {
+            console.error('Could not refresh the knowledge base after a language change:', error);
+        });
+    });
 
     return { retryIndexing };
 }

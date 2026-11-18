@@ -7,13 +7,13 @@
     <meta name="theme-color" content="#080b0e">
     <title>Skill Shard - Retrieval Augmented Intelligence</title>
     <link rel="shortcut icon" href="../public/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="style/main.css">
+    <link rel="stylesheet" href="./style/main.css">
 </head>
 
 <body>
     <div class="app-shell">
         <header class="topbar">
-            <a class="brand" href="#" aria-label="Skill Shard home">
+            <a class="brand" href="#" aria-label="Skill Shard home" data-i18n-aria="brand-home">
                 <span class="brand-mark"><span></span></span>
                 <span class="brand-copy">
                     <strong>SKILL SHARD</strong>
@@ -24,18 +24,18 @@
                 <button class="icon-button adjustments-toggle" id="adjustments-toggle" type="button"
                     aria-label="Open adjustments" title="Open adjustments"
                     data-i18n-aria="adjustments-open" data-i18n-title="adjustments-open">
-                    <img src="assets/icons/adjust.svg" alt="" aria-hidden="true" width="16" height="16">
+                    <img src="./assets/icons/adjust.svg" alt="" aria-hidden="true" width="16" height="16">
                 </button>
-                <button class="icon-button language-toggle" id="language-toggle" type="button" aria-label="Switch language" title="Switch language">
-                    <img src="assets/icons/language.svg" alt="Language selector" width="16" height="16">
+                <button class="icon-button language-toggle" id="language-toggle" type="button" aria-label="Switch language" title="Switch language" data-i18n-aria="language-toggle" data-i18n-title="language-toggle">
+                    <img src="./assets/icons/language.svg" alt="" aria-hidden="true" width="16" height="16">
                 </button>
                 <button class="icon-button theme-toggle" id="theme-toggle" type="button" aria-label="Switch to light theme" title="Switch to light theme">
-                    <img id="theme-icon" src="assets/icons/light_mode.svg" alt="Theme icon" width="16" height="16">
+                    <img id="theme-icon" src="./assets/icons/light_mode.svg" alt="" aria-hidden="true" width="16" height="16">
                 </button>
-                <button class="icon-button information-modal" id="information-modal" type="button" aria-label="About this interface" title="About this interface">
-                    <img src="assets/icons/info.svg" alt="Help icon" width="16" height="16">
+                <button class="icon-button information-modal" id="information-modal" type="button" aria-label="About this interface" title="About this interface" data-i18n-aria="information-open" data-i18n-title="information-open">
+                    <img src="assets/icons/info.svg" alt="" aria-hidden="true" width="16" height="16">
                 </button>
-                <span class="unit-label"><img class="icon" src="assets/icons/unit.svg" alt="" width="12" height="12">
+                <span class="unit-label"><img class="icon" src="./assets/icons/unit.svg" alt="" width="12" height="12">
                     UNIT SS-800<br>
                     <b>INTERFACE V.01</b>
                 </span>
@@ -49,7 +49,7 @@
                     <button class="icon-button panel-toggle sidebar-toggle" type="button"
                         aria-label="Hide workspace sidebar" title="Hide workspace sidebar"
                         data-i18n-aria="sidebar-collapse" data-i18n-title="sidebar-collapse">
-                        <img src="assets/icons/left_panel_close.svg" alt="Hide workspace sidebar" width="12"
+                        <img src="./assets/icons/left_panel_close.svg" alt="" aria-hidden="true" width="12"
                             height="12">
                     </button>
                 </div>
@@ -59,19 +59,19 @@
                         CONVERSATION</span></button>
                 <div class="conversation-entry active">
                     <button class="conversation-item" type="button">
-                        <img class="chat-icon" src="assets/icons/chat.svg" alt="" width="18" height="18">
+                        <img class="chat-icon" src="./assets/icons/chat.svg" alt="" width="18" height="18">
                         <span data-i18n="new-investigation">New investigation</span>
                     </button>
                     <button class="knowledge-delete conversation-delete" type="button" data-conversation-action="delete"
                         aria-label="Delete conversation" data-i18n-aria="delete-conversation"
                         title="Delete conversation" data-i18n-title="delete-conversation">
-                        <img src="assets/icons/delete.svg" alt="" aria-hidden="true">
+                        <img src="./assets/icons/delete.svg" alt="" aria-hidden="true">
                     </button>
                 </div>
             </div>
             <div class="sidebar-bottom">
                 <button class="knowledge-row" id="knowledge-button">
-                    <img class="database-icon" src="assets/icons/database.svg" alt="" width="19" height="19">
+                    <img class="database-icon" src="./assets/icons/database.svg" alt="" width="19" height="19">
                     <span class="knowledge-copy"><strong data-i18n="knowledge-base">Knowledge base</strong><small><span
                                 id="document-count">0</span> <span data-i18n="documents-available">DOCUMENTS
                                 AVAILABLE</span></small></span>
@@ -81,7 +81,7 @@
                     <span class="operator-avatar">SS</span>
                     <span class="knowledge-copy"><strong data-i18n="operator">Operator</strong><small
                             data-i18n="local-session">LOCAL SESSION</small></span>
-                    <img class="shield" src="assets/icons/verified.svg" alt="" width="16" height="16">
+                    <img class="shield" src="./assets/icons/verified.svg" alt="" width="16" height="16">
                 </div>
             </div>
             <div class="sidebar-resize-handle" role="separator" aria-orientation="vertical" aria-label="Resize workspace sidebar"
@@ -90,11 +90,11 @@
 
         <main class="main-panel">
             <div class="workspace-heading">
-                <span class="heading-title"><img class="outline-chat" src="assets/icons/chat.svg" alt="" width="18"
+                <span class="heading-title"><img class="outline-chat" src="./assets/icons/chat.svg" alt="" width="18"
                         height="18"> <span id="workspace-title" data-i18n="new-investigation">New
                         investigation</span></span>
-                <button class="icon-button export-button" id="export-button" title="Export conversation"
-                    aria-label="Export conversation"><img src="assets/icons/download.svg" alt="" width="18"
+                <button class="icon-button export-button" id="export-button" title="Export conversation" data-i18n-title="export-conversation" data-i18n-aria="export-conversation"
+                    aria-label="Export conversation"><img src="./assets/icons/download.svg" alt="" width="18"
                         height="18"></button>
             </div>
             <section class="work-area" id="work-area">
@@ -105,31 +105,31 @@
                     <div class="objective-label" data-i18n="objective-label">SELECT AN OBJECTIVE</div>
                     <div class="objective-grid">
                         <button class="objective-card" data-prompt-key="prompt-analyze">
-                            <img class="objective-icon" src="assets/icons/summarize.svg" alt="" width="19" height="19">
+                            <img class="objective-icon" src="./assets/icons/summarize.svg" alt="" width="19" height="19">
                             <span class="card-arrow"><img class="objective-icon" src="assets/icons/go.svg" alt="" width="19" height="19"></span>
                             <span class="objective-name" data-i18n="objective-analyze">Analyze a document</span>
                         </button>
                         <button class="objective-card" data-prompt-key="prompt-connect">
-                            <img class="objective-icon" src="assets/icons/connections.svg" alt="" width="19" height="19">
+                            <img class="objective-icon" src="./assets/icons/connections.svg" alt="" width="19" height="19">
                             <span class="card-arrow"><img class="objective-icon" src="assets/icons/go.svg" alt="" width="19" height="19"></span>
                             <span class="objective-name" data-i18n="objective-connect">Connect the dots</span>
                         </button>
                         <button class="objective-card" data-prompt-key="prompt-summary">
-                            <img class="objective-icon" src="assets/icons/database.svg" alt="" width="19" height="19">
+                            <img class="objective-icon" src="./assets/icons/database.svg" alt="" width="19" height="19">
                             <span class="card-arrow"><img class="objective-icon" src="assets/icons/go.svg" alt="" width="19" height="19"></span>
                             <span class="objective-name" data-i18n="objective-summary">Summarize a document</span>
                         </button>
                         <button class="objective-card" data-prompt-key="prompt-search">
-                            <img class="objective-icon" src="assets/icons/investigate.svg" alt="" width="19" height="19">
-                            <span class="card-arrow"><img class="objective-icon" src="assets/icons/go.svg" alt="" width="19" height="19"></span>
+                            <img class="objective-icon" src="./assets/icons/investigate.svg" alt="" width="19" height="19">
+                            <span class="card-arrow"><img class="objective-icon" src="./assets/icons/go.svg" alt="" width="19" height="19"></span>
                             <span class="objective-name" data-i18n="objective-search">Search knowledge</span>
                         </button>
                     </div>
                 </div>
-                <button class="scroll-cue" aria-label="Scroll to the message box" hidden>↓</button>
+                <button class="scroll-cue" aria-label="Scroll to the message box" data-i18n-aria="scroll-to-composer" hidden>↓</button>
                 <div class="conversation-output" id="conversation-output" aria-live="polite"></div>
                 <div class="response-loader" id="response-loader" role="status"
-                    aria-label="Assistant is processing your question" hidden>
+                    aria-label="Assistant is processing your question" data-i18n-aria="response-loading" hidden>
                     <div class="response-skeleton" aria-hidden="true">
                         <span class="response-skeleton-caption"></span>
                         <span class="response-skeleton-line"></span>
@@ -140,7 +140,7 @@
             <div class="composer-area">
                 <div class="composer-meta">
                     <span>
-                        <img class="database-icon small" src="assets/icons/database.svg" alt="" width="16" height="16">
+                        <img class="database-icon small" src="./assets/icons/database.svg" alt="" width="16" height="16">
                         <span data-i18n="knowledge-base-meta">KNOWLEDGE BASE</span>
                         <b>/</b>
                         <span data-i18n="no-sources">NO SOURCES</span>
@@ -152,7 +152,7 @@
                         <select class="mode-select" id="retrieval-mode" name="retrieval-mode">
                             <option value="llm" data-icon="assets/icons/simple_retrieval.svg">LLM</option>
                             <option value="rag" data-icon="assets/icons/intermediate_retrieval.svg">RAG</option>
-                            <option value="graphrag" data-icon="assets/icons/complex_retrieval.svg">Relational RAG</option>
+                            <option value="graphrag" data-icon="assets/icons/complex_retrieval.svg" data-i18n="mode-graphrag">Relational RAG</option>
                         </select>
                     </div>
                 </div>
@@ -168,7 +168,7 @@
                         </p>
                         <button class="backend-retry" id="backend-retry" type="button" data-i18n="backend-retry"
                             hidden>RETRY CHECK</button>
-                        <button class="send-button" type="submit" aria-label="Send message" disabled>→</button>
+                        <button class="send-button" type="submit" aria-label="Send message" data-i18n-aria="send-message" disabled>→</button>
                     </div>
                 </form>
             </div>
@@ -178,7 +178,7 @@
                 <button class="icon-button panel-toggle right-panel-toggle" id="right-panel-toggle" type="button"
                     aria-label="Hide data explorer panel" title="Hide data explorer panel"
                     data-i18n-aria="right-panel-collapse" data-i18n-title="right-panel-collapse">
-                    <img src="assets/icons/right_panel_close.svg" alt="Hide data explorer panel" width="12" height="12">
+                    <img src="./assets/icons/right_panel_close.svg" alt="" aria-hidden="true" width="12" height="12">
                 </button>
                 <span data-i18n="right-panel-title">DATA EXPLORER</span>
             </div>
@@ -206,7 +206,7 @@
                         <input class="adjustments-input" id="adjustments-model" type="text" value="Gemini">
                     </div>
                     <div class="metric"><span data-i18n="knowledge-sources">Knowledge sources</span><strong
-                            id="source-metric" data-i18n="source-metric">00 DOCUMENTS</strong></div>
+                            id="source-metric">00 DOCUMENTS</strong></div>
                     <div class="metric">
                         <label for="adjustments-memory" data-i18n="conversation-memory">Conversation memory</label>
                         <input class="adjustments-input" id="adjustments-memory" type="text" value="LOCAL">
@@ -224,7 +224,7 @@
                     </label>
                     <select class="document-preview-select" id="assistant-document-select" hidden></select>
                     <div class="document-preview-content">
-                        <p class="document-preview-empty" id="assistant-document-empty" data-i18n="document-preview-empty">
+                        <p class="document-preview-empty" id="assistant-document-empty">
                             Enable a document in the knowledge base to preview it here.
                         </p>
                         <pre class="document-preview-text" id="assistant-document-text" hidden></pre>
@@ -253,7 +253,7 @@
             <span data-i18n="add-documents">Add documents</span>
         </button>
         <button class="knowledge-add entity-graph-open" id="entity-graph-open" type="button">
-            <img src="assets/icons/connections.svg" alt="" width="18" height="18" aria-hidden="true">
+            <img src="./assets/icons/connections.svg" alt="" width="18" height="18" aria-hidden="true">
             <span data-i18n="entity-graph-open">View entity graph</span>
         </button>
         <input id="file-input" type="file"
@@ -344,7 +344,7 @@
         aria-describedby="information-description">
         <div class="knowledge-dialog-header">
             <div>
-                <h2 id="information-title" data-i18n="information-title">Deviant / System information</h2>
+                <h2 id="information-title" data-i18n="information-title">Skill Shard / System information</h2>
                 <p data-i18n="information-subtitle">Android-inspired RAG interface prototype</p>
             </div>
             <button class="knowledge-close" id="information-close" type="button" aria-label="Close information"
@@ -361,7 +361,7 @@
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="assets/vendor/vis-network.min.js"></script>
-    <script type="module" src="script/main.js"></script>
+    <script type="module" src="./script/main.js"></script>
 </body>
 
 </html>
