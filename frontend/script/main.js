@@ -534,6 +534,20 @@ adjustmentsToggle.addEventListener('click', () => {
     loadModelOptions();
 });
 
+// Collapsed sidebar: heading shortcuts reuse the hidden sidebar buttons.
+$('#collapsed-knowledge').addEventListener('click', () => $('#knowledge-button').click());
+$('#collapsed-adjustments').addEventListener('click', () => adjustmentsToggle.click());
+
+// Keep the collapsed shortcuts' bottom edge aligned with the composer box (their size is fixed).
+function syncCollapsedRail() {
+    const composerBox = $('#composer').getBoundingClientRect();
+    const sidebarBox = sidebar.getBoundingClientRect();
+    appShell.style.setProperty('--rail-bottom', `${Math.max(0, sidebarBox.bottom - composerBox.bottom)}px`);
+}
+const railObserver = new ResizeObserver(syncCollapsedRail);
+railObserver.observe($('#composer'));
+railObserver.observe(appShell);
+
 adjustmentsClose.addEventListener('click', () => {
     adjustmentsDialog.close();
 });

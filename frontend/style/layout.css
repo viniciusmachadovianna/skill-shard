@@ -25,3 +25,33 @@
     content: "";
 }
 .app-shell.is-resizing { transition: none; }
+/* Collapsed sidebar: knowledge base and adjustments shortcuts sit at the left edge. */
+.collapsed-rail { display: none; }
+.app-shell.sidebar-collapsed .collapsed-rail {
+    position: absolute;
+    z-index: 4;
+    bottom: var(--rail-bottom, 44px); /* synced with the composer box by main.js */
+    left: 0;
+    display: flex;
+    width: 71px;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+.collapsed-rail-cell { display: grid; place-items: center; }
+.collapsed-action { pointer-events: auto; }
+/* Same look as the "new conversation" button. */
+.collapsed-rail .collapsed-action {
+    width: 42px;
+    height: 42px;
+    border: 1px solid #234351;
+    border-radius: 0;
+    background: var(--surface-accent);
+    transition: border-color .18s, background .18s;
+}
+.collapsed-rail .collapsed-action:hover { background: var(--surface-hover); border-color: var(--cyan); }
+.collapsed-rail .collapsed-action:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.collapsed-rail .collapsed-action img { display: block; width: 18px; height: 18px; }
+html[data-theme="light"] .collapsed-rail .collapsed-action { border-color: #b7d6de; }
+/* Keep the composer clear of the rail, symmetric so it stays centered. */
+.app-shell.sidebar-collapsed .composer-area { padding-right: 71px; padding-left: 71px; }
