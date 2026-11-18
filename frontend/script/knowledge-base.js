@@ -238,6 +238,23 @@ async function updateDocumentChunkCounts(documents, chunkCounts = {}) {
     }
 }
 
+function getDocumentBytes(document) {
+    const content = document.content ?? '';
+    if (document.encoding === 'base64') {
+        const padding = content.endsWith('==') ? 2 : content.endsWith('=') ? 1 : 0;
+        return Math.floor(content.length * 3 / 4) - padding;
+    }
+    return new TextEncoder().encode(content).length;
+}
+
+function formatBytes(bytes) {
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    const mb = kb / 1024;
+    if (mb < 1024) return `${mb.toFixed(1)} MB`;
+    return `${(mb / 1024).toFixed(1)} GB`;
+}
+
 function formatSummary(count) {
     return t('knowledge-summary').replace('{count}', String(count));
 }
@@ -254,7 +271,8 @@ function updateDocumentCounters(documents) {
             .replace('{active}', String(enabledCount))
             .replace('{count}', String(documents.length));
     }
-    summary.textContent = formatSummary(documents.length);
+    const totalBytes = documents.reduce((sum, document) => sum + getDocumentBytes(document), 0);
+    summary.textContent = `${formatSummary(documents.length)} · ${formatBytes(totalBytes)}`;
     documentList.hidden = documents.length === 0;
     emptyState.hidden = documents.length !== 0;
 }
@@ -281,7 +299,7 @@ function createDocumentRow(document) {
     const metadata = documentList.ownerDocument.createElement('span');
     metadata.className = 'knowledge-document-meta';
     const chunkCount = Number(document.chunk_count ?? 0);
-    metadata.textContent = `${chunkCount} ${t(chunkCount === 1 ? 'chunk-singular' : 'chunk-plural')}`;
+    metadata.textContent = `${formatBytes(getDocumentBytes(document))} · ${chunkCount} ${t(chunkCount === 1 ? 'chunk-singular' : 'chunk-plural')}`;
 
     copy.append(name, metadata);
 
