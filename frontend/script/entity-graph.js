@@ -1,3 +1,46 @@
+/**
+ * @file Painel do grafo de entidades.
+ *
+ * Busca o grafo dos documentos ativados (`GET /graph`) e o desenha com a
+ * biblioteca vis-network, que o `index.html` carrega como script global. Ao
+ * selecionar um nó ou uma ligação, mostra as evidências de origem (de qual
+ * item de qual documento a relação foi tirada). Também desenha o subgrafo
+ * devolvido por uma resposta do modo `graphrag` e se redesenha quando o tema
+ * muda.
+ */
+
+/**
+ * @typedef {Object} GraphNode
+ * @property {string} id
+ * @property {string} label
+ * @property {'document' | 'knowledge_item' | 'document_type' | 'project' | 'product' | 'topic' | 'tag'} type
+ */
+
+/**
+ * Indica de onde uma relação foi tirada.
+ * @typedef {Object} GraphEvidence
+ * @property {string} document_id
+ * @property {string} document_name
+ * @property {string} title Título do item de conhecimento.
+ * @property {string} [source_url] Link da fonte original, quando existe.
+ */
+
+/**
+ * @typedef {Object} GraphEdge
+ * @property {string} id
+ * @property {string} source ID do nó de origem.
+ * @property {string} target ID do nó de destino.
+ * @property {string} label Relação: `contains`, `type`, `project`, `product`, `topic` ou `tag`.
+ * @property {GraphEvidence[]} evidence
+ */
+
+/**
+ * Grafo de relações entre entidades, como devolvido por `/graph` e `/ask`.
+ * @typedef {Object} Graph
+ * @property {GraphNode[]} nodes
+ * @property {GraphEdge[]} edges
+ */
+
 import * as api from './api.js';
 import { t } from './language.js';
 import { $ } from './utils.js';
@@ -454,6 +497,15 @@ async function openEntityGraph() {
     }
 }
 
+/**
+ * Desenha no painel o subgrafo devolvido por uma resposta do modo `graphrag`.
+ *
+ * Valida o formato antes de desenhar. Em vez de lançar erro, mostra a falha na
+ * área do painel: dados inválidos viram uma mensagem de erro, e um grafo vazio
+ * vira o aviso de que nenhuma relação foi encontrada nos trechos recuperados.
+ *
+ * @param {Graph} graph Subgrafo da resposta.
+ */
 export function renderAnswerGraph(graph) {
     try {
         const validGraph = validateGraph(graph);
@@ -481,6 +533,14 @@ export function renderAnswerGraph(graph) {
     }
 }
 
+/**
+ * Liga os botões do painel (ver grafo, atualizar e enquadrar) e o observador
+ * de tema. Deve ser chamada uma vez.
+ *
+ * Ao abrir ou atualizar, o grafo é pedido para os documentos ativados na lista
+ * da base de conhecimento; os IDs são lidos direto das caixas de seleção dessa
+ * lista no DOM.
+ */
 export function initializeEntityGraph() {
     openButton.addEventListener('click', openEntityGraph);
     refreshButton.addEventListener('click', openEntityGraph);

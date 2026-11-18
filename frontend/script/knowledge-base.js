@@ -1,3 +1,16 @@
+/**
+ * @file Base de conhecimento: os documentos que o usuário pode consultar.
+ *
+ * - Guarda os documentos no navegador, em IndexedDB.
+ * - Lista os documentos da pasta `data/` do repositório, que começam
+ *   desativados.
+ * - Permite adicionar arquivos (TXT, MD, CSV, JSON e PDF, até 2 MB), ativar,
+ *   desativar e excluir os que o usuário enviou.
+ * - Mostra uma prévia dos documentos ativados.
+ * - Mantém o backend sincronizado: quando a seleção muda, os documentos
+ *   ativados são enviados para `/index`.
+ */
+
 import * as api from './api.js';
 import { onLanguageChange, t } from './language.js';
 import { $ } from './utils.js';
@@ -173,6 +186,14 @@ async function readDocumentFile(file, extension) {
     };
 }
 
+/**
+ * Lê do navegador os documentos que estão ativados.
+ *
+ * @returns {Promise<Array<{id: string, name: string, content: string, encoding: 'text' | 'base64'}>>}
+ *     Documentos no formato aceito pelo backend. Documentos antigos sem
+ *     `encoding` são tratados como `'text'`.
+ * @throws {Error} Se o armazenamento local do navegador estiver indisponível.
+ */
 export async function getEnabledDocuments() {
     const documents = await getDocuments();
     return documents
@@ -363,6 +384,19 @@ function reportStorageError(error, showToast) {
     showToast(t('knowledge-storage-error'));
 }
 
+/**
+ * Liga a interface da base de conhecimento e inicia a sincronização inicial:
+ * carrega os documentos do repositório e indexa os que estão ativados. Também
+ * atualiza os textos da lista quando o idioma muda. Deve ser chamada uma vez.
+ *
+ * @param {Object} callbacks
+ * @param {(message: string) => void} callbacks.showToast Mostra uma mensagem ao usuário.
+ * @param {(status: 'loading' | 'ready' | 'error') => void} [callbacks.onIndexingState]
+ *     Chamada a cada mudança no andamento da indexação.
+ * @returns {{ retryIndexing: () => Promise<void> }} `retryIndexing`
+ *     sincroniza e indexa de novo; é o que o botão de nova tentativa chama
+ *     depois de uma falha.
+ */
 export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} }) {
     let indexRequestId = 0;
 

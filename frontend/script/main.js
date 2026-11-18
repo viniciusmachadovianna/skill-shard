@@ -1,3 +1,12 @@
+/**
+ * @file Ponto de entrada da interface.
+ *
+ * Monta a página e inicializa os outros módulos: chat, base de conhecimento,
+ * grafo de entidades e idioma. Também controla a barra lateral (recolher e
+ * redimensionar), o painel direito, a lista de conversas e os diálogos de
+ * informações e de ajustes. Não exporta nada.
+ */
+
 import { applyTheme } from './theme.js';
 import { applyLanguage, getCurrentLanguage, initializeLanguage, t } from './language.js';
 import { clearChat, initializeChat, cancelPendingResponse } from './chat.js';

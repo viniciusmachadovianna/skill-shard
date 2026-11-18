@@ -64,6 +64,7 @@ Add new tests as `unittest.TestCase` classes and mock every call to Gemini.
 - Add each new key to both the `en` and `pt-BR` blocks of `translations`. A key present in only one language shows up untranslated.
 - Do not put `data-i18n` on an element whose text JavaScript sets at runtime: `applyLanguage` runs often (every panel toggle) and would overwrite it. Either set `element.dataset.i18n` to the current key together with the text, or leave the attribute off and re-render the text from `onLanguageChange(callback)`.
 - Icons inside a button that already has an `aria-label` use `alt=""`.
+- Document each module with a short `@file` comment at the top that says what it owns, and put JSDoc (`@param`, `@returns`, `@throws`) on every exported function, in Portuguese like the Python docstrings. Private helpers only get one when what they do is not obvious. Keep the JSDoc in sync when a signature changes.
 
 ## Documentation
 

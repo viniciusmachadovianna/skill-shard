@@ -1,4 +1,12 @@
-import { showToast } from './main.js';
+/**
+ * @file Tema claro e escuro.
+ *
+ * Aplica o tema, guarda a preferência no `localStorage` (chave
+ * `skill-shard-theme`) e atende o botão `#theme-toggle`. Ao ser importado, o
+ * módulo já lê a preferência salva e registra o clique do botão.
+ */
+
+import { showToast } from './toast.js';
 import { t } from './language.js';
 
 const themeToggle = document.getElementById('theme-toggle');
@@ -8,6 +16,14 @@ const mobileTheme = {
     light: '#f1f5f7',
     dark: '#080b0e'
 }
+/**
+ * Aplica um tema: define `data-theme` no `<html>`, troca o ícone do botão,
+ * atualiza o rótulo dele (traduzido) e a cor da barra do navegador em
+ * dispositivos móveis. Não salva a preferência.
+ *
+ * @param {'light' | 'dark'} [theme] Qualquer valor diferente de `'light'`,
+ *     inclusive nenhum, aplica o tema escuro.
+ */
 export function applyTheme(theme) {
     const isLight = theme === 'light';
     document.documentElement.dataset.theme = isLight ? 'light' : 'dark';

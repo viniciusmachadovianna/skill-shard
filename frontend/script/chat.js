@@ -1,3 +1,17 @@
+/**
+ * @file Chat: envio de perguntas, exibição das mensagens e estado da conexão.
+ *
+ * Responsabilidades:
+ * - enviar a pergunta ao backend no modo escolhido (`llm`, `rag` ou
+ *   `graphrag`), com os IDs dos documentos ativados e nunca o conteúdo;
+ * - exibir as mensagens, com um renderizador de Markdown simples (títulos,
+ *   listas, blocos de código, negrito, itálico, código em linha e links
+ *   http/https);
+ * - verificar se o backend e o modelo estão prontos e refletir isso no
+ *   indicador de status e no botão de envio;
+ * - exportar a conversa como arquivo de texto.
+ */
+
 import { $, $$ } from './utils.js';
 import * as api from './api.js';
 import { t } from './language.js';
@@ -104,6 +118,11 @@ function addMessage(label, message, className = '') {
     scrollToLatestMessage();
 }
 
+/**
+ * Cancela a pergunta em andamento: aborta a requisição, esconde o indicador de
+ * carregamento e reabilita o envio se o backend estiver pronto. É seguro
+ * chamar sem nenhuma pergunta pendente.
+ */
 export function cancelPendingResponse() {
     pendingRequestController?.abort();
     pendingRequestController = undefined;
@@ -113,6 +132,10 @@ export function cancelPendingResponse() {
     updateScrollCue();
 }
 
+/**
+ * Limpa a conversa: cancela a pergunta pendente, remove as mensagens, volta à
+ * tela de boas-vindas e esvazia o campo de texto.
+ */
 export function clearChat() {
     cancelPendingResponse();
     conversationOutput.replaceChildren();
@@ -260,6 +283,25 @@ function exportConversation(onEmptyExport) {
     URL.revokeObjectURL(url);
 }
 
+/**
+ * Liga o chat à página: cartões de objetivo, envio com Enter (Shift+Enter
+ * quebra a linha), rolagem, botão de nova verificação, formulário de envio e
+ * exportação. Também inicia a primeira verificação do backend (`GET /ready`).
+ * Deve ser chamada uma vez.
+ *
+ * @param {Object} callbacks
+ * @param {() => void} callbacks.onEmptyExport Chamada quando o usuário pede
+ *     para exportar uma conversa sem mensagens.
+ * @param {(graph: Object) => void} callbacks.onRelationalResponse Chamada
+ *     depois de uma resposta bem-sucedida no modo `graphrag`, com o subgrafo
+ *     devolvido pelo backend.
+ * @returns {{
+ *     setKnowledgeIndexStatus: (status: 'loading' | 'ready' | 'error') => void,
+ *     setRetryKnowledgeIndex: (retry: () => void) => void
+ * }} Funções para a base de conhecimento informar o andamento da indexação (o
+ *     chat só libera o envio quando ela termina) e registrar o que fazer
+ *     quando o usuário pedir uma nova tentativa.
+ */
 export function initializeChat({ onEmptyExport, onRelationalResponse }) {
     $$('.objective-card').forEach((card) => {
         card.addEventListener('click', () => {
