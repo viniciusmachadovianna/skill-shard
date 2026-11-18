@@ -196,3 +196,17 @@
     font: 10px var(--mono);
     letter-spacing: .04em;
 }
+.graph-mode-icon { width: 24px; height: 24px; object-fit: contain; }
+.graph-mode-notice {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 10px;
+}
+.graph-mode-notice > * { grid-column: 1 / -1; }
+.graph-mode-notice > .graph-mode-icon { grid-column: 1; grid-row: 1 / span 2; }
+.graph-mode-notice > strong,
+.graph-mode-notice > .graph-mode-badge { grid-column: 2; }
+.graph-mode-notice > strong { align-self: end; }
+.graph-mode-notice > .graph-mode-badge { align-self: start; margin-top: -8px; }

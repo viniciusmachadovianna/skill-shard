@@ -177,6 +177,7 @@
                 <section class="right-panel-graph" id="right-panel-graph"
                     aria-label="Entity relationship graph" data-i18n-aria="entity-graph-title">
                     <div class="graph-mode-notice" id="graph-mode-notice" role="note">
+                        <img class="graph-mode-icon" src="./assets/icons/connections.svg" alt="" width="24" height="24" aria-hidden="true">
                         <strong data-i18n="entity-graph-title">Entity relationship graph</strong>
                         <span class="graph-mode-badge" data-i18n="graph-mode-badge">RELATIONAL RAG ONLY</span>
                         <p data-i18n="graph-mode-text">This graph is only available in Relational RAG mode, which has its own parameters: entities and relationships are extracted from your enabled documents, and each answer draws its subgraph from the passages it retrieved.</p>
@@ -225,7 +226,7 @@
                     </div>
                     <div class="document-preview-content">
                         <p class="document-preview-empty" id="assistant-document-empty">
-                            Select a document
+                            Click a document in the list to preview its contents here.
                         </p>
                         <pre class="document-preview-text" id="assistant-document-text" hidden></pre>
                     </div>
@@ -259,7 +260,6 @@
             <span data-i18n="add-documents">Add documents</span>
         </button>
         <button class="knowledge-add entity-graph-open" id="entity-graph-open" type="button">
-            <img src="./assets/icons/connections.svg" alt="" width="18" height="18" aria-hidden="true">
             <span data-i18n="entity-graph-open">View entity graph</span>
         </button>
         <input id="file-input" type="file"
