@@ -201,6 +201,7 @@ sidebarToggle.addEventListener('click', () => {
 rightPanelToggle.addEventListener('click', () => {
     if (suppressPanelToggleClick) return;
     rightPanel.classList.toggle('is-collapsed');
+    syncRightPanelMaxHeight();
     placeFloatingPanelAfterToggle();
     syncSidebarState();
 });
@@ -319,6 +320,36 @@ new ResizeObserver(() => {
     clearTimeout(panelSaveTimer);
     panelSaveTimer = setTimeout(() => { clampFloatingPanel(); saveFloatingPanel(); }, 200);
 }).observe(rightPanel);
+
+// The explorer may be dragged shorter than its content, never taller: cap its
+// max-height at the natural content height. The content box itself stretches
+// with the panel, so measure its children instead of its scrollHeight; outside
+// Relational RAG mode the only visible child is the graph-view notice, so the
+// cap follows the notice height.
+const rightPanelContent = rightPanel.querySelector('.right-panel-content');
+
+function getNaturalContentHeight() {
+    const style = getComputedStyle(rightPanelContent);
+    const children = [...rightPanelContent.children].filter((child) => child.offsetHeight > 0);
+    const gaps = Math.max(0, children.length - 1) * (parseFloat(style.rowGap) || 0);
+    const padding = (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0);
+    return children.reduce((sum, child) => sum + child.offsetHeight, 0) + gaps + padding;
+}
+
+function syncRightPanelMaxHeight() {
+    if (rightPanel.classList.contains('is-collapsed')) return;
+    const frame = rightPanel.offsetHeight - rightPanel.clientHeight;
+    const natural = rightPanelBar.offsetHeight + getNaturalContentHeight() + frame;
+    const viewportCap = Math.min(window.innerHeight * 0.8, 720);
+    rightPanel.style.maxHeight = `${Math.ceil(Math.min(natural, viewportCap))}px`;
+}
+
+const rightPanelContentObserver = new ResizeObserver(syncRightPanelMaxHeight);
+rightPanelContentObserver.observe(rightPanelContent);
+for (const child of rightPanelContent.querySelectorAll(':scope > *, :scope > * > *')) {
+    rightPanelContentObserver.observe(child);
+}
+window.addEventListener('resize', syncRightPanelMaxHeight);
 
 // The collapsed icon only slides vertically, along the right edge of the work area.
 const COLLAPSED_ICON_SIZE = 44;

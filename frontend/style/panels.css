@@ -66,9 +66,9 @@
     width: var(--right-panel-width);
     min-width: 280px;
     max-width: calc(100vw - 16px);
-    height: min(70vh, 640px);
-    min-height: 220px;
-    max-height: calc(100vh - 16px);
+    height: auto; /* fits its content; may be dragged shorter, never taller (max-height is synced in main.js) */
+    min-height: 0;
+    max-height: min(80vh, 720px);
     flex-direction: column;
     overflow: hidden;
     resize: both;
@@ -114,7 +114,7 @@
     flex: 1 1 auto;
     flex-direction: column;
     gap: 20px;
-    padding: 14px;
+    padding: 14px 14px 18px;
     overflow-y: auto;
     scrollbar-color: var(--scrollbar-thumb) transparent;
     scrollbar-width: thin;
