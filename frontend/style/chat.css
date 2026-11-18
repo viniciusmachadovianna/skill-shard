@@ -289,4 +289,5 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .composer-actions .adjustments-toggle:hover { border-color: var(--cyan); }
 .composer-actions .adjustments-toggle + .send-button { margin-left: 0; }
-.composer-footnote { margin: 10px 0 0; color: #657681; text-align: center; font-size: 13px; font-weight: 300; }
+.composer-footnote { margin: 10px 0 0; color: #657681; text-align: center; font-size: 13px; font-weight: 400; }
+.composer-footnote-emphasis { color: inherit; font: inherit; text-decoration: underline; text-underline-offset: 3px; }
