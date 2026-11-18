@@ -205,3 +205,4 @@
     letter-spacing: 0;
     text-transform: none;
 }
+.knowledge-dialog .document-preview-empty { padding: 28px 24px; font: 13px/1.6 var(--display); text-align: center; }
