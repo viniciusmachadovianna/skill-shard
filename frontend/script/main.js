@@ -461,7 +461,8 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-informationModal.addEventListener('click', () => {
+informationModal.addEventListener('click', (event) => {
+    event.preventDefault();
     informationDialog.showModal();
     informationClose.focus();
 });
@@ -474,8 +475,41 @@ informationDialog.addEventListener('click', (event) => {
     if (event.target === informationDialog) informationDialog.close();
 });
 
+const modelSelect = $('#adjustments-model');
+let modelsLoaded = false;
+let modelsLoading = false;
+
+/** Preenche o seletor de modelos com `GET /models`; tenta de novo na próxima abertura se falhar. */
+async function loadModelOptions() {
+    if (modelsLoaded || modelsLoading) return;
+    modelsLoading = true;
+    try {
+        const { models } = await listModels();
+        if (!models.length) throw new Error('No models returned');
+        const previous = modelSelect.value;
+        modelSelect.replaceChildren(...models.map((model) => {
+            const option = document.createElement('option');
+            option.value = model.id;
+            option.textContent = model.display_name;
+            return option;
+        }));
+        const preferred = models.find((model) => model.id === previous) ?? models.find((model) => model.default);
+        if (preferred) modelSelect.value = preferred.id;
+        modelsLoaded = true;
+    } catch {
+        const option = document.createElement('option');
+        option.value = '';
+        option.dataset.i18n = 'lm-model-unavailable';
+        option.textContent = t('lm-model-unavailable');
+        modelSelect.replaceChildren(option);
+    } finally {
+        modelsLoading = false;
+    }
+}
+
 adjustmentsToggle.addEventListener('click', () => {
     adjustmentsDialog.showModal();
+    loadModelOptions();
 });
 
 adjustmentsClose.addEventListener('click', () => {

@@ -553,6 +553,43 @@ def ready(refresh: bool = False):
         ready_cache_until = monotonic() + READY_CACHE_SECONDS
         return {"ready": True, "cached": False}
 
+@app.get("/models")
+def list_models():
+    """
+    Lista os modelos Gemini que aceitam geração de texto.
+
+    Consulta `GET /v1beta/models` da API Gemini com a chave do servidor, que
+    nunca chega ao navegador. Devolve `models` (cada item com `id`,
+    `display_name` e `default`, que marca o modelo configurado em
+    `LLM_MODEL_ID`). Responde 503 se a chave não estiver configurada e 502 se a
+    consulta falhar.
+    """
+    if not api_key:
+        raise HTTPException(status_code=503, detail="LLM_API_KEY is not configured.")
+
+    try:
+        client = genai.Client(
+            api_key=api_key,
+            http_options=types.HttpOptions(timeout=READY_TIMEOUT_MS),
+        )
+        models = [
+            {
+                "id": model.name.removeprefix("v1/models/"),
+                "display_name": model.display_name or model.name,
+            }
+            for model in client.models.list(config={"page_size": 1000})
+            if model.name and "generateContent" in (model.supported_actions or [])
+        ]
+    except Exception:
+        logger.exception("Gemini model listing failed.")
+        raise HTTPException(
+            status_code=502,
+            detail="Could not list Gemini models. Check the API key and connection.",
+        ) from None
+
+    default_id = (llm_model or "").removeprefix("models/")
+    return {"models": [{**model, "default": model["id"] == default_id} for model in models]}
+
 @app.post("/ask", response_model=AskResponse)
 def ask(request: AskRequest) -> AskResponse:
     """

@@ -214,16 +214,10 @@
                     </div>
                     <div class="metric">
                         <label for="adjustments-model" data-i18n="lm-model">LM Model</label>
-                        <input class="adjustments-input" id="adjustments-model" type="text" value="Gemini">
+                        <select class="adjustments-input mode-select" id="adjustments-model" name="adjustments-model">
+                            <option value="" data-i18n="lm-model-loading">Loading…</option>
+                        </select>
                     </div>
-                    <div class="metric"><span data-i18n="knowledge-sources">Knowledge sources</span><strong
-                            id="source-metric">00 DOCUMENTS</strong></div>
-                    <div class="metric">
-                        <label for="adjustments-memory" data-i18n="conversation-memory">Conversation memory</label>
-                        <input class="adjustments-input" id="adjustments-memory" type="text" value="LOCAL">
-                    </div>
-                    <div class="metric"><span data-i18n="retrieval-protocol">Retrieval protocol</span><strong
-                            data-i18n="standby">STANDBY</strong></div>
                 </div>
 
                 <section class="document-preview" id="assistant-document-preview" aria-labelledby="document-preview-title">
@@ -239,8 +233,6 @@
                             Enable a document in the knowledge base to preview it here.
                         </p>
                         <pre class="document-preview-text" id="assistant-document-text" hidden></pre>
-                        <iframe class="document-preview-pdf" id="assistant-document-pdf" hidden
-                            title="Document preview" data-i18n-title="document-preview-title"></iframe>
                     </div>
                     <nav class="document-preview-pager" id="assistant-document-pager" hidden
                         aria-label="Chunk navigation" data-i18n-aria="chunk-pager-label">
