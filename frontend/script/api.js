@@ -125,6 +125,21 @@ export function indexDocuments(documents) {
 }
 
 /**
+ * Pede os trechos em que um documento é dividido na indexação (`POST /chunks`).
+ *
+ * @param {IndexDocument} document Documento a dividir.
+ * @returns {Promise<{chunks: Array<{chunk: number, page: (number | null), text: string}>}>}
+ * @throws {ApiError} 422 se o documento for inválido.
+ */
+export function getDocumentChunks({ id, name, content, encoding }) {
+    return request('/chunks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name, content, encoding: encoding ?? 'text' })
+    });
+}
+
+/**
  * Remove um documento indexado do backend (`DELETE /documents`).
  *
  * @param {string} id ID do documento.
