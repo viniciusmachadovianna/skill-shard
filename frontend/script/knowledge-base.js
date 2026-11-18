@@ -29,18 +29,21 @@ const fileInput = $('#file-input');
 const documentList = $('#knowledge-document-list');
 const emptyState = $('#knowledge-empty');
 const summary = $('#knowledge-summary');
-const documentCount = $('#document-count');
-const sourceMetric = $('#source-metric');
+const knowledgeStatus = $('#knowledge-status');
 const previewSelect = $('#assistant-document-select');
 const previewEmpty = $('#assistant-document-empty');
 const previewText = $('#assistant-document-text');
-const previewPdf = $('#assistant-document-pdf');
-const PREVIEW_CHARACTER_LIMIT = 1200;
+const previewPager = $('#assistant-document-pager');
+const previewPrevious = $('#assistant-chunk-prev');
+const previewNext = $('#assistant-chunk-next');
+const previewPosition = $('#assistant-chunk-position');
 
 let databasePromise;
 let currentDocuments = [];
 let selectedPreviewDocumentId;
-let previewObjectUrl;
+let previewChunkIndex = 0;
+let previewChunks = [];
+const chunkCache = new Map();
 
 function openDatabase() {
     if (!('indexedDB' in window)) {
@@ -241,8 +244,16 @@ function formatSummary(count) {
 
 function updateDocumentCounters(documents) {
     const enabledCount = documents.filter((document) => document.enabled).length;
-    documentCount.textContent = String(enabledCount);
-    sourceMetric.textContent = `${String(enabledCount).padStart(2, '0')} ${t(enabledCount === 1 ? 'document-singular' : 'document-plural')}`;
+    if (documents.length === 0) {
+        knowledgeStatus.textContent = t('knowledge-status-none');
+    } else if (enabledCount === 0) {
+        knowledgeStatus.textContent = t(documents.length === 1 ? 'knowledge-status-available-one' : 'knowledge-status-available-many')
+            .replace('{count}', String(documents.length));
+    } else {
+        knowledgeStatus.textContent = t('knowledge-status-active')
+            .replace('{active}', String(enabledCount))
+            .replace('{count}', String(documents.length));
+    }
     summary.textContent = formatSummary(documents.length);
     documentList.hidden = documents.length === 0;
     emptyState.hidden = documents.length !== 0;
@@ -311,18 +322,47 @@ async function renderDocuments() {
     return documents;
 }
 
-function clearPdfPreview() {
-    previewPdf.removeAttribute('src');
-    if (previewObjectUrl) {
-        URL.revokeObjectURL(previewObjectUrl);
-        previewObjectUrl = undefined;
+function getDocumentChunks(document) {
+    const cacheKey = `${document.id}:${document.content?.length ?? 0}`;
+    if (!chunkCache.has(cacheKey)) {
+        const request = api.getDocumentChunks(document)
+            .then((result) => result.chunks)
+            .catch((error) => {
+                chunkCache.delete(cacheKey);
+                throw error;
+            });
+        chunkCache.set(cacheKey, request);
     }
+    return chunkCache.get(cacheKey);
 }
 
-function renderAssistantPreview(documents) {
+function renderPreviewChunk() {
+    const chunk = previewChunks[previewChunkIndex];
+    previewText.textContent = chunk.text;
+    previewText.scrollTop = 0;
+    previewText.hidden = false;
+    previewEmpty.hidden = true;
+    previewPager.hidden = false;
+    previewPosition.textContent = t(chunk.page ? 'chunk-position-page' : 'chunk-position')
+        .replace('{current}', String(previewChunkIndex + 1))
+        .replace('{total}', String(previewChunks.length))
+        .replace('{page}', String(chunk.page ?? ''));
+    previewPrevious.disabled = previewChunkIndex === 0;
+    previewNext.disabled = previewChunkIndex === previewChunks.length - 1;
+}
+
+function showPreviewMessage(key) {
+    previewText.hidden = true;
+    previewPager.hidden = true;
+    previewEmpty.hidden = false;
+    previewEmpty.textContent = t(key);
+}
+
+async function renderAssistantPreview(documents, { resetChunk = false } = {}) {
     const enabledDocuments = documents.filter((document) => document.enabled);
     const selectedDocument = enabledDocuments.find((document) => document.id === selectedPreviewDocumentId)
         ?? enabledDocuments[0];
+    const documentChanged = selectedDocument?.id !== selectedPreviewDocumentId;
 
     selectedPreviewDocumentId = selectedDocument?.id;
     previewSelect.replaceChildren(...enabledDocuments.map((document) => {
@@ -334,49 +374,42 @@ function renderAssistantPreview(documents) {
     previewSelect.hidden = enabledDocuments.length === 0;
     if (selectedDocument) previewSelect.value = selectedDocument.id;
 
-    previewText.hidden = true;
-    previewPdf.hidden = true;
-    previewEmpty.hidden = Boolean(selectedDocument);
-    previewEmpty.textContent = t('document-preview-empty');
-    clearPdfPreview();
+    previewChunks = [];
+    if (!selectedDocument) {
+        showPreviewMessage('document-preview-empty');
+        return;
+    }
+    if (documentChanged || resetChunk) previewChunkIndex = 0;
 
-    if (!selectedDocument) return;
-
-    const extension = selectedDocument.name.split('.').pop()?.toLowerCase();
-    if (extension === 'pdf') {
-        if (selectedDocument.encoding !== 'base64') {
-            previewEmpty.hidden = false;
-            previewEmpty.textContent = t('document-preview-pdf-readd');
-            return;
-        }
-
-        try {
-            const binary = window.atob(selectedDocument.content);
-            const bytes = new Uint8Array(binary.length);
-            for (let index = 0; index < binary.length; index += 1) {
-                bytes[index] = binary.charCodeAt(index);
-            }
-            previewObjectUrl = URL.createObjectURL(
-                new Blob([bytes], { type: 'application/pdf' })
-            );
-            previewPdf.src = previewObjectUrl;
-            previewPdf.hidden = false;
-            previewEmpty.hidden = true;
-        } catch (error) {
-            console.error('Could not render the PDF preview:', error);
-            previewEmpty.hidden = false;
-            previewEmpty.textContent = t('document-preview-error');
-        }
+    if (selectedDocument.name.toLowerCase().endsWith('.pdf') && selectedDocument.encoding !== 'base64') {
+        showPreviewMessage('document-preview-pdf-readd');
         return;
     }
 
-    const content = selectedDocument.content ?? '';
-    const isTruncated = content.length > PREVIEW_CHARACTER_LIMIT;
-    previewText.textContent = isTruncated
-        ? `${content.slice(0, PREVIEW_CHARACTER_LIMIT)}\n\n${t('document-preview-truncated')}`
-        : content || t('document-preview-no-text');
-    previewText.hidden = false;
-    previewEmpty.hidden = true;
+    showPreviewMessage('document-preview-loading');
+    const requestedId = selectedDocument.id;
+    try {
+        const chunks = await getDocumentChunks(selectedDocument);
+        if (selectedPreviewDocumentId !== requestedId) return;
+        if (!chunks.length) {
+            showPreviewMessage('document-preview-no-text');
+            return;
+        }
+        previewChunks = chunks;
+        previewChunkIndex = Math.min(previewChunkIndex, chunks.length - 1);
+        renderPreviewChunk();
+    } catch (error) {
+        if (selectedPreviewDocumentId !== requestedId) return;
+        console.error('Could not load the document chunks:', error);
+        showPreviewMessage('document-preview-error');
+    }
+}
+
+function stepPreviewChunk(step) {
+    const next = previewChunkIndex + step;
+    if (next < 0 || next >= previewChunks.length) return;
+    previewChunkIndex = next;
+    renderPreviewChunk();
 }
 
 function reportStorageError(error, showToast) {
@@ -430,8 +463,10 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
 
     previewSelect.addEventListener('change', () => {
         selectedPreviewDocumentId = previewSelect.value;
-        renderAssistantPreview(currentDocuments);
+        renderAssistantPreview(currentDocuments, { resetChunk: true });
     });
+    previewPrevious.addEventListener('click', () => stepPreviewChunk(-1));
+    previewNext.addEventListener('click', () => stepPreviewChunk(1));
 
     async function refreshDocuments({ synchronize = false, index = false } = {}) {
         let repositoryDocumentsChanged = false;

@@ -393,6 +393,28 @@ def list_repository_documents(include_chunk_counts: bool = Query(default=False))
     """
     return load_repository_documents(include_chunk_counts=include_chunk_counts)
 
+@app.post("/chunks")
+def list_document_chunks(document: IndexDocument):
+    """
+    Devolve os trechos em que um documento é dividido na indexação.
+
+    Usa a mesma divisão de `/index`, então os trechos exibidos são exatamente
+    os que seriam indexados. Cada item traz `chunk` (número a partir de 1),
+    `page` (número ou `None`) e `text`. Responde 422 se o documento for
+    inválido (tipo não suportado, PDF ilegível etc.).
+    """
+    try:
+        chunks = build_document_chunks([document])
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+    return {
+        "chunks": [
+            {"chunk": chunk["chunk"], "page": chunk["page"], "text": chunk["text"]}
+            for chunk in chunks
+        ]
+    }
+
 @app.get(
     "/graph",
     response_model=GraphResponse,

@@ -242,6 +242,14 @@
                         <iframe class="document-preview-pdf" id="assistant-document-pdf" hidden
                             title="Document preview" data-i18n-title="document-preview-title"></iframe>
                     </div>
+                    <nav class="document-preview-pager" id="assistant-document-pager" hidden
+                        aria-label="Chunk navigation" data-i18n-aria="chunk-pager-label">
+                        <button type="button" id="assistant-chunk-prev" aria-label="Previous chunk"
+                            data-i18n-aria="chunk-previous">‹</button>
+                        <span id="assistant-chunk-position" aria-live="polite"></span>
+                        <button type="button" id="assistant-chunk-next" aria-label="Next chunk"
+                            data-i18n-aria="chunk-next">›</button>
+                    </nav>
                 </section>
 
                 <div class="signal-bars" aria-hidden="true">
