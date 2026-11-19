@@ -124,6 +124,20 @@ function createConversationEntry(name) {
     title.textContent = name;
     selectButton.append(icon, title);
 
+    const renameButton = document.createElement('button');
+    renameButton.className = 'knowledge-delete conversation-delete conversation-rename';
+    renameButton.type = 'button';
+    renameButton.dataset.conversationAction = 'rename';
+    renameButton.setAttribute('aria-label', t('rename-conversation'));
+    renameButton.dataset.i18nAria = 'rename-conversation';
+    renameButton.title = t('rename-conversation');
+    renameButton.dataset.i18nTitle = 'rename-conversation';
+    const renameIcon = document.createElement('img');
+    renameIcon.src = 'assets/icons/edit.svg';
+    renameIcon.alt = '';
+    renameIcon.setAttribute('aria-hidden', 'true');
+    renameButton.append(renameIcon);
+
     const deleteButton = document.createElement('button');
     deleteButton.className = 'knowledge-delete conversation-delete';
     deleteButton.type = 'button';
@@ -143,7 +157,7 @@ function createConversationEntry(name) {
     menu.setAttribute('role', 'menu');
     menu.hidden = true;
 
-    entry.append(selectButton, deleteButton, menu);
+    entry.append(selectButton, renameButton, deleteButton, menu);
     return entry;
 }
 
@@ -159,6 +173,56 @@ function activateConversation(entry) {
     if (title.dataset.i18n) workspaceTitle.dataset.i18n = title.dataset.i18n;
     else delete workspaceTitle.dataset.i18n;
     showConversation(entry.dataset.conversationId);
+}
+
+function setConversationName(entry, name) {
+    const title = entry.querySelector('.conversation-item span:last-child');
+    delete title.dataset.i18n;
+    title.textContent = name;
+    if (entry.classList.contains('active')) {
+        delete workspaceTitle.dataset.i18n;
+        workspaceTitle.textContent = name;
+    }
+}
+
+/** Troca o título da conversa por um campo de texto: Enter ou sair do campo confirma, Esc cancela. */
+function startRename(entry) {
+    if (entry.querySelector('.conversation-rename-input')) return;
+    const selectButton = entry.querySelector('.conversation-item');
+    const title = selectButton.querySelector('span:last-child');
+    const input = document.createElement('input');
+    input.className = 'conversation-rename-input';
+    input.type = 'text';
+    input.maxLength = 80;
+    input.value = title.textContent;
+    input.setAttribute('aria-label', t('rename-conversation'));
+    selectButton.hidden = true;
+    selectButton.before(input);
+    input.focus();
+    input.select();
+
+    let finished = false;
+    const finish = (save) => {
+        if (finished) return;
+        finished = true;
+        const name = input.value.trim();
+        input.remove();
+        selectButton.hidden = false;
+        if (!save || name === title.textContent) return;
+        if (!name) {
+            showToast(t('conversation-name-empty'), 'alert');
+            return;
+        }
+        setConversationName(entry, name);
+        showToast(t('conversation-renamed'));
+    };
+    input.addEventListener('keydown', (event) => {
+        if (event.isComposing) return;
+        if (event.key === 'Enter') finish(true);
+        else if (event.key === 'Escape') finish(false);
+        event.stopPropagation();
+    });
+    input.addEventListener('blur', () => finish(true));
 }
 
 function createConversation() {
@@ -517,6 +581,12 @@ conversationDeleteDialog.addEventListener('close', () => {
     conversationPendingDeletion = undefined;
 });
 
+conversationList.addEventListener('dblclick', (event) => {
+    if (!(event.target instanceof Element)) return;
+    const entry = event.target.closest('.conversation-entry');
+    if (entry && event.target.closest('.conversation-item')) startRename(entry);
+});
+
 conversationList.addEventListener('click', (event) => {
     if (!(event.target instanceof Element)) return;
     const target = event.target;
@@ -539,6 +609,8 @@ conversationList.addEventListener('click', (event) => {
     const entry = target.closest('.conversation-entry');
     if (!entry) return;
 
+    if (target.closest('.conversation-rename-input')) return;
+
     if (target.closest('.conversation-item')) {
         if (!entry.classList.contains('active')) activateConversation(entry);
         return;
@@ -560,20 +632,7 @@ conversationList.addEventListener('click', (event) => {
         const title = entry.querySelector('.conversation-item span:last-child');
 
         if (action === 'rename') {
-            const newName = window.prompt(t('rename-conversation-prompt'), title.textContent);
-            if (newName === null) return;
-            const trimmedName = newName.trim();
-            if (!trimmedName) {
-                showToast(t('conversation-name-empty'), 'alert');
-                return;
-            }
-            delete title.dataset.i18n;
-            title.textContent = trimmedName;
-            if (entry.classList.contains('active')) {
-                delete workspaceTitle.dataset.i18n;
-                workspaceTitle.textContent = trimmedName;
-            }
-            showToast(t('conversation-renamed'));
+            startRename(entry);
         } else if (action === 'delete') {
             conversationPendingDeletion = entry;
             conversationDeleteMessage.textContent = t('delete-conversation-confirm')

@@ -168,6 +168,7 @@ export default {
     'api-mode-mismatch': 'The API returned a response for a different retrieval mode.',
     'no-conversation-selected': 'No conversation selected',
     'rename-conversation-prompt': 'Rename conversation:',
+    'rename-conversation': 'Rename conversation',
     'conversation-name-empty': 'Conversation name cannot be empty.',
     'conversation-renamed': 'Conversation renamed.',
     'theme-switch-to-light': 'Switch to light theme',
