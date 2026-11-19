@@ -130,6 +130,7 @@ export default {
     'composer-footnote': 'Fluency doesn\'t equal truth. Always double-check the responses given here,',
     'composer-footnote-strong': 'even when answers are grounded in documents',
     'new-conversation-toast': 'New investigation started.',
+    'new-conversation-blocked': 'You already have an empty investigation. Use it first.',
     'request-failed': 'Could not get an answer. Check that the backend is running and try again.',
     'system-telemetry': 'SYSTEM TELEMETRY',
     'inference-engine': 'Inference engine',

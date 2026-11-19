@@ -9,7 +9,14 @@
 
 import { applyTheme } from './theme.js';
 import { applyLanguage, getCurrentLanguage, initializeLanguage, onLanguageChange, t } from './language.js';
-import { clearChat, initializeChat, cancelPendingResponse } from './chat.js';
+import {
+    initializeChat,
+    cancelPendingResponse,
+    createConversationOutput,
+    isConversationEmpty,
+    showConversation,
+    removeConversation
+} from './chat.js';
 import { initializeKnowledgeBase } from './knowledge-base.js';
 import { initializeEntityGraph, renderAnswerGraph } from './entity-graph.js';
 import { showToast } from './toast.js';
@@ -103,6 +110,8 @@ function syncSidebarState() {
 function createConversationEntry(name) {
     const entry = document.createElement('div');
     entry.className = 'conversation-entry';
+    entry.dataset.conversationId = crypto.randomUUID();
+    createConversationOutput(entry.dataset.conversationId);
 
     const selectButton = document.createElement('button');
     selectButton.type = 'button';
@@ -141,11 +150,32 @@ function createConversationEntry(name) {
 function activateConversation(entry) {
     conversationList.querySelectorAll('.conversation-entry').forEach((item) => {
         item.classList.toggle('active', item === entry);
+        const button = item.querySelector('.conversation-item');
+        if (item === entry) button.setAttribute('aria-current', 'true');
+        else button.removeAttribute('aria-current');
     });
     const title = entry.querySelector('.conversation-item span:last-child');
     workspaceTitle.textContent = title.textContent;
     if (title.dataset.i18n) workspaceTitle.dataset.i18n = title.dataset.i18n;
     else delete workspaceTitle.dataset.i18n;
+    showConversation(entry.dataset.conversationId);
+}
+
+function createConversation() {
+    const conversation = createConversationEntry(t('new-investigation'));
+    conversation.querySelector('.conversation-item span:last-child').dataset.i18n = 'new-investigation';
+    conversationEntries.append(conversation);
+    conversation.scrollIntoView({ block: 'nearest' });
+    activateConversation(conversation);
+    updateConversationCount();
+}
+
+// A conversa que já vem no HTML também precisa de um espaço de mensagens.
+const initialConversation = conversationList.querySelector('.conversation-entry');
+if (initialConversation) {
+    initialConversation.dataset.conversationId = crypto.randomUUID();
+    createConversationOutput(initialConversation.dataset.conversationId);
+    activateConversation(initialConversation);
 }
 
 function updateConversationCount() {
@@ -160,6 +190,7 @@ function deleteConversation(entry) {
     const deletedIndex = entries.indexOf(entry);
     if (wasActive) cancelPendingResponse();
     entry.remove();
+    removeConversation(entry.dataset.conversationId);
     updateConversationCount();
 
     if (wasActive) {
@@ -170,7 +201,6 @@ function deleteConversation(entry) {
         } else {
             workspaceTitle.dataset.i18n = 'no-conversation-selected';
             workspaceTitle.textContent = t('no-conversation-selected');
-            clearChat();
         }
     }
     showToast(t('conversation-deleted'));
@@ -178,6 +208,7 @@ function deleteConversation(entry) {
 
 const chat = initializeChat({
     onEmptyExport: () => showToast(t('export-empty'), 'alert'),
+    ensureConversation: createConversation,
     onRelationalResponse: (graph) => {
         rightPanel.classList.remove('is-collapsed');
         syncSidebarState();
@@ -492,19 +523,26 @@ conversationList.addEventListener('click', (event) => {
     const newConversationButton = target.closest('.new-conversation');
 
     if (newConversationButton) {
-        clearChat();
-        const conversation = createConversationEntry(t('new-investigation'));
-        conversation.querySelector('.conversation-item span:last-child').dataset.i18n = 'new-investigation';
-        conversationEntries.append(conversation);
-        conversation.scrollIntoView({ block: 'nearest' });
-        activateConversation(conversation);
-        updateConversationCount();
+        const emptyEntry = [...conversationList.querySelectorAll('.conversation-entry')]
+            .find((item) => isConversationEmpty(item.dataset.conversationId));
+        if (emptyEntry) {
+            activateConversation(emptyEntry);
+            emptyEntry.scrollIntoView({ block: 'nearest' });
+            showToast(t('new-conversation-blocked'), 'alert');
+            return;
+        }
+        createConversation();
         showToast(t('new-conversation-toast'));
         return;
     }
 
     const entry = target.closest('.conversation-entry');
     if (!entry) return;
+
+    if (target.closest('.conversation-item')) {
+        if (!entry.classList.contains('active')) activateConversation(entry);
+        return;
+    }
 
     const menuToggle = target.closest('.conversation-menu-toggle');
     if (menuToggle) {

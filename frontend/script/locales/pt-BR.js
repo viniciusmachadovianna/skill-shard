@@ -130,6 +130,7 @@ export default {
     'composer-footnote': 'Fluência não significa verdade. Sempre confira as respostas dadas,',
     'composer-footnote-strong': 'mesmo quando baseadas nos documentos.',
     'new-conversation-toast': 'Nova investigação iniciada.',
+    'new-conversation-blocked': 'Você já tem uma investigação vazia. Use-a primeiro.',
     'request-failed': 'Não foi possível obter uma resposta. Verifique se o backend está ativo e tente novamente.',
     'system-telemetry': 'TELEMETRIA DO SISTEMA',
     'inference-engine': 'Motor de inferência',

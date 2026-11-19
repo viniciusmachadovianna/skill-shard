@@ -39,7 +39,7 @@
     border-left: 2px solid var(--cyan);
     background: var(--surface-selected);
     text-align: left;
-    color: #d8e2e7;
+    color: var(--subtext);
     font-size: 16px;
     cursor: pointer;
 }
@@ -71,9 +71,16 @@
 .conversation-entry {
     margin-top: 12px;
     padding-right: 10px;
-    border-left: 2px solid var(--cyan);
+    border-left: 2px solid transparent;
+    background: transparent;
+    transition: background-color .15s, border-color .15s;
+}
+.conversation-entry:hover { background: var(--surface-hover); }
+.conversation-entry.active {
+    border-left-color: var(--cyan);
     background: var(--surface-selected);
 }
+.conversation-entry.active .conversation-item { color: var(--text); }
 .conversation-entry .conversation-item {
     width: auto;
     min-width: 0;

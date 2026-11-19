@@ -22,7 +22,12 @@ const workArea = $('#work-area');
 const welcomeContent = $('.welcome-content');
 const promptInput = $('#prompt-input');
 const retrievalMode = $('#retrieval-mode');
-const conversationOutput = $('#conversation-output');
+// Cada conversa guarda suas mensagens em um elemento próprio no DOM; só o da
+// conversa ativa fica visível. O elemento original da página fica sempre
+// vazio e serve de "sem conversa". `conversationOutput` aponta para o visível.
+const emptyConversationOutput = $('#conversation-output');
+const conversationOutputs = new Map();
+let conversationOutput = emptyConversationOutput;
 const scrollCue = $('.scroll-cue');
 const backendStatus = $('#backend-status');
 const backendStatusText = $('#backend-status-text');
@@ -130,6 +135,73 @@ export function cancelPendingResponse() {
     conversationOutput.removeAttribute('aria-busy');
     sendButton.disabled = !backendReady;
     updateScrollCue();
+}
+
+/**
+ * Cria o espaço de mensagens de uma conversa: um elemento oculto no DOM que
+ * guarda as mensagens dela. Ignora IDs já registrados.
+ *
+ * @param {string} id ID da conversa.
+ */
+export function createConversationOutput(id) {
+    if (conversationOutputs.has(id)) return;
+    const output = document.createElement('div');
+    output.className = 'conversation-output';
+    output.setAttribute('aria-live', 'polite');
+    output.dataset.conversationId = id;
+    output.hidden = true;
+    responseLoader.before(output);
+    conversationOutputs.set(id, output);
+}
+
+/**
+ * Informa se a conversa `id` ainda não tem nenhuma mensagem.
+ *
+ * @param {string} id ID da conversa.
+ * @returns {boolean} `false` também para IDs desconhecidos.
+ */
+export function isConversationEmpty(id) {
+    const output = conversationOutputs.get(id);
+    return Boolean(output) && output.childElementCount === 0;
+}
+
+function activateOutput(next) {
+    if (next === conversationOutput) return;
+    cancelPendingResponse();
+    conversationOutput.hidden = true;
+    next.hidden = false;
+    conversationOutput = next;
+    welcomeContent.hidden = next.childElementCount > 0;
+    updateScrollCue();
+}
+
+/**
+ * Mostra as mensagens da conversa `id` e esconde as das outras. Uma pergunta
+ * pendente é cancelada, porque a resposta pertenceria à conversa anterior.
+ * Sem mensagens, a tela de boas-vindas volta; o campo de texto não muda.
+ *
+ * @param {string} id ID de uma conversa criada com `createConversationOutput`.
+ */
+export function showConversation(id) {
+    const next = conversationOutputs.get(id);
+    if (next) activateOutput(next);
+}
+
+/**
+ * Remove do DOM as mensagens da conversa `id`. Se ela era a visível, o chat
+ * volta para a tela de boas-vindas, sem conversa, até outra ser mostrada.
+ *
+ * @param {string} id ID da conversa removida.
+ */
+export function removeConversation(id) {
+    const output = conversationOutputs.get(id);
+    if (!output) return;
+    if (output === conversationOutput) {
+        activateOutput(emptyConversationOutput);
+        promptInput.value = '';
+    }
+    conversationOutputs.delete(id);
+    output.remove();
 }
 
 /**
@@ -292,6 +364,8 @@ function exportConversation(onEmptyExport) {
  * @param {Object} callbacks
  * @param {() => void} callbacks.onEmptyExport Chamada quando o usuário pede
  *     para exportar uma conversa sem mensagens.
+ * @param {() => void} callbacks.ensureConversation Chamada antes de enviar uma
+ *     pergunta quando não há conversa ativa; deve criar e ativar uma.
  * @param {(graph: Object) => void} callbacks.onRelationalResponse Chamada
  *     depois de uma resposta bem-sucedida no modo `graphrag`, com o subgrafo
  *     devolvido pelo backend.
@@ -302,7 +376,7 @@ function exportConversation(onEmptyExport) {
  *     chat só libera o envio quando ela termina) e registrar o que fazer
  *     quando o usuário pedir uma nova tentativa.
  */
-export function initializeChat({ onEmptyExport, onRelationalResponse }) {
+export function initializeChat({ onEmptyExport, onRelationalResponse, ensureConversation }) {
     $$('.objective-card').forEach((card) => {
         card.addEventListener('click', () => {
             promptInput.value = card.dataset.prompt;
@@ -339,6 +413,7 @@ export function initializeChat({ onEmptyExport, onRelationalResponse }) {
         }
         if (pendingRequestController) return;
 
+        if (conversationOutput === emptyConversationOutput) ensureConversation?.();
         welcomeContent.hidden = true;
         addMessage(t('message-operator'), message, 'user-prompt');
         promptInput.value = '';
