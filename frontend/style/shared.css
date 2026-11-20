@@ -23,7 +23,8 @@
 .brand-mark span { width: 11px; height: 11px; background: var(--cyan); }
 .brand-copy { display: flex; flex: 0 0 auto; width: max-content; flex-direction: column; gap: 3px; white-space: nowrap; }
 .brand-copy strong { font: 500 22px/1 var(--display); letter-spacing: .04em; }
-.brand-copy small { font: 12px/1.2 var(--mono); color: #82909b; letter-spacing: .06em; }
+.brand-slashes { color: var(--cyan); font-weight: 400; }
+.brand-copy small { font: 10px/1.2 var(--mono); color: #82909b; letter-spacing: .06em; }
 .unit-label, .section-caption, .objective-label, .eyebrow,
 .composer-meta, .awaiting, .telemetry-title, .metric {
     font-family: var(--mono);
@@ -92,6 +93,7 @@
 .language-toggle,
 .theme-toggle,
 .adjustments-toggle { width: 27px; height: 27px; border: 1px solid var(--line); border-radius: 50%; font-size: 16px; }
+.adjustments-toggle { border-radius: 0; }
 .language-toggle img,
 .theme-toggle img,
 .adjustments-toggle img {

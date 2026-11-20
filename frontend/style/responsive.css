@@ -20,7 +20,7 @@
     .right-panel { top: 8px; right: 8px; }
     .brand-mark { width: 24px; height: 24px; }
     .brand-copy strong { font-size: 19px; }
-    .brand-copy small { font-size: 12px; }
+    .brand-copy small { font-size: 10px; }
     .unit-label { font-size: 12px; padding-left: 9px; }
     .sidebar { display: none; }
     .main-panel { min-height: 100dvh; }
