@@ -15,6 +15,7 @@
 import { $, $$ } from './utils.js';
 import * as api from './api.js';
 import { t } from './language.js';
+import { showToast } from './toast.js';
 import { getEnabledDocuments } from './knowledge-base.js';
 
 const composer = $('#composer');
@@ -116,6 +117,20 @@ function addMessage(label, message, className = '') {
         minute: '2-digit'
     }).format(timestamp);
     caption.append(messageLabel, time);
+    if (className.includes('assistant-reply')) {
+        const copyButton = document.createElement('button');
+        copyButton.type = 'button';
+        copyButton.className = 'copy-message';
+        copyButton.title = t('copy-message');
+        copyButton.setAttribute('aria-label', t('copy-message'));
+        copyButton.dataset.i18nTitle = 'copy-message';
+        copyButton.dataset.i18nAria = 'copy-message';
+        copyButton.addEventListener('click', async () => {
+            await navigator.clipboard.writeText(message);
+            showToast(t('message-copied'));
+        });
+        caption.append(copyButton);
+    }
     const body = document.createElement('div');
     body.innerHTML = className.includes('assistant-reply') ? renderMarkdown(message) : escapeHtml(message);
     article.append(caption, body);

@@ -162,6 +162,8 @@ export default {
     'entity-graph-empty': 'Enable documents in the knowledge base to see their graph.',
     'chunk-singular': 'chunk',
     'chunk-plural': 'chunks',
+    'copy-message': 'Copy message',
+    'message-copied': 'Message copied.',
     'message-operator': 'OPERATOR',
     'message-system': 'SS-800',
     'api-invalid-answer': 'The API returned an invalid answer.',

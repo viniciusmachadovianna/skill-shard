@@ -162,6 +162,8 @@ export default {
     'entity-graph-empty': 'Ative documentos na base de conhecimento para ver o grafo.',
     'chunk-singular': 'trecho',
     'chunk-plural': 'trechos',
+    'copy-message': 'Copiar mensagem',
+    'message-copied': 'Mensagem copiada.',
     'message-operator': 'OPERADOR',
     'message-system': 'SS-800',
     'api-invalid-answer': 'A API retornou uma resposta inválida.',

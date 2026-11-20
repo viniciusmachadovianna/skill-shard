@@ -94,6 +94,17 @@ html[data-theme="light"] .scroll-cue img { filter: invert(1) brightness(.35); }
     color: var(--cyan);
     font: 12px var(--mono);
 }
+.copy-message {
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border: 0;
+    background-color: var(--subtext);
+    cursor: pointer;
+    -webkit-mask: url("../assets/icons/copy.svg") center / contain no-repeat;
+    mask: url("../assets/icons/copy.svg") center / contain no-repeat;
+}
+.copy-message:hover { background-color: var(--cyan); }
 .chat-message time { color: var(--subtext); font-size: 12px; white-space: nowrap; }
 .chat-message > div {
     overflow-wrap: anywhere;
