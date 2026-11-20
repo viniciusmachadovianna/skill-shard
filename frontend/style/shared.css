@@ -45,11 +45,33 @@
     transform-origin: center;
     will-change: box-shadow, opacity;
 }
+/* Idle / checking: cyan. */
 .status-led-blue {
-    box-shadow: 0 0 0 2px #00d9ff, 0 0 9px 3px #00bfff, 0 0 23px 7px #006bff88, inset 0 0 8px #00aaff;
+    box-shadow: 0 0 0 2px #35c3ed, 0 0 9px 3px #35c3ed, 0 0 23px 7px #35c3ed66, inset 0 0 8px #35c3ed;
+}
+/* Answering: green. */
+.status-led-green {
+    box-shadow: 0 0 0 2px #58dba0, 0 0 9px 3px #58dba0, 0 0 23px 7px #58dba066, inset 0 0 8px #58dba0;
+    animation-name: indicator-blink-green;
 }
 .status-led-red {
     animation: status-led-red-blink 1.2s ease-in-out infinite alternate;
+}
+.status-led.status-led-send {
+    animation: status-led-send-blink .5s steps(1, end) 1;
+}
+/* Two hard on/off green flashes (steps, no fading), then back to normal. */
+@keyframes status-led-send-blink {
+    0%, 50% {
+        border-color: #58dba0;
+        opacity: 1;
+        box-shadow: 0 0 0 2px #58dba0, 0 0 9px 3px #58dba0, 0 0 22px 7px #58dba088, inset 0 0 8px #58dba0;
+    }
+    25%, 75%, 100% {
+        border-color: #2d4a3d;
+        opacity: .7;
+        box-shadow: none;
+    }
 }
 @keyframes status-led-red-blink {
     from {
@@ -66,11 +88,21 @@
 @keyframes indicator-blink {
     0% {
         opacity: .68;
-        box-shadow: 0 0 0 2px rgba(0, 217, 255, .8), 0 0 9px 3px rgba(0, 191, 255, .6), 0 0 18px 6px rgba(0, 107, 255, .45), inset 0 0 8px rgba(0, 170, 255, .78);
+        box-shadow: 0 0 0 2px rgba(53, 195, 237, .8), 0 0 9px 3px rgba(53, 195, 237, .6), 0 0 18px 6px rgba(53, 195, 237, .4), inset 0 0 8px rgba(53, 195, 237, .78);
     }
     100% {
         opacity: 1;
-        box-shadow: 0 0 0 2px rgba(0, 217, 255, 1), 0 0 12px 4px rgba(0, 191, 255, .9), 0 0 25px 8px rgba(0, 107, 255, .7), inset 0 0 10px rgba(0, 170, 255, 1);
+        box-shadow: 0 0 0 2px rgba(53, 195, 237, 1), 0 0 12px 4px rgba(53, 195, 237, .9), 0 0 25px 8px rgba(53, 195, 237, .6), inset 0 0 10px rgba(53, 195, 237, 1);
+    }
+}
+@keyframes indicator-blink-green {
+    0% {
+        opacity: .68;
+        box-shadow: 0 0 0 2px rgba(88, 219, 160, .8), 0 0 9px 3px rgba(88, 219, 160, .6), 0 0 18px 6px rgba(88, 219, 160, .4), inset 0 0 8px rgba(88, 219, 160, .78);
+    }
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 0 2px rgba(88, 219, 160, 1), 0 0 12px 4px rgba(88, 219, 160, .9), 0 0 25px 8px rgba(88, 219, 160, .6), inset 0 0 10px rgba(88, 219, 160, 1);
     }
 }
 .unit-label {

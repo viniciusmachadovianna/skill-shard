@@ -322,6 +322,12 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .composer textarea::placeholder { color: #8a9ba6; opacity: 1; }
 .composer-actions { display: flex; align-items: center; gap: 10px; }
+/* Idle: cyan. Answering: green. Unavailable: red. */
+/* Prefixed so it beats the plain `.awaiting` rule in adjustments-preview.css. */
+.composer-actions .awaiting { color: var(--cyan); }
+.composer-actions .awaiting .status-dot { background: var(--cyan); box-shadow: 0 0 8px #35c3ed88; }
+.awaiting.is-generating { color: var(--green); }
+.awaiting.is-generating .status-dot { background: var(--green); box-shadow: 0 0 8px #58dba088; }
 .awaiting.is-unavailable { color: #ec5748; }
 .awaiting.is-unavailable .status-dot {
     background: #ec5748;
@@ -330,9 +336,11 @@ h1 em { color: var(--cyan); font-style: normal; }
 .awaiting.is-loading { color: var(--cyan); }
 .awaiting.is-loading .status-dot {
     background: var(--cyan);
-    box-shadow: 0 0 8px #00d9ff88;
+    box-shadow: 0 0 8px #35c3ed88;
     animation: status-dot-pulse 1.2s ease-in-out infinite alternate;
 }
+.awaiting.is-loading.is-generating { color: var(--green); }
+.awaiting.is-loading.is-generating .status-dot { background: var(--green); box-shadow: 0 0 8px #58dba088; }
 @keyframes status-dot-pulse {
     to { opacity: .35; }
 }
