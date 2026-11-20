@@ -105,9 +105,10 @@ function renderMarkdown(markdown) {
     }).join('');
 }
 
-function addMessage(label, message, className = '') {
+function addMessage(label, message, className = '', mode = '') {
     const article = document.createElement('article');
     article.className = `chat-message ${className}`.trim();
+    if (mode) article.dataset.retrievalMode = mode;
     const caption = document.createElement('small');
     const messageLabel = document.createElement('span');
     messageLabel.textContent = label;
@@ -367,14 +368,15 @@ function exportConversation(onEmptyExport) {
         const label = message.querySelector('small span').textContent;
         const timestamp = message.querySelector('time').textContent;
         const body = message.querySelector(':scope > div').innerText;
-        return `${label} — ${timestamp}\n${body}`;
+        const mode = message.dataset.retrievalMode ? ` (${message.dataset.retrievalMode})` : '';
+        return `[${timestamp}] ${label}${mode}:\n\n${body}`;
     });
     if (!messages.length) {
         onEmptyExport();
         return;
     }
 
-    const file = new Blob([messages.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+    const file = new Blob([messages.join('\n\n\n')], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(file);
     const link = document.createElement('a');
     link.href = url;
@@ -454,20 +456,21 @@ export function initializeChat({ onEmptyExport, onRelationalResponse, ensureConv
         conversationOutput.setAttribute('aria-busy', 'true');
         updateScrollCue();
 
+        const mode = retrievalMode.value;
+        const modeLabel = retrievalMode.selectedOptions[0].textContent.trim();
         try {
-            const mode = retrievalMode.value;
             const documents = mode === 'llm' ? [] : await getEnabledDocuments();
             const documentIds = documents.map((document) => document.id);
             const result = await ask(message, mode, documentIds, controller.signal);
             if (controller.signal.aborted) return;
             markBackendReady();
-            addMessage(t('message-system'),result.answer, 'assistant-reply');
+            addMessage(t('message-system'), result.answer, 'assistant-reply', modeLabel);
             if (mode === 'graphrag') onRelationalResponse?.(result.graph);
         } catch (error) {
             if (controller.signal.aborted) return;
             console.error('Unable to get an answer from the API:', error);
             const detail = error instanceof Error ? `\n${error.message}` : '';
-            addMessage(t('message-system'),`${t('request-failed')}${detail}`, 'assistant-reply');
+            addMessage(t('message-system'), `${t('request-failed')}${detail}`, 'assistant-reply', modeLabel);
             checkBackendReadiness({ refresh: true });
         } finally {
             if (pendingRequestController === controller) {
