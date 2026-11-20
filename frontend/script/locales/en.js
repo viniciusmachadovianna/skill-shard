@@ -156,6 +156,8 @@ export default {
     'mode-graphrag': 'Relational RAG',
     'export-conversation': 'Export conversation',
     'export-label': 'Export',
+    'mock-label': 'Mock',
+    'mock-title': 'Add a mock question and answer (no API call)',
     'export-empty': 'There are no messages to export yet.',
     'scroll-to-composer': 'Scroll to the message box',
     'response-loading': 'Assistant is processing your question',

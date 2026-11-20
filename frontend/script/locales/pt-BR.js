@@ -156,6 +156,8 @@ export default {
     'mode-graphrag': 'RAG relacional',
     'export-conversation': 'Exportar conversa',
     'export-label': 'Exportar',
+    'mock-label': 'Mock',
+    'mock-title': 'Adicionar pergunta e resposta de exemplo (sem chamar a API)',
     'export-empty': 'Ainda não há mensagens para exportar.',
     'scroll-to-composer': 'Rolar até a caixa de mensagem',
     'response-loading': 'O assistente está processando sua pergunta',

@@ -20,21 +20,28 @@ _BRACKET = re.compile(r"\[([^\[\]]*chunks?\s*\d[^\[\]]*)\]", re.IGNORECASE)
 # Início de uma entrada: "Source:" opcional, o nome do arquivo e, opcionalmente,
 # a página, até o primeiro "chunk N".
 _ENTRY_HEAD = re.compile(
-    r"^\s*(?:source:\s*)?(?P<name>.+?)\s*,\s*(?:page\s*\d+\s*,\s*)?(?=chunks?\s*\d)",
+    r"^\s*(?:source:\s*)?(?P<name>.+?)\s*,\s*(?:page\s*(?P<page>\d+)\s*,\s*)?(?=chunks?\s*\d)",
     re.IGNORECASE,
 )
+
+
+def _bracket_citations(bracket_text: str):
+    """Gera `(arquivo, número do trecho, página ou None)` de cada citação do colchete."""
+    for entry in bracket_text.split(";"):
+        head = _ENTRY_HEAD.match(entry)
+        if not head:
+            continue
+        name = head.group("name").strip()
+        page = head.group("page")
+        for number in re.findall(r"\d+", entry[head.end():]):
+            yield name, int(number), int(page) if page else None
 
 
 def _citations(line: str):
     """Gera `(arquivo, número do trecho)` de cada citação encontrada na linha."""
     for bracket in _BRACKET.finditer(line):
-        for entry in bracket.group(1).split(";"):
-            head = _ENTRY_HEAD.match(entry)
-            if not head:
-                continue
-            name = head.group("name").strip()
-            for number in re.findall(r"\d+", entry[head.end():]):
-                yield name, int(number)
+        for name, number, _ in _bracket_citations(bracket.group(1)):
+            yield name, number
 
 
 def expand_short_ids(answer: str, chunks: list[dict]) -> str:
@@ -83,12 +90,25 @@ def insert_chunk_quotes(answer: str, chunks: list[dict]) -> str:
     """
     answer = expand_short_ids(answer, chunks)
     lookup = {
-        (chunk["source"].casefold(), chunk["chunk"]): (chunk["source"], chunk["text"])
+        (chunk["source"].casefold(), chunk["chunk"]): (chunk["source"], chunk["text"], chunk.get("page"))
         for chunk in chunks
     }
+
+    def canonical(match: re.Match) -> str:
+        # One `[Source: arquivo, page N, chunk K]` per cited chunk, so the
+        # interface can show each one as its own button.
+        labels = []
+        for name, number, written_page in _bracket_citations(match.group(1)):
+            entry = lookup.get((name.casefold(), number))
+            source, page = (entry[0], entry[2]) if entry else (name, written_page)
+            page_label = f", page {page}" if page is not None else ""
+            labels.append(f"[Source: {source}{page_label}, chunk {number}]")
+        return " ".join(labels) or match.group(0)
+
     output = []
 
     for line in answer.split("\n"):
+        line = _BRACKET.sub(canonical, line)
         output.append(line)
         quotes = []
         seen_in_line = set()
@@ -98,7 +118,7 @@ def insert_chunk_quotes(answer: str, chunks: list[dict]) -> str:
             if entry is None or key in seen_in_line:
                 continue
             seen_in_line.add(key)
-            source, text = entry
+            source, text, _ = entry
             quotes.append(f"> ⟦{source}|{number}⟧ " + " ".join(text.split()))
         for quote in quotes:
             output.extend(["", quote, ""])

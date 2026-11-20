@@ -89,6 +89,18 @@ class InsertChunkQuotesTests(unittest.TestCase):
     def test_lowercase_short_id_is_accepted(self):
         self.assertIn("alpha", insert_chunk_quotes("Fact [s1].", CHUNKS))
 
+    def test_multi_source_bracket_is_split_into_one_label_per_chunk(self):
+        result = insert_chunk_quotes("Fact [a.pdf, chunk 2, chunk 3; notes.md, chunk 1].", CHUNKS)
+        self.assertIn(
+            "Fact [Source: a.pdf, page 1, chunk 2] [Source: a.pdf, page 2, chunk 3] "
+            "[Source: notes.md, chunk 1].",
+            result,
+        )
+
+    def test_unmatched_entry_in_bracket_becomes_its_own_label(self):
+        result = insert_chunk_quotes("Fact [other.pdf, page 3, chunk 9].", CHUNKS)
+        self.assertEqual(result, "Fact [Source: other.pdf, page 3, chunk 9].")
+
 
 if __name__ == "__main__":
     unittest.main()
