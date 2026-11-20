@@ -120,6 +120,7 @@ function addMessage(label, message, className = '') {
     body.innerHTML = className.includes('assistant-reply') ? renderMarkdown(message) : escapeHtml(message);
     article.append(caption, body);
     conversationOutput.append(article);
+    updateExportButton();
     scrollToLatestMessage();
 }
 
@@ -172,6 +173,7 @@ function activateOutput(next) {
     next.hidden = false;
     conversationOutput = next;
     welcomeContent.hidden = next.childElementCount > 0;
+    updateExportButton();
     updateScrollCue();
 }
 
@@ -213,6 +215,7 @@ export function clearChat() {
     conversationOutput.replaceChildren();
     welcomeContent.hidden = false;
     promptInput.value = '';
+    updateExportButton();
     updateScrollCue();
 }
 
@@ -233,6 +236,10 @@ async function ask(question, mode, documentIds, signal) {
 
 function scrollToLatestMessage() {
     workArea.scrollTo({ top: workArea.scrollHeight, behavior: 'smooth' });
+}
+
+function updateExportButton() {
+    exportButton.disabled = conversationOutput.childElementCount === 0;
 }
 
 function updateScrollCue() {
@@ -393,6 +400,7 @@ export function initializeChat({ onEmptyExport, onRelationalResponse, ensureConv
     window.addEventListener('resize', updateScrollCue);
     workArea.addEventListener('scroll', updateScrollCue);
     updateScrollCue();
+    updateExportButton();
     updateBackendStatus();
     backendRetryButton.addEventListener('click', () => {
         if (knowledgeIndexStatus === 'error') retryKnowledgeIndex();
