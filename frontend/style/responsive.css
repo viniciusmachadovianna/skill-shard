@@ -23,9 +23,7 @@
     .brand-copy small { font-size: 12px; }
     .unit-label { font-size: 12px; padding-left: 9px; }
     .sidebar { display: none; }
-    .app-shell.sidebar-collapsed .workspace-heading { padding-left: 21px; }
     .main-panel { min-height: 100dvh; }
-    .workspace-heading { height: 46px; flex-basis: 46px; }
     .work-area { min-height: 420px; }
     .welcome-content { width: calc(100% - 38px); margin-top: 43px; }
     h1 { font-size: clamp(40px, 13vw, 52px); }

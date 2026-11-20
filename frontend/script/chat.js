@@ -14,7 +14,7 @@
 
 import { $, $$ } from './utils.js';
 import * as api from './api.js';
-import { t } from './language.js';
+import { t, onLanguageChange } from './language.js';
 import { showToast } from './toast.js';
 import { getEnabledDocuments } from './knowledge-base.js';
 
@@ -36,6 +36,8 @@ const backendRetryButton = $('#backend-retry');
 const backendLed = $('#backend-led');
 const composerActions = $('.composer-actions');
 const exportButton = $('#export-button');
+const workspaceHeading = $('.workspace-heading');
+const messageCount = $('#workspace-message-count');
 const sendButton = $('.send-button');
 const responseLoader = $('#response-loader');
 let pendingRequestController;
@@ -254,7 +256,11 @@ function scrollToLatestMessage() {
 }
 
 function updateExportButton() {
-    exportButton.disabled = conversationOutput.childElementCount === 0;
+    const count = conversationOutput.childElementCount;
+    exportButton.disabled = count === 0;
+    workspaceHeading.hidden = count === 0;
+    messageCount.textContent = t(count === 1 ? 'message-count-one' : 'message-count-many')
+        .replace('{count}', String(count));
 }
 
 function updateScrollCue() {
@@ -416,6 +422,7 @@ export function initializeChat({ onEmptyExport, onRelationalResponse, ensureConv
     workArea.addEventListener('scroll', updateScrollCue);
     updateScrollCue();
     updateExportButton();
+    onLanguageChange(updateExportButton);
     updateBackendStatus();
     backendRetryButton.addEventListener('click', () => {
         if (knowledgeIndexStatus === 'error') retryKnowledgeIndex();

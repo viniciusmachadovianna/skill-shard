@@ -3,6 +3,8 @@ export default {
     'system-status': 'SISTEMA LOCAL ONLINE',
     'conversations': 'CONVERSAS',
     'new-conversation': 'NOVA CONVERSA',
+    'message-count-one': '{count} mensagem',
+    'message-count-many': '{count} mensagens',
     'new-investigation': 'Nova investigação',
     'adjustments-open': 'Abrir ajustes',
     'adjustments-title': 'Ajustes',

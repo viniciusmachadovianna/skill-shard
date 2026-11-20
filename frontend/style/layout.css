@@ -12,18 +12,6 @@
 .app-shell.sidebar-collapsed {
     grid-template-columns: 0 minmax(420px, 1fr);
 }
-/* Leave room for the floating logotype when the sidebar is collapsed. */
-.app-shell.sidebar-collapsed .workspace-heading { position: relative; padding-left: 104px; }
-/* Divider between the floating logo and the conversation title. */
-.app-shell.sidebar-collapsed .workspace-heading::before {
-    position: absolute;
-    top: 14px;
-    bottom: 14px;
-    left: 80px;
-    width: 1px;
-    background: var(--line);
-    content: "";
-}
 .app-shell.is-resizing { transition: none; }
 /* Collapsed sidebar: knowledge base and adjustments shortcuts sit at the left edge. */
 .collapsed-rail { display: none; }
