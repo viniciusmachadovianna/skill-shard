@@ -19,6 +19,7 @@
     --muted: #70808d;
     --subtext: #80909b;
     --text: #dce4e9;
+    --reply-text: #f5f9fb;
     --cyan: #35c3ed;
     --green: #58dba0;
     --scrollbar-thumb: #286477;
@@ -51,6 +52,7 @@ html[data-theme="light"] {
     --muted: #607681;
     --subtext: #657b86;
     --text: #192a33;
+    --reply-text: #192a33;
     --cyan: #007894;
     --green: #168553;
     --scrollbar-thumb: #72aebb;

@@ -39,5 +39,40 @@ html[data-theme="light"] .toast.toast-error { border-color: #c9363b; background:
 html[data-theme="light"] .knowledge-close,
 html[data-theme="light"] .knowledge-document-name,
 html[data-theme="light"] .knowledge-delete { color: var(--text); }
-html[data-theme="light"] .knowledge-dialog::backdrop { background: #10191db3; }
-html[data-theme="light"] .adjustments-dialog::backdrop { background: #10191db3; }
+html[data-theme="light"] .knowledge-dialog::backdrop { background: #10191d66; }
+html[data-theme="light"] .adjustments-dialog::backdrop { background: #10191d66; }
+
+/* Soften elements that are hard-coded for the dark theme. */
+html[data-theme="light"] .panel-toggle { background: #e3edf1; }
+html[data-theme="light"] .panel-toggle:hover { background: #d3e6ed; }
+html[data-theme="light"] .panel-toggle img { filter: var(--icon-neutral); }
+html[data-theme="light"] .chat-message > div pre { background: #eef3f5; }
+html[data-theme="light"] .operator-avatar {
+    background: linear-gradient(135deg, #e4eaee, #c3ced5 65%, #f2f5f7);
+    border-color: #b7c5cd;
+    color: #2b4350;
+}
+html[data-theme="light"] .information-dialog,
+html[data-theme="light"] .adjustments-dialog,
+html[data-theme="light"] .conversation-delete-dialog,
+html[data-theme="light"] .knowledge-dialog,
+html[data-theme="light"] .entity-graph-dialog,
+html[data-theme="light"] .right-panel { box-shadow: 0 12px 40px #10191d26; }
+html[data-theme="light"] .information-dialog::backdrop,
+html[data-theme="light"] .conversation-delete-dialog::backdrop { background: #10191d66; }
+
+/* Knowledge base: lighter checkbox and selected row. */
+html[data-theme="light"] .knowledge-switch-track { border-color: #8aa6b2; background: var(--panel); }
+html[data-theme="light"] .knowledge-switch:hover .knowledge-switch-track { border-color: #35c3ed; }
+html[data-theme="light"] .knowledge-switch input:checked + .knowledge-switch-track { border-color: #35c3ed; background: #6fd6f3; }
+html[data-theme="light"] .knowledge-switch-track::after { border-color: #0b3a4a; }
+html[data-theme="light"] .knowledge-document:hover,
+html[data-theme="light"] .knowledge-document.is-selected { background: #e6f6fb; border-color: #6fd6f3; }
+
+/* Collapsed data explorer button: lighter fill and glow. */
+html[data-theme="light"] .right-panel.is-collapsed {
+    border-color: #35c3ed;
+    background: #6fd6f3;
+    box-shadow: 0 0 0 4px rgba(53, 195, 237, .2), 0 6px 18px #10191d26;
+}
+html[data-theme="light"] .right-panel.is-collapsed .right-panel-toggle:hover { background: rgba(255, 255, 255, .45); }

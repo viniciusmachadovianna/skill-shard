@@ -114,6 +114,7 @@ h1 em { color: var(--cyan); font-style: normal; }
 .chat-message > div {
     overflow-wrap: anywhere;
 }
+.chat-message.assistant-reply > div { color: var(--reply-text); }
 .chat-message > div > :last-child { margin-bottom: 0; }
 .chat-message > div h1,
 .chat-message > div h2,
