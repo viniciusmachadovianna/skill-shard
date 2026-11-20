@@ -196,8 +196,10 @@ function startRename(entry) {
     input.maxLength = 80;
     input.value = title.textContent;
     input.setAttribute('aria-label', t('rename-conversation'));
-    selectButton.hidden = true;
-    selectButton.before(input);
+    // Keep the chat icon; the field takes the place of the title, to its right.
+    selectButton.classList.add('is-renaming');
+    title.hidden = true;
+    selectButton.after(input);
     input.focus();
     input.select();
 
@@ -207,7 +209,8 @@ function startRename(entry) {
         finished = true;
         const name = input.value.trim();
         input.remove();
-        selectButton.hidden = false;
+        selectButton.classList.remove('is-renaming');
+        title.hidden = false;
         if (!save || name === title.textContent) return;
         if (!name) {
             showToast(t('conversation-name-empty'), 'alert');

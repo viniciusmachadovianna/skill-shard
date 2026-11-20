@@ -76,3 +76,5 @@ html[data-theme="light"] .right-panel.is-collapsed {
     box-shadow: 0 0 0 4px rgba(53, 195, 237, .2), 0 6px 18px #10191d26;
 }
 html[data-theme="light"] .right-panel.is-collapsed .right-panel-toggle:hover { background: rgba(255, 255, 255, .45); }
+
+html[data-theme="light"] .scroll-cue { background: #6fd6f3; }
