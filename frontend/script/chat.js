@@ -153,6 +153,7 @@ export function cancelPendingResponse() {
     responseLoader.hidden = true;
     conversationOutput.removeAttribute('aria-busy');
     sendButton.disabled = !backendReady;
+    updateBackendStatus();
     updateScrollCue();
 }
 
@@ -273,11 +274,13 @@ function updateScrollCue() {
 
 function setBackendStatus(key) {
     backendReady = key === 'backend-ready';
-    const isLoading = ['backend-checking', 'indexing-documents'].includes(key);
+    const isGenerating = backendReady && Boolean(pendingRequestController);
+    const isLoading = isGenerating || ['backend-checking', 'indexing-documents'].includes(key);
+    const textKey = !backendReady ? key : isGenerating ? 'generating-answer' : 'awaiting-input';
     backendStatus.classList.toggle('is-unavailable', !backendReady && !isLoading);
     backendStatus.classList.toggle('is-loading', isLoading);
-    backendStatusText.dataset.i18n = backendReady ? 'awaiting-input' : key;
-    backendStatusText.textContent = t(backendReady ? 'awaiting-input' : key);
+    backendStatusText.dataset.i18n = textKey;
+    backendStatusText.textContent = t(textKey);
     backendLed.classList.toggle('status-led-blue', backendReady || isLoading);
     backendLed.classList.toggle('status-led-red', !backendReady && !isLoading);
     backendActionsState();
@@ -454,6 +457,7 @@ export function initializeChat({ onEmptyExport, onRelationalResponse, ensureConv
         sendButton.disabled = true;
         responseLoader.hidden = false;
         conversationOutput.setAttribute('aria-busy', 'true');
+        updateBackendStatus();
         updateScrollCue();
 
         const mode = retrievalMode.value;
@@ -478,6 +482,7 @@ export function initializeChat({ onEmptyExport, onRelationalResponse, ensureConv
                 sendButton.disabled = !backendReady;
                 responseLoader.hidden = true;
                 conversationOutput.removeAttribute('aria-busy');
+                updateBackendStatus();
                 updateScrollCue();
             }
             scrollToLatestMessage();

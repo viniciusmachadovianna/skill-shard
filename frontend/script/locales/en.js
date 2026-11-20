@@ -118,6 +118,7 @@ export default {
     'prompt-placeholder': 'Analyze the key findings in my documents.',
     'prompt-aria': 'Ask a question',
     'awaiting-input': 'AWAITING YOUR INPUT',
+    'generating-answer': 'GENERATING ANSWER',
     'backend-checking': 'CHECKING MODEL CONNECTION',
     'indexing-documents': 'INDEXING KNOWLEDGE BASE',
     'indexing-failed': 'DOCUMENT INDEXING FAILED',

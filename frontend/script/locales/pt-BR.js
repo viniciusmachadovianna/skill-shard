@@ -118,6 +118,7 @@ export default {
     'prompt-placeholder': 'Analise os principais achados dos meus documentos.',
     'prompt-aria': 'Faça uma pergunta',
     'awaiting-input': 'AGUARDANDO SUA ENTRADA',
+    'generating-answer': 'GERANDO RESPOSTA',
     'backend-checking': 'VERIFICANDO CONEXÃO COM O MODELO',
     'indexing-documents': 'INDEXANDO BASE DE CONHECIMENTO',
     'indexing-failed': 'FALHA AO INDEXAR DOCUMENTOS',
