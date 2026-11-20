@@ -86,8 +86,6 @@ h1 em { color: var(--cyan); font-style: normal; }
     cursor: pointer;
 }
 .scroll-cue img { display: block; margin: auto; }
-/* The icon is light grey; darken it on the light theme. */
-html[data-theme="light"] .scroll-cue img { filter: invert(1) brightness(.35); }
 .scroll-cue[hidden] { display: none; }
 .conversation-output { width: min(546px, calc(100% - 64px)); margin: 8px auto 24px; }
 .chat-message { display: flex; flex-direction: column; margin: 10px 0; padding: 13px 15px; border-left: 2px solid var(--cyan); background: var(--surface); font-size: 16px; }

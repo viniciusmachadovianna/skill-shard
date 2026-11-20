@@ -107,3 +107,14 @@
 .theme-toggle:focus-visible,
 .language-toggle:focus-visible,
 .adjustments-toggle:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+/* Icons that only decorate or inform stay neutral; cyan is reserved for action triggers. */
+.chat-icon,
+.outline-chat,
+.objective-icon,
+.knowledge-document-icon,
+.knowledge-search-field img,
+.graph-mode-icon,
+.unit-label .icon,
+#retrieval-mode-icon { filter: var(--icon-neutral); }
+.card-arrow .objective-icon { filter: none; }

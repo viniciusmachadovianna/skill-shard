@@ -35,10 +35,12 @@
     --mono: 'IBM Plex Mono', 'Consolas', monospace;
     --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     --base-font-size: 16px;
+    --icon-neutral: brightness(0) invert(.93);
 }
 
 html[data-theme="light"] {
     color-scheme: light;
+    --icon-neutral: brightness(0) invert(.2);
     --bg: #f1f5f7;
     --panel: #ffffff;
     --surface: #f8fafb;
