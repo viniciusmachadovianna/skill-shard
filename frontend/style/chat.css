@@ -87,8 +87,8 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .scroll-cue img { display: block; margin: auto; }
 .scroll-cue[hidden] { display: none; }
-.conversation-output { width: min(546px, calc(100% - 64px)); margin: 8px auto 24px; }
-.chat-message { display: flex; flex-direction: column; margin: 10px 0; padding: 13px 15px; border-left: 2px solid var(--cyan); background: var(--surface); font-size: 16px; }
+.conversation-output { width: min(860px, calc(100% - 32px)); margin: 8px auto 24px; }
+.chat-message { display: flex; flex-direction: column; margin: 10px 0; padding: 13px 15px; border-left: 2px solid var(--cyan); background: var(--surface); font-size: 18px; }
 .chat-message small {
     display: flex;
     align-items: center;
@@ -116,6 +116,37 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .chat-message.assistant-reply > div { color: var(--reply-text); }
 .chat-message > div > :last-child { margin-bottom: 0; }
+.chat-message > div blockquote.source-quote[hidden] { display: none; }
+.source-chip {
+    display: inline-flex;
+    max-width: 100%;
+    align-items: center;
+    gap: 6px;
+    margin: 0 2px;
+    padding: 1px 9px;
+    border: 1px solid transparent;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--subtext) 16%, transparent);
+    color: var(--subtext);
+    font: 13px/1.6 var(--display);
+    vertical-align: baseline;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+}
+.source-chip:hover:not(:disabled) { background: color-mix(in srgb, var(--cyan) 22%, transparent); color: var(--text); }
+.source-chip.is-open { border-color: var(--cyan); color: var(--text); }
+.source-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.source-chip:disabled { cursor: default; opacity: .7; }
+.source-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.source-chip-chunk { flex: none; padding-left: 6px; border-left: 1px solid currentColor; opacity: .75; }
+.chat-message > div blockquote {
+    margin: 8px 0 12px;
+    padding: 6px 0 6px 12px;
+    border-left: 2px solid var(--cyan);
+    color: var(--subtext);
+    font-size: 16px;
+    line-height: 1.5;
+}
 .chat-message > div h1,
 .chat-message > div h2,
 .chat-message > div h3,
@@ -162,12 +193,14 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .assistant-reply > div {
     width: fit-content;
-    max-width: 85%;
+    max-width: 94%;
     margin-right: auto;
     padding: 12px 18px;
-    border-left: 2px solid var(--green);
-    border-radius: 4px;
-    background: var(--surface);
+    border: 0;
+    border-radius: 0;
+    background: var(--bubble-system);
+    /* Cut top-left corner. */
+    clip-path: polygon(var(--bubble-cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--bubble-cut));
 }
 .user-prompt {
     padding: 13px 0;
@@ -177,17 +210,19 @@ h1 em { color: var(--cyan); font-style: normal; }
 .user-prompt small { justify-content: flex-end; margin-top: 8px; color: var(--subtext); }
 .user-prompt > div {
     width: fit-content;
-    max-width: 85%;
+    max-width: 94%;
     margin-left: auto;
     padding: 12px 18px;
-    border-radius: 4px;
-    background: var(--surface-selected);
-    color: var(--text);
+    border-radius: 0;
+    background: var(--bubble-user);
+    color: var(--bubble-user-text);
+    /* Cut top-right corner. */
+    clip-path: polygon(0 0, calc(100% - var(--bubble-cut)) 0, 100% var(--bubble-cut), 100% 100%, 0 100%);
     overflow-wrap: anywhere;
     white-space: pre-wrap;
 }
 .response-loader {
-    width: min(546px, calc(100% - 64px));
+    width: min(860px, calc(100% - 32px));
     margin: 10px auto 24px;
     padding: 13px 15px;
     border-left: 2px solid var(--green);

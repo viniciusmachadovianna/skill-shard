@@ -20,6 +20,10 @@
     --subtext: #80909b;
     --text: #dce4e9;
     --reply-text: #f5f9fb;
+    --bubble-system: #1f262c;
+    --bubble-user: #14607a;
+    --bubble-user-text: #eefaff;
+    --bubble-cut: 14px;
     --cyan: #35c3ed;
     --green: #58dba0;
     --scrollbar-thumb: #286477;
@@ -53,6 +57,9 @@ html[data-theme="light"] {
     --subtext: #657b86;
     --text: #192a33;
     --reply-text: #192a33;
+    --bubble-system: #e6edf1;
+    --bubble-user: #c3e7f2;
+    --bubble-user-text: #0b2a35;
     --cyan: #007894;
     --green: #168553;
     --scrollbar-thumb: #72aebb;

@@ -46,6 +46,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from app.generation.llm_client import ask_llm
+from app.generation.citation_quotes import insert_chunk_quotes
 from app.config import frontend_origin
 from app.ingestion.chunker import chunk_text_by_words
 from app.ingestion.loader import load_pdf_pages_from_bytes
@@ -639,10 +640,12 @@ def ask(request: AskRequest) -> AskResponse:
             )
 
         context_parts = []
-        for chunk in relevant_chunks:
+        for number, chunk in enumerate(relevant_chunks, start=1):
             page_label = f", page {chunk['page']}" if chunk["page"] is not None else ""
+            # The model cites the short ID; `insert_chunk_quotes` expands it
+            # back to the full label using the same order.
             context_parts.append(
-                f"[Source: {chunk['source']}{page_label}, chunk {chunk['chunk']}]\n"
+                f"[S{number}] ({chunk['source']}{page_label}, chunk {chunk['chunk']})\n"
                 f"{chunk['text']}"
             )
         context = "\n\n".join(context_parts)
@@ -695,6 +698,7 @@ def ask(request: AskRequest) -> AskResponse:
         )
 
     if sources:
+        answer = insert_chunk_quotes(answer, relevant_chunks)
         citations = [
             f"- {name}" if page is None else f"- {name}, page {page}"
             for name, page in sources
