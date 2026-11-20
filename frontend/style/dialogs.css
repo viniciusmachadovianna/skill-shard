@@ -44,7 +44,9 @@
     font-size: 16px;
     line-height: 1.65;
 }
-.information-dialog .information-version { margin: 0; color: var(--cyan); font: 12px var(--mono); }
+.information-dialog .information-links { display: flex; gap: 16px; margin: 0 0 14px; font: 12px var(--mono); }
+.information-dialog .information-links a { color: var(--cyan); text-decoration: none; }
+.information-dialog .information-links a:hover { text-decoration: underline; }
 .adjustments-dialog {
     width: min(460px, calc(100vw - 32px));
     max-width: none;
