@@ -132,6 +132,7 @@ export default {
     'composer-footnote-strong': 'mesmo quando baseadas nos documentos.',
     'new-conversation-toast': 'Nova investigação iniciada.',
     'new-conversation-blocked': 'Você já tem uma investigação vazia. Use-a primeiro.',
+    'new-conversation-use-welcome': 'Envie uma mensagem na tela de boas-vindas para iniciar sua primeira conversa.',
     'request-failed': 'Não foi possível obter uma resposta. Verifique se o backend está ativo e tente novamente.',
     'system-telemetry': 'TELEMETRIA DO SISTEMA',
     'chunking-overlap': 'Sobreposição de chunks',

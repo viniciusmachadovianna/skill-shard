@@ -132,6 +132,7 @@ export default {
     'composer-footnote-strong': 'even when answers are grounded in documents',
     'new-conversation-toast': 'New investigation started.',
     'new-conversation-blocked': 'You already have an empty investigation. Use it first.',
+    'new-conversation-use-welcome': 'Send a message from the welcome screen to start your first conversation.',
     'request-failed': 'Could not get an answer. Check that the backend is running and try again.',
     'system-telemetry': 'SYSTEM TELEMETRY',
     'chunking-overlap': 'Chunking overlap',

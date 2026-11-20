@@ -593,6 +593,11 @@ conversationList.addEventListener('click', (event) => {
     const newConversationButton = target.closest('.new-conversation');
 
     if (newConversationButton) {
+        // The first conversation is created by sending a message from the welcome screen.
+        if (!conversationList.querySelector('.conversation-entry')) {
+            showToast(t('new-conversation-use-welcome'), 'alert');
+            return;
+        }
         const emptyEntry = [...conversationList.querySelectorAll('.conversation-entry')]
             .find((item) => isConversationEmpty(item.dataset.conversationId));
         if (emptyEntry) {
