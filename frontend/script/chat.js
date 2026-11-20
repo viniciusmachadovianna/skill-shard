@@ -130,7 +130,7 @@ function addMessage(label, message, className = '', mode = '') {
         copyButton.dataset.i18nAria = 'copy-message';
         copyButton.addEventListener('click', async () => {
             await navigator.clipboard.writeText(message);
-            showToast(t('message-copied'));
+            showToast(t('message-copied'), 'success');
         });
         caption.append(copyButton);
     }

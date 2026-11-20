@@ -1,20 +1,55 @@
-/* Toast notifications. */
-.toast {
-    position: fixed;
+/* Toast notifications. Default type is info (light blue). */
+/* Popover container: lives in the top layer, so it renders above modal dialogs. */
+.toast-stack {
     z-index: 5;
-    right: 24px;
-    bottom: 24px;
+    inset: 24px 24px auto auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    overflow: visible;
+    pointer-events: none;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+.toast-stack:popover-open { display: flex; }
+.toast {
+    box-sizing: border-box;
     max-width: min(360px, calc(100vw - 48px));
     padding: 11px 15px;
-    border: 1px solid #2a758a;
-    background: #0e1b22;
-    color: #c9e9f2;
+    border: 1px solid #5fb8d1;
+    background: #8fd3e6;
+    color: #0b2a35;
     font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    pointer-events: auto;
     opacity: 0;
-    pointer-events: none;
-    transform: translateY(8px);
+    transform: translateY(-8px);
     transition: opacity .2s, transform .2s;
 }
+.toast-icon { display: block; flex-shrink: 0; width: 20px; height: 20px; filter: brightness(0); }
 .toast.visible { opacity: 1; transform: translateY(0); }
-.toast.toast-error { border-color: #e5484d; }
-.toast.toast-alert { border-color: #d4a017; }
+.toast.toast-alert { border-color: #b8860b; background: #e2b53a; color: #2b2000; }
+.toast.toast-success { border-color: #2f9e5b; background: #4fc27f; color: #06240f; }
+.toast.toast-error { border-color: #c9363b; background: #e5484d; color: #2a0506; }
+
+/* Time-remaining bar. Its animation is the toast's lifetime: toast.js removes
+   the toast when it ends, and hovering pauses it. */
+.toast-progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: .45;
+    transform-origin: left;
+    animation: toast-countdown 3200ms linear forwards;
+}
+@keyframes toast-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.toast:hover .toast-progress { animation-play-state: paused; }

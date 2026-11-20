@@ -29,12 +29,13 @@ html[data-theme="light"] .composer textarea::placeholder { color: #526873; }
 html[data-theme="light"] .chat-message small { color: var(--cyan); }
 html[data-theme="light"] .metric strong { color: var(--text); }
 html[data-theme="light"] .toast {
-    border-color: #83c7d8;
-    background: #f4fbfd;
-    color: #183b48;
+    border-color: #4aa8c2;
+    background: #a9dfee;
+    color: #0b2a35;
 }
-html[data-theme="light"] .toast.toast-error { border-color: #d12f35; }
-html[data-theme="light"] .toast.toast-alert { border-color: #b8860b; }
+html[data-theme="light"] .toast.toast-alert { border-color: #b8860b; background: #f0c24a; color: #2b2000; }
+html[data-theme="light"] .toast.toast-success { border-color: #2f9e5b; background: #6dd29a; color: #06240f; }
+html[data-theme="light"] .toast.toast-error { border-color: #c9363b; background: #ef6b6f; color: #2a0506; }
 html[data-theme="light"] .knowledge-close,
 html[data-theme="light"] .knowledge-document-name,
 html[data-theme="light"] .knowledge-delete { color: var(--text); }

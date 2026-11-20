@@ -214,7 +214,7 @@ function startRename(entry) {
             return;
         }
         setConversationName(entry, name);
-        showToast(t('conversation-renamed'));
+        showToast(t('conversation-renamed'), 'success');
     };
     input.addEventListener('keydown', (event) => {
         if (event.isComposing) return;
@@ -267,7 +267,7 @@ function deleteConversation(entry) {
             workspaceTitle.textContent = t('no-conversation-selected');
         }
     }
-    showToast(t('conversation-deleted'));
+    showToast(t('conversation-deleted'), 'success');
 }
 
 const chat = initializeChat({

@@ -569,7 +569,7 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
         await refreshDocuments({ index: true });
 
         if (errors.length) showToast(errors.join(' '), 'error');
-        else if (addedCount) showToast(t('documents-added').replace('{count}', String(addedCount)));
+        else if (addedCount) showToast(t('documents-added').replace('{count}', String(addedCount)), 'success');
     });
 
     documentList.addEventListener('change', async (event) => {
@@ -611,7 +611,7 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
             await removeIndexedDocument(row.dataset.documentId);
             await removeDocument(row.dataset.documentId);
             await refreshDocuments({ index: true });
-            showToast(t('document-deleted'));
+            showToast(t('document-deleted'), 'success');
         } catch (error) {
             console.error('Could not delete the document from the local knowledge base:', error);
             showToast(t('document-backend-delete-error'), 'error');
