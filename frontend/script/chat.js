@@ -198,6 +198,70 @@ const GRADES = {
  * @param {HTMLElement} article Mensagem avaliada.
  * @returns {HTMLElement} Chip com os botões.
  */
+/**
+ * Define (ou limpa, com '') a avaliação de uma resposta: atualiza o chip de
+ * avaliação, a etiqueta (marcador) na bolha e os contadores do modo laboratório.
+ */
+function setGrade(article, grade) {
+    if (grade) article.dataset.grade = grade;
+    else delete article.dataset.grade;
+    article.querySelectorAll('.grade-option').forEach((option) => {
+        option.setAttribute('aria-pressed', String(option.dataset.grade === grade));
+    });
+    const reset = article.querySelector('.grade-reset');
+    if (reset) reset.disabled = !grade;
+    const tag = article.querySelector('.grade-tag');
+    if (tag) {
+        tag.hidden = !grade;
+        if (grade) {
+            const { key, icon } = GRADES[grade];
+            tag.className = `grade-tag grade-tag-${grade}`;
+            tag.dataset.i18nTitle = key;
+            tag.dataset.i18nAria = key;
+            tag.title = t(key);
+            tag.setAttribute('aria-label', t(key));
+            tag.querySelector('img').src = icon;
+        }
+    }
+    updateLabSummary();
+}
+
+/** Marcador pendurado na borda superior da bolha (apenas indicativo). */
+function createGradeTag(article) {
+    const tag = document.createElement('span');
+    tag.className = 'grade-tag';
+    tag.hidden = true;
+    tag.setAttribute('role', 'img');
+    const image = document.createElement('img');
+    image.alt = '';
+    image.setAttribute('aria-hidden', 'true');
+    image.width = 16;
+    image.height = 16;
+    tag.append(image);
+    return tag;
+}
+
+/** Botão fora do chip que remove a avaliação da resposta. */
+function createGradeReset(article) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'grade-reset';
+    button.disabled = true;
+    button.title = t('grade-reset');
+    button.setAttribute('aria-label', t('grade-reset'));
+    button.dataset.i18nTitle = 'grade-reset';
+    button.dataset.i18nAria = 'grade-reset';
+    const image = document.createElement('img');
+    image.src = './assets/icons/reset.svg';
+    image.alt = '';
+    image.setAttribute('aria-hidden', 'true');
+    image.width = 14;
+    image.height = 14;
+    button.append(image);
+    button.addEventListener('click', () => setGrade(article, ''));
+    return button;
+}
+
 function createGradeOptions(article) {
     const row = document.createElement('div');
     row.className = 'message-grades';
@@ -226,15 +290,7 @@ function createGradeOptions(article) {
         text.dataset.i18n = key;
         text.textContent = t(key);
         button.append(image, text);
-        button.addEventListener('click', () => {
-            const selected = article.dataset.grade === grade ? '' : grade;
-            if (selected) article.dataset.grade = selected;
-            else delete article.dataset.grade;
-            row.querySelectorAll('.grade-option').forEach((option) => {
-                option.setAttribute('aria-pressed', String(option.dataset.grade === selected));
-            });
-            updateLabSummary();
-        });
+        button.addEventListener('click', () => setGrade(article, article.dataset.grade === grade ? '' : grade));
         row.append(button);
     }
     return row;
@@ -267,7 +323,8 @@ function addMessage(label, message, className = '', mode = '') {
             await navigator.clipboard.writeText(stripQuoteMarkers(message));
             showToast(t('message-copied'), 'success');
         });
-        caption.append(copyButton, createGradeOptions(article));
+        caption.append(copyButton, createGradeOptions(article), createGradeReset(article));
+        article.append(createGradeTag(article));
     }
     const body = document.createElement('div');
     const isReply = className.includes('assistant-reply');
@@ -717,6 +774,9 @@ export function initializeChat({ onEmptyExport, onRelationalResponse, ensureConv
     exportButton.addEventListener('click', () => exportConversation(onEmptyExport));
 
     // Lab mode: the purple rating chips only show while the box is checked.
+    // Browsers restore a checked box on reload without firing 'change'; always start off, in sync with the page state.
+    labModeToggle.checked = false;
+    delete document.documentElement.dataset.labMode;
     labModeToggle.addEventListener('change', (event) => {
         if (event.target.checked) document.documentElement.dataset.labMode = 'on';
         else delete document.documentElement.dataset.labMode;

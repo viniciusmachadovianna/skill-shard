@@ -24,6 +24,10 @@
     --bubble-user: #14607a;
     --bubble-user-text: #eefaff;
     --bubble-cut: 14px;
+    --grade-tag-correct: #3fbf72;
+    --grade-tag-ungrounded: #e3b422;
+    --grade-tag-incorrect: #ee8a2a;
+    --grade-tag-hallucination: #e5484d;
     --grade-chip: #b093ef;
     --grade-chip-text: #1c1030;
     --grade-chip-selected: #1c1030;

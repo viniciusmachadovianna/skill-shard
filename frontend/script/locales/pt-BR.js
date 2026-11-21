@@ -175,6 +175,7 @@ export default {
     'grade-correct': 'Correto e com base',
     'grade-ungrounded': 'Correto, mas sem base',
     'grade-incorrect': 'Incorreto, mas com base',
+    'grade-reset': 'Remover avaliação',
     'grade-hallucination': 'Alucinação',
     'message-copied': 'Mensagem copiada.',
     'message-operator': 'OPERADOR',

@@ -437,8 +437,49 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .composer-actions .adjustments-toggle:hover { border-color: var(--cyan); }
 .composer-actions .adjustments-toggle + .send-button { margin-left: 0; }
-.message-grades { display: none; }
+.message-grades,
+.grade-reset { display: none; }
 :root[data-lab-mode="on"] .message-grades { display: inline-flex; }
+:root[data-lab-mode="on"] .grade-reset { display: inline-grid; }
+/* Reset button outside the purple chip, to its right. */
+.grade-reset {
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--grade-chip);
+    background: transparent;
+    cursor: pointer;
+}
+.grade-reset img { display: block; width: 14px; height: 14px; filter: var(--icon-neutral); pointer-events: none; }
+.grade-reset:hover:not(:disabled) { background: color-mix(in srgb, var(--grade-chip) 25%, transparent); }
+.grade-reset:focus-visible { outline: 2px solid var(--grade-chip); outline-offset: 2px; }
+.grade-reset:disabled { border-color: var(--line); cursor: not-allowed; opacity: .5; }
+/* Bookmark tag hanging from the top edge of a rated system bubble (visible with or without lab mode). */
+.assistant-reply { position: relative; }
+.grade-tag {
+    position: absolute;
+    top: 13px; /* the article's top padding: the tag starts at the bubble's top edge */
+    right: 14px;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 46px;
+    padding: 0 0 6px; /* centres the icon in the straight part, above the notch */
+    border: 0;
+    background: var(--grade-tag-color, var(--grade-chip));
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 88%, 0 100%);
+    cursor: default;
+}
+.grade-tag[hidden] { display: none; }
+.grade-tag img { display: block; width: 20px; height: 20px; filter: brightness(0) invert(1); }
+.grade-tag-correct { --grade-tag-color: var(--grade-tag-correct); }
+.grade-tag-ungrounded { --grade-tag-color: var(--grade-tag-ungrounded); }
+.grade-tag-incorrect { --grade-tag-color: var(--grade-tag-incorrect); }
+.grade-tag-hallucination { --grade-tag-color: var(--grade-tag-hallucination); }
+/* Room beside the tag so the text wraps before it instead of running under it. */
+.assistant-reply[data-grade] > div { padding-right: 58px; }
 /* Purple square checkbox placed close to the left of the send button. */
 .composer-actions .lab-toggle {
     position: relative;
