@@ -310,6 +310,13 @@ function addMessage(label, message, className = '', mode = '') {
         minute: '2-digit'
     }).format(timestamp);
     caption.append(messageLabel, time);
+    if (mode) {
+        // Retrieval mode the answer was produced with (LLM / RAG / Relational RAG).
+        const modeBadge = document.createElement('span');
+        modeBadge.className = 'message-mode';
+        modeBadge.textContent = mode;
+        caption.append(modeBadge);
+    }
     if (className.includes('assistant-reply')) {
         const copyButton = document.createElement('button');
         copyButton.type = 'button';

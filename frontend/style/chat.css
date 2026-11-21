@@ -179,6 +179,14 @@ h1 em { color: var(--cyan); font-style: normal; }
     mask: url("../assets/icons/check.svg") center / contain no-repeat;
 }
 .copy-done[hidden] { display: none; }
+.message-mode {
+    padding: 0 6px;
+    border: 1px solid var(--line);
+    color: var(--subtext);
+    font: 11px/1.6 var(--mono);
+    letter-spacing: .04em;
+    white-space: nowrap;
+}
 .chat-message time { color: var(--subtext); font-size: 12px; white-space: nowrap; }
 .chat-message > div {
     overflow-wrap: anywhere;
