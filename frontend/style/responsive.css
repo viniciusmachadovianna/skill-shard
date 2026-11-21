@@ -32,7 +32,9 @@
     .composer-area { padding: 0 15px 14px; }
     .composer-footnote { font-size: 12px; }
     .knowledge-dialog { padding: 22px 18px 14px; }
-    .knowledge-dialog[open] { grid-template-columns: minmax(0, 1fr); overflow-y: auto; }
+    .knowledge-dialog[open] { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; overflow-y: auto; }
+    .knowledge-dialog[open] > :is(*, .knowledge-dialog-header, .knowledge-document-list) { grid-row: auto; }
+    .knowledge-dialog[open] .knowledge-document-list { height: auto; max-height: 50vh; }
     .knowledge-dialog[open] > .document-preview,
     .knowledge-dialog[open] > .knowledge-dialog-header { grid-column: 1; }
     .knowledge-dialog[open] > .document-preview { grid-row: auto; height: 360px; padding: 18px 0 0; border-left: 0; border-top: 1px solid var(--line); }

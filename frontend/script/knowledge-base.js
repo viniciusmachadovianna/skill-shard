@@ -34,6 +34,8 @@ const knowledgeStatus = $('#knowledge-status');
 const searchInput = $('#knowledge-search');
 const noResults = $('#knowledge-no-results');
 const filterBar = $('#knowledge-filters');
+const statusFilterBar = $('#knowledge-status-filters');
+const filterPanel = $('#knowledge-filter-panel');
 const previewTitle = $('#document-preview-title');
 const previewEmpty = $('#assistant-document-empty');
 const previewText = $('#assistant-document-text');
@@ -46,6 +48,8 @@ let databasePromise;
 let currentDocuments = [];
 // File-type filter: extensions toggled on (several allowed); empty means "all".
 const activeExtensions = new Set();
+// Status filter: '' (all), 'active' or 'inactive'.
+let statusFilter = '';
 let selectedPreviewDocumentId;
 let previewChunkIndex = 0;
 let previewChunks = [];
@@ -324,7 +328,37 @@ function renderExtensionFilters(documents) {
         .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
         .map(([extension, count]) => makeChip(extension, extension ? `.${extension}` : '—', count));
     filterBar.replaceChildren(all, ...chips);
-    filterBar.hidden = documents.length === 0;
+    filterPanel.hidden = documents.length === 0;
+}
+
+/** Builds the status chips ("All" / "Active" / "Inactive", single choice) with their counts. */
+function renderStatusFilters(documents) {
+    const activeCount = documents.filter((document) => document.enabled).length;
+    const options = [
+        ['', 'knowledge-filter-all', undefined],
+        ['active', 'knowledge-filter-active', activeCount],
+        ['inactive', 'knowledge-filter-inactive', documents.length - activeCount]
+    ];
+
+    const chips = options.map(([status, key, count]) => {
+        const chip = statusFilterBar.ownerDocument.createElement('button');
+        chip.type = 'button';
+        chip.className = 'knowledge-filter';
+        chip.dataset.status = status;
+        chip.setAttribute('aria-pressed', String(statusFilter === status));
+        const text = statusFilterBar.ownerDocument.createElement('span');
+        text.textContent = t(key);
+        text.dataset.i18n = key;
+        chip.append(text);
+        if (count !== undefined) {
+            const badge = statusFilterBar.ownerDocument.createElement('span');
+            badge.className = 'knowledge-filter-count';
+            badge.textContent = String(count);
+            chip.append(badge);
+        }
+        return chip;
+    });
+    statusFilterBar.replaceChildren(...chips);
 }
 
 function applyDocumentSearch() {
@@ -333,11 +367,13 @@ function applyDocumentSearch() {
     documentList.querySelectorAll('.knowledge-document').forEach((row) => {
         const matchesName = !term || row.querySelector('.knowledge-document-name').textContent.toLocaleLowerCase().includes(term);
         const matchesType = activeExtensions.size === 0 || activeExtensions.has(row.dataset.extension);
-        const matches = matchesName && matchesType;
+        const matchesStatus = !statusFilter
+            || (statusFilter === 'active') === (row.dataset.enabled === 'true');
+        const matches = matchesName && matchesType && matchesStatus;
         row.hidden = !matches;
         if (matches) visible += 1;
     });
-    noResults.hidden = !((term || activeExtensions.size > 0) && currentDocuments.length > 0 && visible === 0);
+    noResults.hidden = !((term || activeExtensions.size > 0 || statusFilter) && currentDocuments.length > 0 && visible === 0);
 }
 
 function createDocumentRow(document) {
@@ -345,6 +381,7 @@ function createDocumentRow(document) {
     row.className = 'knowledge-document';
     row.dataset.documentId = document.id;
     row.dataset.extension = getExtension(document.name);
+    row.dataset.enabled = String(Boolean(document.enabled));
     row.classList.toggle('is-selected', document.id === selectedPreviewDocumentId);
 
     const icon = documentList.ownerDocument.createElement('img');
@@ -405,6 +442,7 @@ async function renderDocuments() {
     documentList.replaceChildren(...documents.map(createDocumentRow));
     updateDocumentCounters(documents);
     renderExtensionFilters(documents);
+    renderStatusFilters(documents);
     applyDocumentSearch();
     renderAssistantPreview(documents);
     return documents;
@@ -548,6 +586,13 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
         else if (activeExtensions.has(extension)) activeExtensions.delete(extension);
         else activeExtensions.add(extension);
         renderExtensionFilters(currentDocuments);
+        applyDocumentSearch();
+    });
+    statusFilterBar.addEventListener('click', (event) => {
+        const chip = event.target.closest('.knowledge-filter');
+        if (!chip) return;
+        statusFilter = chip.dataset.status;
+        renderStatusFilters(currentDocuments);
         applyDocumentSearch();
     });
     previewPrevious.addEventListener('click', () => stepPreviewChunk(-1));

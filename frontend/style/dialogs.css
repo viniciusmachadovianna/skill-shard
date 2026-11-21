@@ -84,29 +84,41 @@
     color: #fff;
 }
 .conversation-delete-actions .conversation-delete-confirm:hover { background: #d84a3c; }
+/*
+ * Two columns: controls on the left, document preview on the right. Each left-column element has its own
+ * row; the last row (the document list) is 1fr, so it takes exactly the height left inside the dialog.
+ * Rows of hidden elements collapse to 0.
+ */
 .knowledge-dialog[open] {
     display: grid;
     grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
-    grid-template-rows: auto;
-    align-content: start;
+    grid-template-rows: repeat(6, auto) minmax(0, 1fr);
     column-gap: 28px;
 }
 .knowledge-dialog[open] > * { grid-column: 1; min-width: 0; }
-.knowledge-dialog[open] > .knowledge-dialog-header { grid-column: 1 / -1; }
+.knowledge-dialog[open] > .knowledge-dialog-header { grid-column: 1 / -1; grid-row: 1; }
+.knowledge-dialog[open] > .knowledge-add { grid-row: 2; }
+.knowledge-dialog[open] > .knowledge-dialog-hint { grid-row: 3; }
+.knowledge-dialog[open] > .knowledge-dialog-note { grid-row: 4; }
+.knowledge-dialog[open] > .knowledge-search-field { grid-row: 5; }
+.knowledge-dialog[open] > .knowledge-filter-panel { grid-row: 6; }
+/* The list and both empty-state messages share the last row (they are never shown with content at once). */
+.knowledge-dialog[open] > .knowledge-document-list,
+.knowledge-dialog[open] > .knowledge-empty { grid-row: 7; }
+.knowledge-dialog[open] > .knowledge-empty { align-self: start; }
 .knowledge-dialog[open] > .document-preview {
     grid-column: 2;
-    grid-row: 2 / span 8;
+    grid-row: 2 / -1;
     display: flex;
     flex-direction: column;
     margin-top: 20px;
     padding: 0 0 0 28px;
     border-top: 0;
     border-left: 1px solid var(--line);
-    height: calc(min(86vh, 680px) - 150px);
     min-height: 0;
 }
 .knowledge-dialog[open] .document-preview-content { flex: 1; height: auto; min-height: 0; }
-.knowledge-dialog[open] .knowledge-document-list { height: calc(min(86vh, 680px) - 380px); min-height: 120px; max-height: none; }
+.knowledge-dialog[open] .knowledge-document-list { height: auto; min-height: 0; max-height: none; padding-bottom: 8px; }
 .knowledge-dialog::backdrop { background: #000b; }
 .knowledge-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .knowledge-dialog-header h2 { margin: 0; font-size: 25px; font-weight: 500; line-height: 1.2; }
@@ -222,9 +234,16 @@
 .knowledge-search::placeholder { color: var(--muted); }
 .knowledge-search:focus-visible { border-color: var(--cyan); outline: 2px solid var(--cyan); outline-offset: 2px; }
 .knowledge-document[hidden] { display: none; }
-/* File-type filter chips below the search field: "All" plus one per extension with its count. */
-.knowledge-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
-.knowledge-filters[hidden] { display: none; }
+/* Filters below the search field: file-type chips on one line, status segmented control on the next. */
+.knowledge-filter-panel { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 4px; }
+.knowledge-filter-panel[hidden] { display: none; }
+.knowledge-filters { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+/* Status: joined buttons sharing borders, stretched to the full width. */
+.knowledge-status-segment { flex-wrap: nowrap; gap: 0; }
+.knowledge-status-segment .knowledge-filter { flex: 1; justify-content: center; padding: 5px 10px; }
+.knowledge-status-segment .knowledge-filter + .knowledge-filter { margin-left: -1px; }
+.knowledge-status-segment .knowledge-filter[aria-pressed="true"],
+.knowledge-status-segment .knowledge-filter:hover { position: relative; z-index: 1; }
 .knowledge-filter {
     display: inline-flex;
     align-items: center;
