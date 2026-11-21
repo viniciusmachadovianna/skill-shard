@@ -1,0 +1,37 @@
+{
+    "description": "Gabarito para medir a cobertura (recall) da extração de entidades e relações. Uma relação do gabarito é encontrada quando existe uma aresta com um dos tipos em 'relation', origem com um dos nomes em 'source' e destino com um dos nomes em 'target'. Os nomes são comparados sem maiúsculas, acentos e pontuação, e um nome pode estar contido no outro ('Aditivo 02' casa com 'Termo Aditivo nº 02'). 'documents' lista os arquivos que declaram a relação, para conferência manual. Relações corretas que não estão aqui não contam como erro: a precisão é medida à parte, por amostra rotulada.",
+    "relations": [
+        {"id": "g01", "source": ["Helena Prado"], "relation": ["ocupa_cargo"], "target": ["CTMSC"], "documents": ["D02", "D12"]},
+        {"id": "g02", "source": ["Ricardo Menezes"], "relation": ["ocupa_cargo"], "target": ["CTMSC"], "documents": ["D11", "D13"]},
+        {"id": "g03", "source": ["Ricardo Menezes"], "relation": ["sucede"], "target": ["Helena Prado"], "documents": ["D11", "D12"]},
+        {"id": "g04", "source": ["Sandra Leitão"], "relation": ["ocupa_cargo"], "target": ["CTMSC"], "documents": ["D11"]},
+        {"id": "g05", "source": ["Marcos Teixeira"], "relation": ["ocupa_cargo"], "target": ["Consórcio TransAurora", "TransAurora"], "documents": ["D14"]},
+        {"id": "g06", "source": ["Helena Prado"], "relation": ["assina"], "target": ["Contrato 014/2021"], "documents": ["D12"]},
+        {"id": "g07", "source": ["Helena Prado"], "relation": ["assina"], "target": ["Aditivo 01"], "documents": ["D03", "D12"]},
+        {"id": "g08", "source": ["Ricardo Menezes"], "relation": ["assina"], "target": ["Aditivo 02"], "documents": ["D04", "D13"]},
+        {"id": "g09", "source": ["Marcos Teixeira"], "relation": ["assina"], "target": ["Aditivo 02"], "documents": ["D04"]},
+        {"id": "g10", "source": ["Aditivo 01"], "relation": ["altera"], "target": ["Contrato 014/2021"], "documents": ["D03"]},
+        {"id": "g11", "source": ["Aditivo 02"], "relation": ["altera"], "target": ["Contrato 014/2021"], "documents": ["D04"]},
+        {"id": "g12", "source": ["CTMSC"], "relation": ["contrata"], "target": ["Consórcio TransAurora", "TransAurora"], "documents": ["D01", "D02"]},
+        {"id": "g13", "source": ["Construtora Meridional"], "relation": ["integra"], "target": ["Consórcio TransAurora", "TransAurora"], "documents": ["D10"]},
+        {"id": "g14", "source": ["Ferrovias Altiplano"], "relation": ["integra"], "target": ["Consórcio TransAurora", "TransAurora"], "documents": ["D10"]},
+        {"id": "g15", "source": ["Tecnolinha Sistemas", "Tecnolinha"], "relation": ["integra"], "target": ["Consórcio TransAurora", "TransAurora"], "documents": ["D10"]},
+        {"id": "g16", "source": ["Construtora Meridional"], "relation": ["contrata"], "target": ["Geosolo Consultoria", "Geosolo"], "documents": ["D10"]},
+        {"id": "g17", "source": ["Beatriz Calado"], "relation": ["autor_de"], "target": ["Relatório Geotécnico"], "documents": ["D18"]},
+        {"id": "g18", "source": ["Tribunal de Contas Estadual", "TCE"], "relation": ["autor_de"], "target": ["Parecer 118/2024"], "documents": ["D19"]},
+        {"id": "g19", "source": ["Cronograma v3", "v3"], "relation": ["substitui"], "target": ["Cronograma v1", "Cronograma v2", "v1", "v2"], "documents": ["D07"]},
+        {"id": "g20", "source": ["incidente", "recalque"], "relation": ["afeta"], "target": ["TBM Tatuí", "Tatuí", "tuneladora Tatuí"], "documents": ["D15", "D16"]},
+        {"id": "g21", "source": ["Contrato 014/2021"], "relation": ["trata_de"], "target": ["Linha 2"], "documents": ["D02"]},
+        {"id": "g22", "source": ["Aditivo 02"], "relation": ["afeta", "altera"], "target": ["Jardim das Acácias", "estação Jardim das Acácias"], "documents": ["D04"]}
+    ],
+    "identity_checks": {
+        "same": [
+            ["CTMSC", "Companhia de Transportes Metropolitanos de Serra Clara"],
+            ["Aditivo 02", "Termo Aditivo nº 02"]
+        ],
+        "different": [
+            ["Ricardo Menezes", "Ricardo Meneses"],
+            ["Linha 1 – Azul", "Linha 2 – Verde"]
+        ]
+    }
+}
