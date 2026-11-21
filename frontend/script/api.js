@@ -118,6 +118,28 @@ export function listRepositoryDocuments() {
 }
 
 /**
+ * Pergunta do conjunto de avaliação (`backend/evals/questions.json`).
+ * @typedef {Object} EvaluationQuestion
+ * @property {string} id Identificador (`q01`, `q02`...).
+ * @property {'simples' | 'composta' | 'sem_resposta'} category Categoria derivada de `expected`.
+ * @property {'fora_do_escopo' | 'ausente'} [subtype] Só em perguntas sem resposta.
+ * @property {string[]} tags Rótulos para análise de erros.
+ * @property {string} question Texto da pergunta.
+ * @property {string[][]} expected Grupos de arquivos esperados (qualquer arquivo atende o grupo).
+ * @property {string} [note] Observação do anotador.
+ */
+
+/**
+ * Lê o conjunto de perguntas de avaliação (`GET /evaluation/questions`).
+ *
+ * @returns {Promise<{description: string, questions: EvaluationQuestion[]}>}
+ * @throws {ApiError} Se o backend responder com erro.
+ */
+export function listEvaluationQuestions() {
+    return request('/evaluation/questions');
+}
+
+/**
  * Envia documentos para indexação (`POST /index`).
  *
  * @param {IndexDocument[]} documents Documentos ativados na base de conhecimento.

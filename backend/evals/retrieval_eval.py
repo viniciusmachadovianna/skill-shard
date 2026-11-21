@@ -210,7 +210,39 @@ def load_questions(document_names: set[str]) -> list[dict]:
     })
     if unknown:
         raise SystemExit(f"questions.json cita arquivos que não existem em data/: {', '.join(unknown)}")
+    problems = [
+        f"{question['id']}: {problem}"
+        for question in questions
+        for problem in question_problems(question)
+    ]
+    if problems:
+        raise SystemExit("questions.json inconsistente:\n  " + "\n  ".join(problems))
     return questions
+
+
+TAGS = {"conflito", "versao", "temporal", "entidade_ambigua", "parafrase", "secao_pdf"}
+UNANSWERABLE_SUBTYPES = {"fora_do_escopo", "ausente"}
+
+
+def expected_category(question: dict) -> str:
+    """A categoria decorre só da estrutura de `expected`, sem julgamento do anotador."""
+    groups = len(question["expected"])
+    return "sem_resposta" if groups == 0 else "simples" if groups == 1 else "composta"
+
+
+def question_problems(question: dict) -> list[str]:
+    problems = []
+    expected = expected_category(question)
+    if question["category"] != expected:
+        problems.append(f"categoria '{question['category']}', mas `expected` indica '{expected}'")
+    if expected == "sem_resposta" and question.get("subtype") not in UNANSWERABLE_SUBTYPES:
+        problems.append(f"`subtype` deve ser um de {sorted(UNANSWERABLE_SUBTYPES)}")
+    if expected != "sem_resposta" and "subtype" in question:
+        problems.append("`subtype` só se aplica a perguntas sem resposta")
+    unknown_tags = set(question.get("tags", [])) - TAGS
+    if unknown_tags:
+        problems.append(f"tags desconhecidas: {', '.join(sorted(unknown_tags))}")
+    return problems
 
 
 def score_question(question: dict, results: list[dict]) -> dict:
@@ -222,6 +254,8 @@ def score_question(question: dict, results: list[dict]) -> dict:
     row = {
         "id": question["id"],
         "category": question["category"],
+        "subtype": question.get("subtype"),
+        "tags": question.get("tags", []),
         "question": question["question"],
         "answerable": bool(groups),
         "retrieved": [
@@ -447,18 +481,30 @@ def print_report(results: list[dict], details: bool) -> None:
         ]
         print(f"{result['configuration']:<20}" + "".join(cells))
 
-    categories = sorted({row["category"] for row in results[0]["rows"] if row["answerable"]})
-    print(f"\nRecall@5 por categoria\n{'categoria':<14}"
-          + "".join(f"{result['configuration']:>20}" for result in results))
-    for category in categories:
-        cells = []
-        for result in results:
-            rows = [row for row in result["rows"] if row["category"] == category]
-            cells.append(f"{mean(row['recall@5'] for row in rows):.3f} ({len(rows)})")
-        print(f"{category:<14}" + "".join(f"{cell:>20}" for cell in cells))
+    def print_breakdown(title: str, label: str, groups: list[str], belongs) -> None:
+        print(f"\n{title}\n{label:<18}" + "".join(f"{result['configuration']:>20}" for result in results))
+        for group in groups:
+            cells = []
+            for result in results:
+                rows = [row for row in result["rows"] if row["answerable"] and belongs(row, group)]
+                cells.append(f"{mean(row['recall@5'] for row in rows):.3f} ({len(rows)})")
+            print(f"{group:<18}" + "".join(f"{cell:>20}" for cell in cells))
+
+    answerable_rows = [row for row in results[0]["rows"] if row["answerable"]]
+    print_breakdown(
+        "Recall@5 por categoria (n entre parênteses)", "categoria",
+        [c for c in ("simples", "composta") if any(row["category"] == c for row in answerable_rows)],
+        lambda row, category: row["category"] == category,
+    )
+    print_breakdown(
+        "Recall@5 por tag — as tags se sobrepõem e têm n pequeno: use para análise de erros, "
+        "não para comparar configurações", "tag",
+        sorted({tag for row in answerable_rows for tag in row["tags"]}),
+        lambda row, tag: tag in row["tags"],
+    )
 
     unanswerable_categories = sorted({
-        row["category"] for row in results[0]["rows"] if not row["answerable"]
+        row["subtype"] for row in results[0]["rows"] if not row["answerable"]
     })
     print("\nSimilaridade do 1º trecho: um limite de relevância só separa os grupos se o "
           "mínimo das perguntas com resposta ficar acima do máximo das sem resposta")
@@ -466,7 +512,10 @@ def print_report(results: list[dict], details: bool) -> None:
         answered = [row["top_score"] for row in result["rows"] if row["answerable"]]
         line = f"  {result['configuration']:<20} com resposta: média {mean(answered):.3f}, mín {min(answered):.3f}"
         for category in unanswerable_categories:
-            scores = [row["top_score"] for row in result["rows"] if row["category"] == category]
+            scores = [
+                row["top_score"] for row in result["rows"]
+                if not row["answerable"] and row["subtype"] == category
+            ]
             line += f" | {category}: média {mean(scores):.3f}, máx {max(scores):.3f}"
         print(line)
 
@@ -480,8 +529,9 @@ def print_report(results: list[dict], details: bool) -> None:
         if not rows:
             print("  nenhuma")
         for row in rows:
-            status = f"recall@5 {row['recall@5']:.2f}" if row["answerable"] else "fora do escopo"
-            print(f"  {row['id']} [{row['category']}, {status}] {row['question']}")
+            status = f"recall@5 {row['recall@5']:.2f}" if row["answerable"] else row["subtype"]
+            tags = f", {'/'.join(row['tags'])}" if row["tags"] else ""
+            print(f"  {row['id']} [{row['category']}{tags}, {status}] {row['question']}")
             for missing in row.get("missing", []):
                 print(f"      faltou: {' ou '.join(missing)}")
             retrieved = ", ".join(

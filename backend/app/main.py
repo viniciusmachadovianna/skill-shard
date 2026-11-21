@@ -30,6 +30,7 @@ Além das rotas, este módulo contém:
 
 import base64
 import binascii
+import json
 import logging
 import os
 from pathlib import Path
@@ -389,6 +390,21 @@ def list_repository_documents(include_chunk_counts: bool = Query(default=False))
     desativados.
     """
     return load_repository_documents(include_chunk_counts=include_chunk_counts)
+
+EVALUATION_QUESTIONS_PATH = Path(__file__).resolve().parents[1] / "evals" / "questions.json"
+
+@app.get("/evaluation/questions")
+def list_evaluation_questions():
+    """
+    Devolve o conjunto de perguntas de avaliação (`evals/questions.json`) sem
+    alterações, para o frontend exibir as categorias, as tags e os documentos
+    esperados de cada pergunta.
+    """
+    try:
+        return json.loads(EVALUATION_QUESTIONS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        logger.exception("Falha ao ler %s", EVALUATION_QUESTIONS_PATH)
+        raise HTTPException(status_code=500, detail="Evaluation questions are unavailable.") from error
 
 @app.post("/chunks")
 def list_document_chunks(document: IndexDocument):

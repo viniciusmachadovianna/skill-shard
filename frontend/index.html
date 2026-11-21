@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="./style/toast.css">
     <link rel="stylesheet" href="./style/dialogs.css">
     <link rel="stylesheet" href="./style/entity-graph.css">
+    <link rel="stylesheet" href="./style/evaluation.css">
     <link rel="stylesheet" href="./style/responsive.css">
     <link rel="stylesheet" href="./style/theme-light.css">
 </head>
@@ -40,6 +41,12 @@
                 </div>
             </div>
             <div class="sidebar-bottom">
+                <button class="knowledge-row" id="evaluation-button" type="button" aria-haspopup="dialog">
+                    <img class="database-icon" src="./assets/icons/test.svg" alt="" width="19" height="19">
+                    <span class="knowledge-copy"><strong data-i18n="evaluation-title">Evaluation set</strong><small
+                            id="evaluation-status" data-i18n="evaluation-status-idle">TEST QUESTIONS</small></span>
+                    <span class="chevron">›</span>
+                </button>
                 <button class="knowledge-row" id="knowledge-button">
                     <img class="database-icon" src="./assets/icons/database.svg" alt="" width="19" height="19">
                     <span class="knowledge-copy"><strong data-i18n="knowledge-base">Knowledge base</strong><small
@@ -338,6 +345,38 @@
             <span><i class="graph-legend-dot graph-type-topic"></i><span data-i18n="entity-graph-type-topic">Topic</span></span>
             <span><i class="graph-legend-dot graph-type-tag"></i><span data-i18n="entity-graph-type-tag">Tag</span></span>
         </div>
+    </dialog>
+    <dialog class="evaluation-dialog" id="evaluation-dialog" aria-labelledby="evaluation-dialog-title">
+        <div class="knowledge-dialog-header">
+            <div>
+                <h2 id="evaluation-dialog-title" data-i18n="evaluation-title">Evaluation set</h2>
+                <p id="evaluation-summary" aria-live="polite"></p>
+            </div>
+            <button class="knowledge-close" id="evaluation-close" type="button" aria-label="Close evaluation set"
+                data-i18n-aria="evaluation-close">×</button>
+        </div>
+        <section class="evaluation-overview" id="evaluation-overview" aria-label="Category distribution"
+            data-i18n-aria="evaluation-distribution" hidden>
+            <div class="evaluation-bar" id="evaluation-bar" aria-hidden="true"></div>
+            <ul class="evaluation-legend" id="evaluation-legend"></ul>
+            <p class="knowledge-dialog-note" data-i18n="evaluation-rule">The category follows from the expected
+                documents: one group is simple, two or more is composite, none is unanswerable.</p>
+        </section>
+        <div class="evaluation-controls" id="evaluation-controls" hidden>
+            <div class="knowledge-search-field">
+                <img src="./assets/icons/search.svg" alt="" width="20" height="20" aria-hidden="true">
+                <input class="knowledge-search" id="evaluation-search" type="search" autocomplete="off"
+                    placeholder="Search questions or documents" aria-label="Search questions or documents"
+                    data-i18n-placeholder="evaluation-search" data-i18n-aria="evaluation-search">
+            </div>
+            <div class="knowledge-filters knowledge-status-segment" id="evaluation-category-filters" role="group"
+                aria-label="Filter by category" data-i18n-aria="evaluation-category-filters"></div>
+            <div class="knowledge-filters" id="evaluation-tag-filters" role="group" aria-label="Filter by tag"
+                data-i18n-aria="evaluation-tag-filters"></div>
+        </div>
+        <ol class="evaluation-list" id="evaluation-list" aria-label="Evaluation questions"
+            data-i18n-aria="evaluation-list"></ol>
+        <p class="knowledge-empty" id="evaluation-empty" hidden></p>
     </dialog>
     <dialog class="conversation-delete-dialog" id="conversation-delete-dialog" aria-labelledby="conversation-delete-title"
         aria-describedby="conversation-delete-message">

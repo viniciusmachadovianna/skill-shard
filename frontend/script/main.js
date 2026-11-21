@@ -18,6 +18,7 @@ import {
     removeConversation
 } from './chat.js';
 import { initializeKnowledgeBase } from './knowledge-base.js';
+import { initializeEvaluation } from './evaluation.js';
 import { initializeEntityGraph, renderAnswerGraph } from './entity-graph.js';
 import { showToast } from './toast.js';
 import { listModels } from './api.js';
@@ -284,6 +285,8 @@ const chat = initializeChat({
         renderAnswerGraph(graph);
     }
 });
+
+initializeEvaluation({ showToast });
 
 const knowledgeBase = initializeKnowledgeBase({
     showToast,
