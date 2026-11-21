@@ -104,6 +104,26 @@
 }
 .entity-graph-legend > span { display: inline-flex; align-items: center; gap: 5px; }
 .entity-graph-legend > span:first-child { color: var(--subtext); }
+/* Cada tipo da legenda mostra ou oculta os nós daquele tipo. */
+.graph-legend-toggle,
+.graph-legend-show-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 6px;
+    border: 1px solid transparent;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+.graph-legend-toggle:hover,
+.graph-legend-show-all:hover { border-color: var(--line); color: var(--text); }
+.graph-legend-toggle:focus-visible,
+.graph-legend-show-all:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.graph-legend-toggle[aria-pressed="false"] { opacity: .45; }
+.graph-legend-toggle[aria-pressed="false"] span { text-decoration: line-through; }
+.graph-legend-show-all { color: var(--cyan); }
 .entity-graph-legend[hidden] { display: none; }
 /* Ícones da legenda com o mesmo formato dos nós desenhados pela vis-network. */
 .graph-legend-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; }

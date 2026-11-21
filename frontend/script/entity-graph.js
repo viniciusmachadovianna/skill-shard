@@ -114,11 +114,16 @@ const SIMILARITY_WIDTH_RANGE = { min: 0.75, max: 0.95 };
 const SPREAD_MODES = ['orbit', 'clusters', 'balanced', 'even', 'hierarchy'];
 const DEFAULT_SPREAD_MODE = 'clusters';
 const SPREAD_STORAGE_KEY = 'skill-shard-graph-spread';
+const HIDDEN_TYPES_STORAGE_KEY = 'skill-shard-graph-hidden-types';
 
 let network;
 let networkSpreadMode;
 let spreadMode = readStoredSpreadMode();
+let hiddenTypes = readStoredHiddenTypes();
+// Grafo completo (do backend ou da resposta) e o subgrafo desenhado, sem os
+// tipos ocultos na legenda. Cliques, enquadrar e tema usam o desenhado.
 let currentGraph;
+let displayedGraph;
 let requestId = 0;
 
 function getEnabledDocumentIds() {
@@ -330,10 +335,12 @@ function getOrbitPositions(graph) {
 }
 
 /**
- * Mostra na legenda só os tipos de nó presentes no grafo exibido, na ordem de
- * `NODE_SHAPES`, com o ícone no mesmo formato e cor do nó. Sem grafo (ou com
- * grafo vazio), a legenda fica escondida. Os rótulos usam `data-i18n`, então
- * acompanham a troca de idioma.
+ * Mostra na legenda os tipos de nó presentes no grafo (completo, não só o
+ * visível), na ordem de `NODE_SHAPES`, com o ícone no mesmo formato e cor do
+ * nó. Cada tipo é um botão que mostra ou oculta os nós daquele tipo
+ * (`aria-pressed` = visível). Quando algum tipo está oculto, aparece o botão
+ * "mostrar todos". Sem grafo (ou com grafo vazio), a legenda fica escondida.
+ * Os rótulos usam `data-i18n`, então acompanham a troca de idioma.
  *
  * @param {Graph | undefined} graph
  */
@@ -345,9 +352,13 @@ function updateLegend(graph) {
     ];
 
     const items = orderedTypes.map((type) => {
-        const item = document.createElement('span');
+        const item = document.createElement('button');
         const icon = document.createElement('i');
         const label = document.createElement('span');
+        item.type = 'button';
+        item.className = 'graph-legend-toggle';
+        item.dataset.type = type;
+        item.setAttribute('aria-pressed', String(!hiddenTypes.has(type)));
         icon.className = `graph-legend-dot graph-legend-shape-${NODE_SHAPES[type] || 'dot'} graph-type-${type}`;
         icon.setAttribute('aria-hidden', 'true');
         label.dataset.i18n = `entity-graph-type-${type}`;
@@ -356,8 +367,83 @@ function updateLegend(graph) {
         return item;
     });
 
+    if (orderedTypes.some((type) => hiddenTypes.has(type))) {
+        const showAll = document.createElement('button');
+        showAll.type = 'button';
+        showAll.className = 'graph-legend-show-all';
+        showAll.dataset.legendAction = 'show-all';
+        showAll.dataset.i18n = 'entity-graph-legend-show-all';
+        showAll.textContent = t('entity-graph-legend-show-all');
+        items.push(showAll);
+    }
+
     legend.replaceChildren(legend.firstElementChild, ...items);
-    legend.hidden = !items.length;
+    legend.hidden = !orderedTypes.length;
+}
+
+/**
+ * Subgrafo sem os tipos ocultos na legenda. Uma aresta só fica se as duas
+ * pontas estiverem visíveis.
+ *
+ * @param {Graph} graph
+ * @returns {Graph}
+ */
+function getVisibleGraph(graph) {
+    const nodes = graph.nodes.filter((node) => !hiddenTypes.has(node.type));
+    const visibleIds = new Set(nodes.map((node) => node.id));
+    return {
+        nodes,
+        edges: graph.edges.filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
+    };
+}
+
+function updateSummary(graph, visible) {
+    const filtered = visible.nodes.length !== graph.nodes.length;
+    graphSummary.textContent = t(filtered ? 'entity-graph-summary-filtered' : 'entity-graph-summary')
+        .replace('{visibleNodes}', String(visible.nodes.length))
+        .replace('{visibleEdges}', String(visible.edges.length))
+        .replace('{nodes}', String(graph.nodes.length))
+        .replace('{edges}', String(graph.edges.length));
+}
+
+function readStoredHiddenTypes() {
+    try {
+        const stored = JSON.parse(localStorage.getItem(HIDDEN_TYPES_STORAGE_KEY) ?? '[]');
+        return new Set(Array.isArray(stored) ? stored.filter((type) => typeof type === 'string') : []);
+    } catch {
+        return new Set();
+    }
+}
+
+function storeHiddenTypes() {
+    try {
+        localStorage.setItem(HIDDEN_TYPES_STORAGE_KEY, JSON.stringify([...hiddenTypes]));
+    } catch {
+        // Sem armazenamento: o filtro vale só nesta sessão.
+    }
+}
+
+function setHiddenTypes(nextHiddenTypes) {
+    hiddenTypes = nextHiddenTypes;
+    storeHiddenTypes();
+    clearSelection();
+    if (currentGraph?.nodes.length) updateNetwork(currentGraph);
+}
+
+function handleLegendClick(event) {
+    if (event.target.closest('[data-legend-action="show-all"]')) {
+        setHiddenTypes(new Set());
+        return;
+    }
+    const toggle = event.target.closest('.graph-legend-toggle');
+    if (!toggle) return;
+    const next = new Set(hiddenTypes);
+    if (next.has(toggle.dataset.type)) {
+        next.delete(toggle.dataset.type);
+    } else {
+        next.add(toggle.dataset.type);
+    }
+    setHiddenTypes(next);
 }
 
 function getSimilarityWidth(weight) {
@@ -627,10 +713,11 @@ function showSelection(label, type, edges, relation = '', weight = undefined) {
 }
 
 function handleGraphClick({ nodes, edges }) {
+    if (!displayedGraph) return;
     if (nodes.length) {
         const nodeId = nodes[0];
-        const node = currentGraph.nodes.find((item) => item.id === nodeId);
-        const relatedEdges = currentGraph.edges.filter(
+        const node = displayedGraph.nodes.find((item) => item.id === nodeId);
+        const relatedEdges = displayedGraph.edges.filter(
             (edge) => edge.source === nodeId || edge.target === nodeId
         );
         if (node) {
@@ -643,10 +730,10 @@ function handleGraphClick({ nodes, edges }) {
     }
 
     if (edges.length) {
-        const edge = currentGraph.edges.find((item) => item.id === edges[0]);
+        const edge = displayedGraph.edges.find((item) => item.id === edges[0]);
         if (edge) {
-            const source = currentGraph.nodes.find((item) => item.id === edge.source);
-            const target = currentGraph.nodes.find((item) => item.id === edge.target);
+            const source = displayedGraph.nodes.find((item) => item.id === edge.source);
+            const target = displayedGraph.nodes.find((item) => item.id === edge.target);
             const arrow = edge.label === 'similar_to' ? '↔' : '→';
             showSelection(
                 `${source?.label ?? edge.source} ${arrow} ${target?.label ?? edge.target}`,
@@ -667,8 +754,19 @@ function updateNetwork(graph, fit = true) {
         throw new Error(t('entity-graph-library-unavailable'));
     }
 
-    const data = makeNetworkData(graph);
+    // Só os tipos visíveis vão para a rede: o layout se refaz com eles, sem
+    // buracos onde estavam os nós ocultos.
+    const visible = getVisibleGraph(graph);
+    displayedGraph = visible;
     updateLegend(graph);
+    updateSummary(graph, visible);
+    if (graph.nodes.length && !visible.nodes.length) {
+        showEmptyMessage('entity-graph-all-hidden');
+    } else if (graph.nodes.length) {
+        graphEmpty.hidden = true;
+    }
+
+    const data = makeNetworkData(visible);
     const spreadOptions = getSpreadOptions(spreadMode);
 
     // Trocar de modo recria a rede: a vis-network não alterna de forma
@@ -720,6 +818,7 @@ async function openEntityGraph() {
     if (knowledgeDialog.open) knowledgeDialog.close();
     const currentRequestId = ++requestId;
     currentGraph = undefined;
+    displayedGraph = undefined;
     fitButton.disabled = true;
     graphSummary.textContent = '';
     updateLegend(undefined);
@@ -745,12 +844,8 @@ async function openEntityGraph() {
             return;
         }
 
-        graphEmpty.hidden = true;
         updateNetwork(graph);
         fitButton.disabled = false;
-        graphSummary.textContent = t('entity-graph-summary')
-            .replace('{nodes}', String(graph.nodes.length))
-            .replace('{edges}', String(graph.edges.length));
         setGraphStatus(
             graph.edges.length
                 ? t('entity-graph-loaded')
@@ -779,9 +874,6 @@ export function renderAnswerGraph(graph) {
     try {
         const validGraph = validateGraph(graph);
         currentGraph = validGraph;
-        graphSummary.textContent = t('entity-graph-summary')
-            .replace('{nodes}', String(validGraph.nodes.length))
-            .replace('{edges}', String(validGraph.edges.length));
         clearSelection();
         updateNetwork(validGraph);
         fitButton.disabled = validGraph.nodes.length === 0;
@@ -792,7 +884,6 @@ export function renderAnswerGraph(graph) {
             return;
         }
 
-        graphEmpty.hidden = true;
         setGraphStatus(t('entity-graph-answer-loaded'), 'ready');
     } catch (error) {
         updateLegend(undefined);
@@ -814,19 +905,20 @@ export function renderAnswerGraph(graph) {
 export function initializeEntityGraph() {
     refreshButton.addEventListener('click', openEntityGraph);
     fitButton.addEventListener('click', () => network?.fit({
-        nodes: currentGraph?.nodes.map((node) => node.id),
+        nodes: displayedGraph?.nodes.map((node) => node.id),
         animation: { duration: 450, easingFunction: 'easeInOutQuad' }
     }));
 
     spreadSelect.value = spreadMode;
     spreadSelect.addEventListener('change', () => changeSpreadMode(spreadSelect.value));
+    legend.addEventListener('click', handleLegendClick);
 
     const themeObserver = new MutationObserver(() => {
-        if (!network || !currentGraph) return;
+        if (!network || !displayedGraph) return;
         // Mantém as posições atuais: só as cores mudam com o tema.
         const positions = new Map(Object.entries(network.getPositions()));
         network.setOptions({ physics: { enabled: false } });
-        network.setData(makeNetworkData(currentGraph, positions));
+        network.setData(makeNetworkData(displayedGraph, positions));
     });
     themeObserver.observe(document.documentElement, {
         attributes: true,
