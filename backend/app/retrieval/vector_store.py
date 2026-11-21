@@ -36,7 +36,8 @@ Formato de um trecho (dicionário):
     chunk: posição do trecho no documento, em sequência a partir de 1. A
         contagem continua de uma página para a outra.
     text: texto do trecho.
-    Os resultados de `retrieve_relevant_chunks` trazem também `score`.
+    Os resultados de `retrieve_relevant_chunks` trazem também `score`,
+    `keyword_score` e `rank_score`.
 
 Funções públicas:
     persist_documents: indexa documentos (gera os embeddings que faltam e
@@ -57,10 +58,17 @@ from pathlib import Path
 from google.genai import types
 from app.config import client
 from app.retrieval.entity_graph import merge_document_graphs, serialize_document_graph
+from app.retrieval.keyword_search import bm25_scores
 
 
 EMBEDDING_MODEL = "gemini-embedding-001"
 EMBEDDING_BATCH_SIZE = 100
+# "hybrid": embeddings + BM25 unidos por Reciprocal Rank Fusion; "dense": só
+# embeddings. Ver `retrieve_relevant_chunks`.
+RETRIEVAL_STRATEGY = "hybrid"
+# Constante usual do RRF: reduz a diferença entre as primeiras posições, para
+# que nenhuma das duas listas domine a ordem final.
+RRF_K = 60
 VECTOR_STORE_PATH = Path(__file__).resolve().parents[2] / "data" / "vectors.sqlite3"
 
 
@@ -689,11 +697,20 @@ def retrieve_relevant_chunks(
     top_k: int = 5,
 ) -> list[dict]:
     """
-    Encontra os trechos mais parecidos com a pergunta, entre os documentos dados.
+    Encontra os trechos mais relevantes para a pergunta, entre os documentos dados.
 
-    Gera o embedding da pergunta (uma chamada à API do Gemini) e o compara,
-    por similaridade de cosseno, com o embedding de cada trecho dos
-    documentos. Em caso de empate, vem primeiro o trecho que aparece antes.
+    Duas buscas são feitas sobre os trechos dos documentos:
+        - por significado: o embedding da pergunta (uma chamada à API do
+          Gemini) é comparado com o de cada trecho por similaridade de
+          cosseno;
+        - por palavras-chave: BM25 (`keyword_search.bm25_scores`), que acerta
+          termos exatos como números, códigos e nomes.
+
+    Com `RETRIEVAL_STRATEGY = "hybrid"` (padrão), as duas classificações são
+    unidas por Reciprocal Rank Fusion: cada trecho soma `1 / (RRF_K +
+    posição)` em cada lista onde aparece (na do BM25, só se tiver algum termo
+    da pergunta). Com `"dense"`, vale só a similaridade de cosseno. Em caso de
+    empate, vem primeiro o trecho que aparece antes.
 
     Args:
         question: pergunta do usuário.
@@ -701,10 +718,11 @@ def retrieve_relevant_chunks(
         top_k: quantos trechos devolver.
 
     Returns:
-        Até `top_k` trechos, do mais para o menos parecido. Cada um segue o
-        formato descrito no módulo e traz também `score`, a similaridade de
-        cosseno. Retorna lista vazia se `document_ids` estiver vazio ou se
-        `top_k` for zero ou negativo.
+        Até `top_k` trechos, do mais para o menos relevante. Cada um segue o
+        formato descrito no módulo e traz também `score` (similaridade de
+        cosseno), `keyword_score` (BM25; 0 sem termos em comum) e
+        `rank_score` (a pontuação usada na ordenação). Retorna lista vazia se
+        `document_ids` estiver vazio ou se `top_k` for zero ou negativo.
 
     Raises:
         MissingIndexedDocumentsError: se algum documento não estiver
@@ -719,14 +737,31 @@ def retrieve_relevant_chunks(
 
     chunks, chunk_embeddings = _load_indexed_chunks(document_ids)
     question_embedding = _embed_contents([question])[0]
-    similarities = cosine_similarity([question_embedding], chunk_embeddings)[0]
+    similarities = [float(value) for value in cosine_similarity([question_embedding], chunk_embeddings)[0]]
+    keyword_scores = bm25_scores(question, [chunk["text"] for chunk in chunks])
+
+    if RETRIEVAL_STRATEGY == "dense":
+        rank_scores = similarities
+    else:
+        rank_scores = [0.0] * len(chunks)
+        for scores in (similarities, keyword_scores):
+            ranked = sorted(range(len(chunks)), key=lambda index: (-scores[index], index))
+            for position, index in enumerate(ranked, start=1):
+                if scores is keyword_scores and scores[index] <= 0:
+                    break
+                rank_scores[index] += 1 / (RRF_K + position)
+
     ranked_indices = sorted(
         range(len(chunks)),
-        key=lambda index: (similarities[index], -index),
-        reverse=True,
+        key=lambda index: (-rank_scores[index], -similarities[index], index),
     )[:top_k]
 
     return [
-        {**chunks[index], "score": float(similarities[index])}
+        {
+            **chunks[index],
+            "score": similarities[index],
+            "keyword_score": keyword_scores[index],
+            "rank_score": rank_scores[index],
+        }
         for index in ranked_indices
     ]

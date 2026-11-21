@@ -1,0 +1,275 @@
+{
+    "description": "Perguntas para avaliar a recuperação de trechos. Em `expected`, cada grupo é uma informação necessária para a resposta completa; o grupo é atendido se qualquer um dos seus arquivos aparecer entre os trechos recuperados. Perguntas com `expected` vazio não têm resposta nos documentos e servem para calibrar um limite de relevância: `fora_do_escopo` são de outro assunto; `sem_resposta` são do mesmo assunto, mas a informação não existe (o caso difícil).",
+    "questions": [
+        {
+            "id": "q01",
+            "category": "fato",
+            "question": "Qual era a extensão original prevista para a Linha 2 – Verde?",
+            "expected": [["D01_visao_geral.md", "D02_contrato_original_2021.pdf"]]
+        },
+        {
+            "id": "q02",
+            "category": "fato",
+            "question": "Quem presidia a CTMSC quando o contrato 014/2021 foi assinado?",
+            "expected": [["D02_contrato_original_2021.pdf", "D12_perfil_helena_prado.md"]]
+        },
+        {
+            "id": "q03",
+            "category": "fato",
+            "question": "Qual é o valor atual do contrato da Linha 2?",
+            "expected": [["D04_aditivo_02_2024.txt"]]
+        },
+        {
+            "id": "q04",
+            "category": "versao",
+            "question": "Qual é a data oficial de inauguração da Linha 2 hoje?",
+            "expected": [["D04_aditivo_02_2024.txt", "D07_cronograma_v3.json"]]
+        },
+        {
+            "id": "q05",
+            "category": "versao",
+            "question": "Quantas estações a Linha 2 terá depois das revisões do projeto?",
+            "expected": [["D04_aditivo_02_2024.txt", "D09_estacoes_revisao_2024.json"]]
+        },
+        {
+            "id": "q06",
+            "category": "fato",
+            "question": "Qual estação foi suprimida do projeto e por qual motivo?",
+            "expected": [["D04_aditivo_02_2024.txt"]]
+        },
+        {
+            "id": "q07",
+            "category": "versao",
+            "question": "No cronograma v2, qual era a data prevista para o fim da escavação?",
+            "expected": [["D06_cronograma_v2.csv"]]
+        },
+        {
+            "id": "q08",
+            "category": "versao",
+            "question": "Como a data prevista de inauguração mudou entre as versões v1, v2 e v3 do cronograma?",
+            "expected": [["D05_cronograma_v1.csv"], ["D06_cronograma_v2.csv"], ["D07_cronograma_v3.json"]]
+        },
+        {
+            "id": "q09",
+            "category": "contradicao",
+            "question": "Houve feridos no incidente de 14/08/2023? Quantos?",
+            "expected": [["D15_comunicado_incidente.txt"], ["D16_relatorio_auditoria_incidente.pdf"], ["D17_noticia_jornal.txt"]]
+        },
+        {
+            "id": "q10",
+            "category": "contradicao",
+            "question": "Qual foi a causa do recalque de solo em agosto de 2023? Foi um evento imprevisível?",
+            "expected": [["D16_relatorio_auditoria_incidente.pdf"], ["D15_comunicado_incidente.txt"]]
+        },
+        {
+            "id": "q11",
+            "category": "multi_doc",
+            "question": "O risco de recalque no trecho entre Praça do Relógio e Mercado Velho já era conhecido antes do incidente?",
+            "expected": [["D18_relatorio_geotecnico_2022.md"], ["D16_relatorio_auditoria_incidente.pdf"]]
+        },
+        {
+            "id": "q12",
+            "category": "numero",
+            "question": "Por quantos dias a TBM Tatuí ficou paralisada depois do incidente?",
+            "expected": [["D16_relatorio_auditoria_incidente.pdf"]]
+        },
+        {
+            "id": "q13",
+            "category": "nome",
+            "question": "Quem é Ricardo Menezes e qual é o seu cargo?",
+            "expected": [["D13_perfil_ricardo_menezes.txt", "D11_organograma_ctmsc.md"]]
+        },
+        {
+            "id": "q14",
+            "category": "nome",
+            "question": "O que o vereador Ricardo Meneses disse sobre o custo do metrô?",
+            "expected": [["D26_entrevista_vereador.md"]]
+        },
+        {
+            "id": "q15",
+            "category": "fato",
+            "question": "Quem assinou o Termo Aditivo nº 02?",
+            "expected": [["D04_aditivo_02_2024.txt", "D13_perfil_ricardo_menezes.txt"]]
+        },
+        {
+            "id": "q16",
+            "category": "contradicao",
+            "question": "Qual é a participação da Construtora Meridional no Consórcio TransAurora?",
+            "expected": [["D10_consorcio.json"]]
+        },
+        {
+            "id": "q17",
+            "category": "multi_doc",
+            "question": "Qual sobrepreço o TCE apontou no contrato e como o consórcio respondeu?",
+            "expected": [["D19_parecer_tce.pdf"], ["D20_contestacao_consorcio.txt"]]
+        },
+        {
+            "id": "q18",
+            "category": "numero",
+            "question": "Quantos trens já foram entregues pela Ferrovias Altiplano?",
+            "expected": [["D21_frota_trens.csv"]]
+        },
+        {
+            "id": "q19",
+            "category": "numero",
+            "question": "Quanto do orçamento de obras civis já foi executado?",
+            "expected": [["D23_orcamento_execucao.csv"]]
+        },
+        {
+            "id": "q20",
+            "category": "versao",
+            "question": "Qual será o valor da tarifa da Linha 2?",
+            "expected": [["D29_ata_reuniao_2024_09.txt"], ["D24_faq_passageiros.md"]]
+        },
+        {
+            "id": "q21",
+            "category": "numero",
+            "question": "Qual é a capacidade projetada da Linha 2 com a frota reduzida para 30 trens?",
+            "expected": [["D30_nota_tecnica_demanda.md"]]
+        },
+        {
+            "id": "q22",
+            "category": "fato",
+            "question": "Qual sistema de sinalização será usado na Linha 2?",
+            "expected": [["D22_especificacao_sinalizacao.md"]]
+        },
+        {
+            "id": "q23",
+            "category": "fato",
+            "question": "O que significa headway?",
+            "expected": [["D28_glossario.json"]]
+        },
+        {
+            "id": "q24",
+            "category": "fato",
+            "question": "Qual é a capacidade da Linha 1 – Azul?",
+            "expected": [["D27_linha_azul.md"]]
+        },
+        {
+            "id": "q25",
+            "category": "nome",
+            "question": "Quem é o diretor de obras do Consórcio TransAurora?",
+            "expected": [["D14_perfil_marcos_teixeira.md"]]
+        },
+        {
+            "id": "q26",
+            "category": "fato",
+            "question": "O que foi decidido na reunião de março de 2024 entre a CTMSC e a TransAurora?",
+            "expected": [["D25_ata_reuniao_2024_03.txt"]]
+        },
+        {
+            "id": "q27",
+            "category": "numero",
+            "question": "Qual é o percentual de avanço da obra da estação Santa Rita?",
+            "expected": [["D09_estacoes_revisao_2024.json"]]
+        },
+        {
+            "id": "q28",
+            "category": "fato",
+            "question": "Em qual estação a Linha 2 se integra com a Linha 1?",
+            "expected": [["D01_visao_geral.md", "D08_estacoes_original.csv", "D24_faq_passageiros.md"]]
+        },
+        {
+            "id": "q29",
+            "category": "multi_doc",
+            "question": "Qual é a multa por atraso prevista no contrato e ela está sendo aplicada?",
+            "expected": [["D02_contrato_original_2021.pdf"], ["D04_aditivo_02_2024.txt"]]
+        },
+        {
+            "id": "q30",
+            "category": "fato",
+            "question": "Qual é o custo de implantação do sistema de sinalização CBTC?",
+            "expected": [["D22_especificacao_sinalizacao.md"]]
+        },
+        {
+            "id": "q31",
+            "category": "fora_do_escopo",
+            "question": "Qual é a previsão do tempo para amanhã em Serra Clara?",
+            "expected": []
+        },
+        {
+            "id": "q32",
+            "category": "fora_do_escopo",
+            "question": "Quantos gols o time da cidade marcou no último campeonato?",
+            "expected": []
+        },
+        {
+            "id": "q33",
+            "category": "versao",
+            "question": "Qual passou a ser o valor do contrato depois do Aditivo 01?",
+            "expected": [["D03_aditivo_01_2023.md"]]
+        },
+        {
+            "id": "q34",
+            "category": "multi_doc",
+            "question": "Como o valor do contrato da Linha 2 evoluiu desde a assinatura?",
+            "expected": [["D02_contrato_original_2021.pdf"], ["D03_aditivo_01_2023.md"], ["D04_aditivo_02_2024.txt"]]
+        },
+        {
+            "id": "q35",
+            "category": "nome",
+            "question": "Quem assinou o Termo Aditivo nº 01?",
+            "expected": [["D03_aditivo_01_2023.md"]]
+        },
+        {
+            "id": "q36",
+            "category": "sem_resposta",
+            "question": "Qual é o salário do presidente da CTMSC?",
+            "expected": []
+        },
+        {
+            "id": "q37",
+            "category": "sem_resposta",
+            "question": "Quando começam as obras da Linha 3 do metrô de Serra Clara?",
+            "expected": []
+        },
+        {
+            "id": "q38",
+            "category": "fora_do_escopo",
+            "question": "Como faço para renovar meu passaporte?",
+            "expected": []
+        },
+        {
+            "id": "q39",
+            "category": "fora_do_escopo",
+            "question": "Qual é a receita tradicional de pão de queijo?",
+            "expected": []
+        },
+        {
+            "id": "q40",
+            "category": "parafrase",
+            "question": "Com quantas composições a frota vai ficar no fim das contas?",
+            "expected": [["D04_aditivo_02_2024.txt", "D21_frota_trens.csv", "D29_ata_reuniao_2024_09.txt", "D30_nota_tecnica_demanda.md"]]
+        },
+        {
+            "id": "q41",
+            "category": "parafrase",
+            "question": "Quanto custa a passagem na linha de metrô que já está funcionando?",
+            "expected": [["D27_linha_azul.md"]]
+        },
+        {
+            "id": "q42",
+            "category": "secao_pdf",
+            "question": "Por qual índice o valor do contrato é reajustado a cada ano?",
+            "expected": [["D02_contrato_original_2021.pdf"]]
+        },
+        {
+            "id": "q43",
+            "category": "secao_pdf",
+            "question": "Que medidas a auditoria independente recomendou depois do incidente?",
+            "expected": [["D16_relatorio_auditoria_incidente.pdf"]]
+        },
+        {
+            "id": "q44",
+            "category": "nome",
+            "question": "O vereador Ricardo Meneses tem algum vínculo com a CTMSC?",
+            "expected": [["D13_perfil_ricardo_menezes.txt"], ["D26_entrevista_vereador.md"]]
+        },
+        {
+            "id": "q45",
+            "category": "temporal",
+            "question": "Quem presidia a CTMSC no fim de março de 2024?",
+            "expected": [["D12_perfil_helena_prado.md", "D25_ata_reuniao_2024_03.txt"], ["D13_perfil_ricardo_menezes.txt", "D11_organograma_ctmsc.md", "D25_ata_reuniao_2024_03.txt"]]
+        }
+    ]
+}

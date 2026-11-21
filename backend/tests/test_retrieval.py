@@ -49,6 +49,47 @@ class RetrieveRelevantChunksTests(unittest.TestCase):
         self.assertEqual([chunk["text"] for chunk in results], ["first", "third"])
         self.assertGreater(results[0]["score"], results[1]["score"])
 
+    def _persist_three_documents(self, embed_contents):
+        embed_contents.side_effect = [
+            [[1.0, 0.0], [0.9, 0.1], [0.5, 0.5]],
+            [[1.0, 0.0]],
+        ]
+        texts = {
+            "a": "Cronograma geral da obra",
+            "b": "Visão geral do projeto",
+            "c": "Termo Aditivo 02 altera o prazo",
+        }
+        persist_documents(
+            [
+                {"id": key, "name": f"{key}.txt", "content": text, "encoding": "text"}
+                for key, text in texts.items()
+            ],
+            [
+                {"text": text, "source": f"{key}.txt", "page": None, "chunk": 1, "document_id": key}
+                for key, text in texts.items()
+            ],
+        )
+
+    @patch("app.retrieval.vector_store._embed_contents")
+    def test_hybrid_search_promotes_exact_keyword_matches(self, embed_contents):
+        self._persist_three_documents(embed_contents)
+
+        results = retrieve_relevant_chunks("O que diz o Aditivo 02?", ["a", "b", "c"])
+
+        self.assertEqual([chunk["source"] for chunk in results], ["c.txt", "a.txt", "b.txt"])
+        self.assertGreater(results[0]["keyword_score"], 0)
+        self.assertEqual(results[1]["keyword_score"], 0)
+        self.assertLess(results[0]["score"], results[1]["score"])
+
+    @patch("app.retrieval.vector_store.RETRIEVAL_STRATEGY", "dense")
+    @patch("app.retrieval.vector_store._embed_contents")
+    def test_dense_strategy_ignores_keywords(self, embed_contents):
+        self._persist_three_documents(embed_contents)
+
+        results = retrieve_relevant_chunks("O que diz o Aditivo 02?", ["a", "b", "c"])
+
+        self.assertEqual([chunk["source"] for chunk in results], ["a.txt", "b.txt", "c.txt"])
+
     @patch("app.retrieval.vector_store._embed_contents")
     def test_empty_chunks_do_not_call_embedding_service(self, embed_contents):
         self.assertEqual(retrieve_relevant_chunks("question", []), [])
