@@ -267,8 +267,9 @@ function deleteConversation(entry) {
         if (nextEntry) {
             activateConversation(nextEntry);
         } else {
-            workspaceTitle.dataset.i18n = 'no-conversation-selected';
-            workspaceTitle.textContent = t('no-conversation-selected');
+            // No conversation left: the heading is hidden, so the title is just emptied.
+            delete workspaceTitle.dataset.i18n;
+            workspaceTitle.textContent = '';
         }
     }
     showToast(t('conversation-deleted'), 'success');

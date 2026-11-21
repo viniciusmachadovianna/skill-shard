@@ -182,7 +182,6 @@ export default {
     'message-system': 'SS-800',
     'api-invalid-answer': 'A API retornou uma resposta inválida.',
     'api-mode-mismatch': 'A API retornou uma resposta para outro modo de recuperação.',
-    'no-conversation-selected': 'Nenhuma conversa selecionada',
     'rename-conversation-prompt': 'Renomear conversa:',
     'rename-conversation': 'Renomear conversa',
     'conversation-name-empty': 'O nome da conversa não pode ficar vazio.',
