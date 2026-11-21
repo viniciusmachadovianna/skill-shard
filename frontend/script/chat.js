@@ -74,7 +74,7 @@ function formatInlineMarkdown(value) {
 
 /**
  * Troca rótulos `[Source: arquivo, page N, chunk K]` (já com HTML escapado) por
- * botões compactos "arquivo · K". O clique mostra ou esconde o trecho citado
+ * botões compactos "arquivo - K". O clique mostra ou esconde o trecho citado
  * logo abaixo (veja `wireSourceChips`).
  */
 function renderSourceChips(html, keep) {
@@ -318,11 +318,20 @@ function addMessage(label, message, className = '', mode = '') {
         copyButton.setAttribute('aria-label', t('copy-message'));
         copyButton.dataset.i18nTitle = 'copy-message';
         copyButton.dataset.i18nAria = 'copy-message';
+        // Check mark next to the copy button, shown for a moment after a successful copy.
+        const copiedMark = document.createElement('span');
+        copiedMark.className = 'copy-done';
+        copiedMark.hidden = true;
+        copiedMark.setAttribute('aria-hidden', 'true');
+        let copiedTimer;
         copyButton.addEventListener('click', async () => {
             await navigator.clipboard.writeText(stripQuoteMarkers(message));
             showToast(t('message-copied'), 'success');
+            copiedMark.hidden = false;
+            clearTimeout(copiedTimer);
+            copiedTimer = setTimeout(() => { copiedMark.hidden = true; }, 2000);
         });
-        caption.append(copyButton, createGradeOptions(article), createGradeReset(article));
+        caption.append(copyButton, copiedMark, createGradeOptions(article), createGradeReset(article));
         article.append(createGradeTag(article));
     }
     const body = document.createElement('div');

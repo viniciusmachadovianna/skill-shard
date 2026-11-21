@@ -142,6 +142,6 @@ if __name__ == "__main__":
     print(f"Total de chunks gerados: {len(chunks)}\n")
 
     for i, chunk in enumerate(chunks, start=1):
-        print(f"--- Chunk {i} ({len(chunk['text'].split())} palavras) — fonte: {chunk['source_file']} ---")
+        print(f"--- Chunk {i} ({len(chunk['text'].split())} palavras) - fonte: {chunk['source_file']} ---")
         print(chunk["text"])
         print()

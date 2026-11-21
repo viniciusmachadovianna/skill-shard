@@ -16,7 +16,7 @@
 .heading-text { display: flex; min-width: 0; align-items: baseline; gap: 8px; }
 #workspace-title { overflow: hidden; font-size: 16px; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
 .heading-text small { flex: 0 0 auto; color: var(--subtext); font: 12px/1.2 var(--mono); white-space: nowrap; }
-.heading-text small::before { content: "· "; }
+.heading-text small::before { content: "- "; }
 .outline-chat { display: block; flex: 0 0 auto; width: 18px; height: 18px; }
 .export-button { display: inline-flex; align-items: center; gap: 6px; width: auto; padding: 0 6px; font-size: 12px; }
 .export-button img { display: block; width: 18px; height: 18px; }
@@ -170,6 +170,15 @@ h1 em { color: var(--cyan); font-style: normal; }
     mask: url("../assets/icons/copy.svg") center / contain no-repeat;
 }
 .copy-message:hover { background-color: var(--cyan); }
+.copy-done {
+    width: 14px;
+    height: 14px;
+    margin-left: -6px; /* the caption gap is 12px, so the mark sits 6px from the copy button */
+    background-color: var(--green);
+    -webkit-mask: url("../assets/icons/check.svg") center / contain no-repeat;
+    mask: url("../assets/icons/check.svg") center / contain no-repeat;
+}
+.copy-done[hidden] { display: none; }
 .chat-message time { color: var(--subtext); font-size: 12px; white-space: nowrap; }
 .chat-message > div {
     overflow-wrap: anywhere;

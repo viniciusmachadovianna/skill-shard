@@ -222,5 +222,26 @@
 .knowledge-search::placeholder { color: var(--muted); }
 .knowledge-search:focus-visible { border-color: var(--cyan); outline: 2px solid var(--cyan); outline-offset: 2px; }
 .knowledge-document[hidden] { display: none; }
+/* File-type filter chips below the search field: "All" plus one per extension with its count. */
+.knowledge-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+.knowledge-filters[hidden] { display: none; }
+.knowledge-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--subtext);
+    font: 13px var(--mono);
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+}
+.knowledge-filter:hover { border-color: var(--cyan); color: var(--text); }
+.knowledge-filter:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.knowledge-filter[aria-pressed="true"] { border-color: var(--cyan); background: color-mix(in srgb, var(--cyan) 18%, transparent); color: var(--text); }
+.knowledge-filter-count { color: var(--muted); font-size: 12px; }
+.knowledge-filter[aria-pressed="true"] .knowledge-filter-count { color: inherit; }
 .knowledge-search-field { position: relative; margin-top: 20px; }
 .knowledge-search-field img { position: absolute; top: 50%; left: 14px; width: 20px; height: 20px; transform: translateY(-50%); pointer-events: none; }

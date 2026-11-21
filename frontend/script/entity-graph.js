@@ -375,7 +375,7 @@ function showSelection(label, type, edges, relation = '') {
         ? t(`entity-graph-relation-${relation}`, relation)
         : '';
     selectedType.textContent = relationLabel
-        ? `${relationLabel} · ${typeLabel}`
+        ? `${relationLabel} - ${typeLabel}`
         : typeLabel;
 
     const evidence = getEvidence(edges);

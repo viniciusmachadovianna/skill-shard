@@ -274,7 +274,7 @@
         </button>
         <input id="file-input" type="file"
             accept=".txt,text/plain,.md,text/markdown,.csv,text/csv,.json,application/json,.pdf,application/pdf" multiple hidden>
-        <p class="knowledge-dialog-hint" data-i18n="supported-document-formats">TXT / MARKDOWN / CSV / JSON · UP TO 2 MB EACH</p>
+        <p class="knowledge-dialog-hint" data-i18n="supported-document-formats">TXT / MARKDOWN / CSV / JSON - UP TO 2 MB EACH</p>
         <p class="knowledge-dialog-note" data-i18n="knowledge-local-note">Stored in this browser. Document retrieval is not connected yet.</p>
         <div class="knowledge-search-field">
             <img src="./assets/icons/search.svg" alt="" width="20" height="20" aria-hidden="true">
@@ -282,6 +282,8 @@
                 placeholder="Search documents by name" aria-label="Search documents by name"
                 data-i18n-placeholder="knowledge-search-placeholder" data-i18n-aria="knowledge-search-placeholder">
         </div>
+        <div class="knowledge-filters" id="knowledge-filters" role="group" aria-label="Filter by file type"
+            data-i18n-aria="knowledge-filters" hidden></div>
         <ul class="knowledge-document-list" id="knowledge-document-list" aria-label="Knowledge base documents" data-i18n-aria="knowledge-documents"></ul>
         <p class="knowledge-empty" id="knowledge-no-results" data-i18n="knowledge-no-results" hidden>No documents match your search.</p>
         <p class="knowledge-empty" id="knowledge-empty" data-i18n="knowledge-empty">No documents yet. Add a file to get started.</p>

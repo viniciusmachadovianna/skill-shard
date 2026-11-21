@@ -33,6 +33,7 @@ const summary = $('#knowledge-summary');
 const knowledgeStatus = $('#knowledge-status');
 const searchInput = $('#knowledge-search');
 const noResults = $('#knowledge-no-results');
+const filterBar = $('#knowledge-filters');
 const previewTitle = $('#document-preview-title');
 const previewEmpty = $('#assistant-document-empty');
 const previewText = $('#assistant-document-text');
@@ -43,6 +44,8 @@ const previewPosition = $('#assistant-chunk-position');
 
 let databasePromise;
 let currentDocuments = [];
+// File-type filter: extensions toggled on (several allowed); empty means "all".
+const activeExtensions = new Set();
 let selectedPreviewDocumentId;
 let previewChunkIndex = 0;
 let previewChunks = [];
@@ -275,26 +278,73 @@ function updateDocumentCounters(documents) {
             .replace('{count}', String(documents.length));
     }
     const totalBytes = documents.reduce((sum, document) => sum + getDocumentBytes(document), 0);
-    summary.textContent = `${formatSummary(documents.length)} · ${formatBytes(totalBytes)}`;
+    summary.textContent = `${formatSummary(documents.length)} - ${formatBytes(totalBytes)}`;
     documentList.hidden = documents.length === 0;
     emptyState.hidden = documents.length !== 0;
+}
+
+function getExtension(name) {
+    return name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+}
+
+/** Builds the file-type chips ("All" + one per extension with its count) from the current documents. */
+function renderExtensionFilters(documents) {
+    const counts = new Map();
+    for (const doc of documents) {
+        const extension = getExtension(doc.name);
+        counts.set(extension, (counts.get(extension) ?? 0) + 1);
+    }
+    // Drop selected extensions that no longer exist (e.g. their last document was deleted).
+    for (const extension of [...activeExtensions]) {
+        if (!counts.has(extension)) activeExtensions.delete(extension);
+    }
+
+    const makeChip = (extension, label, count) => {
+        const chip = filterBar.ownerDocument.createElement('button');
+        chip.type = 'button';
+        chip.className = 'knowledge-filter';
+        chip.dataset.extension = extension;
+        const pressed = extension === '' ? activeExtensions.size === 0 : activeExtensions.has(extension);
+        chip.setAttribute('aria-pressed', String(pressed));
+        const text = filterBar.ownerDocument.createElement('span');
+        text.textContent = label;
+        chip.append(text);
+        if (count !== undefined) {
+            const badge = filterBar.ownerDocument.createElement('span');
+            badge.className = 'knowledge-filter-count';
+            badge.textContent = String(count);
+            chip.append(badge);
+        }
+        return chip;
+    };
+
+    const all = makeChip('', t('knowledge-filter-all'));
+    all.querySelector('span').dataset.i18n = 'knowledge-filter-all';
+    const chips = [...counts.entries()]
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([extension, count]) => makeChip(extension, extension ? `.${extension}` : '—', count));
+    filterBar.replaceChildren(all, ...chips);
+    filterBar.hidden = documents.length === 0;
 }
 
 function applyDocumentSearch() {
     const term = searchInput.value.trim().toLocaleLowerCase();
     let visible = 0;
     documentList.querySelectorAll('.knowledge-document').forEach((row) => {
-        const matches = !term || row.querySelector('.knowledge-document-name').textContent.toLocaleLowerCase().includes(term);
+        const matchesName = !term || row.querySelector('.knowledge-document-name').textContent.toLocaleLowerCase().includes(term);
+        const matchesType = activeExtensions.size === 0 || activeExtensions.has(row.dataset.extension);
+        const matches = matchesName && matchesType;
         row.hidden = !matches;
         if (matches) visible += 1;
     });
-    noResults.hidden = !(term && currentDocuments.length > 0 && visible === 0);
+    noResults.hidden = !((term || activeExtensions.size > 0) && currentDocuments.length > 0 && visible === 0);
 }
 
 function createDocumentRow(document) {
     const row = documentList.ownerDocument.createElement('li');
     row.className = 'knowledge-document';
     row.dataset.documentId = document.id;
+    row.dataset.extension = getExtension(document.name);
     row.classList.toggle('is-selected', document.id === selectedPreviewDocumentId);
 
     const icon = documentList.ownerDocument.createElement('img');
@@ -317,7 +367,7 @@ function createDocumentRow(document) {
     const metadata = documentList.ownerDocument.createElement('span');
     metadata.className = 'knowledge-document-meta';
     const chunkCount = Number(document.chunk_count ?? 0);
-    metadata.textContent = `${formatBytes(getDocumentBytes(document))} · ${chunkCount} ${t(chunkCount === 1 ? 'chunk-singular' : 'chunk-plural')}`;
+    metadata.textContent = `${formatBytes(getDocumentBytes(document))} - ${chunkCount} ${t(chunkCount === 1 ? 'chunk-singular' : 'chunk-plural')}`;
 
     copy.append(name, metadata);
 
@@ -354,6 +404,7 @@ async function renderDocuments() {
     currentDocuments = documents;
     documentList.replaceChildren(...documents.map(createDocumentRow));
     updateDocumentCounters(documents);
+    renderExtensionFilters(documents);
     applyDocumentSearch();
     renderAssistantPreview(documents);
     return documents;
@@ -489,6 +540,16 @@ export function initializeKnowledgeBase({ showToast, onIndexingState = () => {} 
     }
 
     searchInput.addEventListener('input', applyDocumentSearch);
+    filterBar.addEventListener('click', (event) => {
+        const chip = event.target.closest('.knowledge-filter');
+        if (!chip) return;
+        const { extension } = chip.dataset;
+        if (extension === '') activeExtensions.clear();
+        else if (activeExtensions.has(extension)) activeExtensions.delete(extension);
+        else activeExtensions.add(extension);
+        renderExtensionFilters(currentDocuments);
+        applyDocumentSearch();
+    });
     previewPrevious.addEventListener('click', () => stepPreviewChunk(-1));
     previewNext.addEventListener('click', () => stepPreviewChunk(1));
 
