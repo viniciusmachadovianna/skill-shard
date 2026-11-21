@@ -1,0 +1,167 @@
+{
+    "version": "1.2",
+    "description": "Esquema de entidades e relações usado na extração com LLM (entity_extraction.py). Os tipos de entidade são genéricos e servem para outros corpora; as relações foram escolhidas para os documentos de data/ e podem ser trocadas junto com a base. Datas, valores e cargos são qualificadores das relações, não nós, para o grafo não ganhar um nó por número.",
+    "rules": [
+        "Extraia apenas o que o trecho afirma. Não use conhecimento externo nem deduza relações que o texto não declara.",
+        "Use o nome como está escrito no trecho. Só liste um alias (sigla ou outro nome) quando o próprio texto mostrar a equivalência, como em 'Companhia de Transportes Metropolitanos de Serra Clara (CTMSC)'.",
+        "Nunca trate como a mesma pessoa nomes com grafias diferentes: 'Ricardo Menezes' e 'Ricardo Meneses' são pessoas distintas, a menos que o texto diga o contrário.",
+        "Cada relação precisa de 'evidence': uma cópia literal (sem paráfrase) do pedaço do trecho que a sustenta.",
+        "A relação vale segundo o documento do trecho. Quando o texto atribui a afirmação a alguém ('a CTMSC diz que...', 'segundo moradores...'), registre quem afirma no qualificador 'segundo'.",
+        "Use um tipo de relação da lista sempre que ele se aplicar. Se nenhum se aplicar e a relação for importante, use 'outra' e descreva-a no qualificador 'descricao'.",
+        "A primeira linha do trecho pode ser de metadados ('doc_id: ... | data: ... | fonte: ...'). Não crie entidades para 'doc_id' nem para a data de publicação, mas extraia o que os outros campos afirmam: 'fonte' e 'observacao' podem citar autores, documentos e substituições (por exemplo, 'Cronograma v3 substitui v1 e v2').",
+        "Datas, valores, quantidades e percentuais nunca são entidades: coloque-os nos qualificadores da relação.",
+        "Escreva o nome da entidade sem a sigla entre parênteses; coloque a sigla em 'aliases'."
+    ],
+    "entity_types": [
+        {
+            "id": "pessoa",
+            "label": {"pt-BR": "Pessoa", "en": "Person"},
+            "description": "Pessoa identificada pelo nome.",
+            "examples": ["Helena Prado", "Ricardo Menezes", "Ricardo Meneses", "Beatriz Calado"]
+        },
+        {
+            "id": "organizacao",
+            "label": {"pt-BR": "Organização", "en": "Organization"},
+            "description": "Empresa, órgão público, consórcio, tribunal, veículo de imprensa ou outra instituição.",
+            "examples": ["CTMSC", "Consórcio TransAurora", "Construtora Meridional", "TCE", "Jornal Voz da Serra"]
+        },
+        {
+            "id": "local",
+            "label": {"pt-BR": "Local", "en": "Location"},
+            "description": "Lugar físico: cidade, bairro, estação, trecho da obra.",
+            "examples": ["Serra Clara", "Praça do Relógio", "Jardim das Acácias", "trecho Centro"]
+        },
+        {
+            "id": "documento",
+            "label": {"pt-BR": "Ato ou documento", "en": "Act or document"},
+            "description": "Documento formal citado no texto: contrato, aditivo, parecer, relatório, cronograma, ata, nota técnica. Atos numerados ('Aditivo 02', 'Contrato 014/2021') se unem aos nós encontrados por regex na camada de trechos.",
+            "examples": ["Contrato 014/2021", "Aditivo 02", "Parecer 118/2024", "cronograma v3", "relatório geotécnico de 2022"]
+        },
+        {
+            "id": "evento",
+            "label": {"pt-BR": "Evento", "en": "Event"},
+            "description": "Acontecimento com data ou período: incidente, reunião, inauguração, paralisação.",
+            "examples": ["incidente de 14/08/2023", "reunião de março de 2024", "inauguração da Linha 2"]
+        },
+        {
+            "id": "ativo",
+            "label": {"pt-BR": "Ativo ou sistema", "en": "Asset or system"},
+            "description": "Bem físico, equipamento, infraestrutura ou sistema técnico.",
+            "examples": ["Linha 2 – Verde", "Linha 1 – Azul", "TBM Tatuí", "frota de trens", "sistema CBTC"]
+        }
+    ],
+    "qualifiers": {
+        "data": "Data em que a relação ocorreu ou foi registrada (AAAA-MM-DD quando o texto permitir).",
+        "inicio": "Início do período em que a relação vale.",
+        "fim": "Fim do período em que a relação vale.",
+        "valor": "Valor monetário, quantidade ou medida, com unidade.",
+        "cargo": "Cargo ou função (em ocupa_cargo e sucede).",
+        "papel": "Papel ou participação, como 'executor' ou '45%'.",
+        "segundo": "Quem faz a afirmação, quando o texto a atribui a alguém.",
+        "descricao": "Descrição livre; obrigatória em 'outra'."
+    },
+    "relation_types": [
+        {
+            "id": "ocupa_cargo",
+            "label": {"pt-BR": "ocupa cargo em", "en": "holds position at"},
+            "source": ["pessoa"],
+            "target": ["organizacao"],
+            "example": "Helena Prado --ocupa_cargo {cargo: presidente, inicio: 2021-01, fim: 2024-03-15}--> CTMSC"
+        },
+        {
+            "id": "sucede",
+            "label": {"pt-BR": "sucede", "en": "succeeds"},
+            "source": ["pessoa"],
+            "target": ["pessoa"],
+            "example": "Ricardo Menezes --sucede {cargo: presidente da CTMSC}--> Helena Prado"
+        },
+        {
+            "id": "assina",
+            "label": {"pt-BR": "assina", "en": "signs"},
+            "source": ["pessoa", "organizacao"],
+            "target": ["documento"],
+            "example": "Helena Prado --assina--> Aditivo 01"
+        },
+        {
+            "id": "autor_de",
+            "label": {"pt-BR": "é autor de", "en": "authored"},
+            "source": ["pessoa", "organizacao"],
+            "target": ["documento"],
+            "example": "Beatriz Calado --autor_de--> relatório geotécnico de 2022"
+        },
+        {
+            "id": "altera",
+            "label": {"pt-BR": "altera", "en": "amends"},
+            "source": ["documento"],
+            "target": ["documento", "ativo", "evento"],
+            "example": "Aditivo 02 --altera {valor: R$ 5,3 bilhões}--> Contrato 014/2021"
+        },
+        {
+            "id": "substitui",
+            "label": {"pt-BR": "substitui", "en": "supersedes"},
+            "source": ["documento"],
+            "target": ["documento"],
+            "example": "cronograma v3 --substitui--> cronograma v1 (quando o trecho declara a substituição)"
+        },
+        {
+            "id": "trata_de",
+            "label": {"pt-BR": "trata de", "en": "is about"},
+            "source": ["documento"],
+            "target": ["ativo", "evento", "local", "organizacao", "pessoa", "documento"],
+            "example": "Contrato 014/2021 --trata_de {descricao: construção}--> Linha 2 – Verde"
+        },
+        {
+            "id": "fornece",
+            "label": {"pt-BR": "fornece ou opera", "en": "supplies or operates"},
+            "source": ["organizacao"],
+            "target": ["ativo"],
+            "example": "Tecnolinha Sistemas --fornece--> sistema CBTC; Metrô Serra Clara Operações --fornece {papel: operadora}--> Linha 1 – Azul"
+        },
+        {
+            "id": "conecta",
+            "label": {"pt-BR": "conecta com", "en": "connects to"},
+            "source": ["ativo", "local"],
+            "target": ["ativo", "local"],
+            "example": "Linha 2 – Verde --conecta {descricao: na estação Centro Cívico}--> Linha 1 – Azul"
+        },
+        {
+            "id": "contrata",
+            "label": {"pt-BR": "contrata", "en": "contracts"},
+            "source": ["organizacao"],
+            "target": ["organizacao"],
+            "example": "CTMSC --contrata {papel: executor}--> Consórcio TransAurora"
+        },
+        {
+            "id": "integra",
+            "label": {"pt-BR": "integra", "en": "is part of"},
+            "source": ["pessoa", "organizacao", "local", "ativo"],
+            "target": ["organizacao", "local", "ativo"],
+            "example": "Construtora Meridional --integra {papel: 45%, liderança}--> Consórcio TransAurora"
+        },
+        {
+            "id": "causa",
+            "label": {"pt-BR": "causa", "en": "causes"},
+            "source": ["evento", "ativo", "documento", "organizacao"],
+            "target": ["evento"],
+            "example": "infiltração de água --causa {segundo: auditoria}--> incidente de 14/08/2023"
+        },
+        {
+            "id": "afeta",
+            "label": {"pt-BR": "afeta", "en": "affects"},
+            "source": ["evento", "documento"],
+            "target": ["ativo", "evento", "documento", "local", "pessoa", "organizacao"],
+            "example": "incidente de 14/08/2023 --afeta {valor: 74 dias de paralisação}--> TBM Tatuí"
+        },
+        {
+            "id": "outra",
+            "label": {"pt-BR": "outra relação", "en": "other"},
+            "source": ["*"],
+            "target": ["*"],
+            "example": "Linha 2 – Verde --outra {descricao: integra-se na estação Centro Cívico}--> Linha 1 – Azul"
+        }
+    ],
+    "future_work": {
+        "contradiz": "Relação derivada, calculada depois da extração: mesma origem, mesmo tipo e mesmo alvo vindos de documentos diferentes, com qualificadores incompatíveis (ex.: feridos no incidente segundo D15, D16 e D17). Um trecho isolado não mostra os dois lados, por isso não é pedida ao LLM.",
+        "inducao_de_esquema": "O LLM propõe tipos e relações a partir de uma amostra de um corpus novo, para revisão humana antes da extração."
+    }
+}

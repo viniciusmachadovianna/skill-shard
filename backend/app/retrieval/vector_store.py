@@ -58,6 +58,7 @@ from pathlib import Path
 from google.genai import types
 from app.config import client
 from app.retrieval.chunk_graph import attach_chunk_evidence, build_chunk_graph
+from app.retrieval.entity_extraction import build_entity_graph, load_extractions
 from app.retrieval.entity_graph import merge_document_graphs, serialize_document_graph
 from app.retrieval.keyword_search import bm25_scores
 
@@ -626,9 +627,12 @@ def get_indexed_document_graph(document_ids: list[str] | None = None) -> dict:
         [json.loads(graph_json) for _, graph_json in graph_rows]
     )
     chunks, embeddings = _load_indexed_chunks(document_ids_to_load, require_all=False)
+    # Ordem importa: em nós repetidos vale o primeiro grafo, então os atos
+    # numerados mantêm o rótulo canônico da camada de trechos ("Aditivo 02").
     return merge_document_graphs([
         attach_chunk_evidence(metadata_graph, chunks),
         build_chunk_graph(chunks, embeddings),
+        build_entity_graph(load_extractions(VECTOR_STORE_PATH, chunks)),
     ])
 
 

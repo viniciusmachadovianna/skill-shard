@@ -10,7 +10,7 @@ Nós:
     document: o documento (mesmo ID usado em `entity_graph`, então os dois
         grafos se unem).
     chunk: um trecho, com `document_id`, `chunk` e `page`.
-    reference: um ato citado por número no texto, como "Contrato 014/2021",
+    documento: um ato citado por número no texto, como "Contrato 014/2021",
         "Aditivo 02", "Parecer 118/2024" ou "Nota Técnica 07/2024".
 
 Arestas:
@@ -204,7 +204,7 @@ def build_chunk_graph(chunks: list[dict], embeddings: list[list[float]] | None =
 
         for identity, label, start, end in find_references(chunk["text"]):
             reference_id = _stable_id("reference", identity)
-            nodes.setdefault(reference_id, {"id": reference_id, "label": label, "type": "reference"})
+            nodes.setdefault(reference_id, {"id": reference_id, "label": label, "type": "documento"})
             _add_edge(edges, node_id, reference_id, "mentions",
                       _evidence(chunk, _excerpt(chunk["text"], start, end)))
 

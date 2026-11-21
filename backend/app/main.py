@@ -104,21 +104,17 @@ class IndexResponse(BaseModel):
 class GraphNode(BaseModel):
     id: str
     label: str
-    type: Literal[
-        "document",
-        "chunk",
-        "reference",
-        "knowledge_item",
-        "document_type",
-        "project",
-        "product",
-        "topic",
-        "tag",
-    ]
+    # `document` e `chunk` (estrutura), os tipos de entidade de
+    # `graph_schema.json` (pessoa, organizacao, documento...) e os do grafo de
+    # metadados (knowledge_item, project, tag...). Texto livre para que trocar
+    # o esquema não exija mudar a API.
+    type: str
     # Só nos nós `chunk`: o trecho que o nó representa.
     document_id: str | None = None
     chunk: int | None = None
     page: int | None = None
+    # Só em entidades: outros nomes resolvidos para o mesmo nó.
+    aliases: list[str] | None = None
 
 class GraphEvidence(BaseModel):
     document_id: str
@@ -131,22 +127,17 @@ class GraphEvidence(BaseModel):
     chunk: int | None = None
     page: int | None = None
     excerpt: str | None = None
+    # Só em relações extraídas pelo LLM: data, valor, cargo etc., como o
+    # documento desta evidência os informa.
+    qualifiers: dict[str, str] | None = None
 
 class GraphEdge(BaseModel):
     id: str
     source: str
     target: str
-    label: Literal[
-        "contains",
-        "mentions",
-        "cites",
-        "similar_to",
-        "type",
-        "project",
-        "product",
-        "topic",
-        "tag",
-    ]
+    # Estrutura (contains, mentions, cites, similar_to), relações de
+    # `graph_schema.json` (assina, ocupa_cargo...) e do grafo de metadados.
+    label: str
     evidence: list[GraphEvidence]
     # Só em `similar_to`: a similaridade de cosseno entre os trechos.
     weight: float | None = None
@@ -224,12 +215,15 @@ def build_relationship_context(graph: dict) -> str:
     Transforma as arestas de um grafo em linhas de texto para o prompt.
 
     Cada evidência de cada aresta vira uma linha no formato
-    `[Relationship: origem --relação--> destino; item: título; source: arquivo]`.
-    Sem título (camada de trechos), o item é `chunk N`. Linhas repetidas são
-    removidas, mantendo a ordem.
+    `[Relationship: origem --relação--> destino; qualificadores; item: título; source: arquivo]`.
+    Sem título (camadas de trechos e de entidades), o item é `chunk N`. Os
+    qualificadores (data, valor, cargo, segundo...) vêm da evidência, porque
+    documentos diferentes podem informar valores diferentes para a mesma
+    relação. Linhas repetidas são removidas, mantendo a ordem.
 
     Ficam de fora as arestas estruturais, que não dizem nada sobre o
-    conteúdo: `similar_to` e `contains` de documento para trecho.
+    conteúdo: `similar_to`, `mentions` (trecho -> entidade) e `contains` de
+    documento para trecho.
 
     Args:
         graph: grafo com `nodes` e `edges`, como o devolvido por
@@ -243,15 +237,18 @@ def build_relationship_context(graph: dict) -> str:
     relationships = []
     for edge in graph["edges"]:
         target = nodes_by_id[edge["target"]]
-        if edge["label"] == "similar_to" or (
+        if edge["label"] in ("similar_to", "mentions") or (
             edge["label"] == "contains" and target["type"] == "chunk"
         ):
             continue
         for evidence in edge["evidence"]:
             item = evidence.get("title") or f"chunk {evidence.get('chunk')}"
+            qualifiers = "".join(
+                f"{key}: {value}; " for key, value in (evidence.get("qualifiers") or {}).items()
+            )
             relationships.append(
                 f"[Relationship: {nodes_by_id[edge['source']]['label']} --{edge['label']}--> "
-                f"{target['label']}; item: {item}; "
+                f"{target['label']}; {qualifiers}item: {item}; "
                 f"source: {evidence['document_name']}]"
             )
     return "\n".join(dict.fromkeys(relationships))

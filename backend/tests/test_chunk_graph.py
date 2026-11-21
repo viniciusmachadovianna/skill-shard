@@ -77,7 +77,7 @@ class BuildChunkGraphTests(unittest.TestCase):
             chunk("b", 1, "Frota cancelada pelo Aditivo 02."),
         ])
 
-        references = [node for node in graph["nodes"] if node["type"] == "reference"]
+        references = [node for node in graph["nodes"] if node["type"] == "documento"]
         self.assertEqual([node["label"] for node in references], ["Aditivo 02"])
         mentions = edges_with(graph, "mentions")
         self.assertEqual(len(mentions), 2)
@@ -175,9 +175,8 @@ class AnswerSubgraphTests(unittest.TestCase):
 
         context = build_relationship_context(subgraph)
 
-        self.assertEqual(context.splitlines(), [
-            "[Relationship: a · trecho 1 --mentions--> Aditivo 02; item: chunk 1; source: a.md]"
-        ])
+        # contains, mentions e similar_to são estruturais: nada vai ao prompt.
+        self.assertEqual(context, "")
 
 
 class GraphEndpointTests(unittest.TestCase):
@@ -195,7 +194,7 @@ class GraphEndpointTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         graph = response.json()
-        self.assertEqual({node["type"] for node in graph["nodes"]}, {"document", "chunk", "reference"})
+        self.assertEqual({node["type"] for node in graph["nodes"]}, {"document", "chunk", "documento"})
         self.assertEqual({edge["label"] for edge in graph["edges"]}, {"contains", "mentions", "cites", "similar_to"})
         mention = next(edge for edge in graph["edges"] if edge["label"] == "mentions")
         self.assertEqual(mention["evidence"][0]["chunk"], 1)
