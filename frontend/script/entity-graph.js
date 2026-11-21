@@ -13,7 +13,10 @@
  * @typedef {Object} GraphNode
  * @property {string} id
  * @property {string} label
- * @property {'document' | 'chunk' | 'reference' | 'knowledge_item' | 'document_type' | 'project' | 'product' | 'topic' | 'tag'} type
+ * @property {string} type `document`, `chunk`, um tipo de entidade de `graph_schema.json`
+ *     (`pessoa`, `organizacao`, `local`, `documento`, `evento`, `ativo`) ou um tipo do
+ *     grafo de metadados (`knowledge_item`, `project`, `tag`...).
+ * @property {string[]} [aliases] Só em entidades: outros nomes do mesmo nó.
  * @property {string} [document_id] Só em `chunk`: documento do trecho.
  * @property {number} [chunk] Só em `chunk`: número do trecho no documento.
  * @property {number | null} [page] Só em `chunk`: página onde o trecho começa.
@@ -73,10 +76,17 @@ const ORBIT_LAYER_GAP = 180;
 const ORBIT_NODE_GAP = 54;
 const MIN_ORBIT_RADIUS = 180;
 
+// A ordem também é a da legenda: estrutura, entidades (graph_schema.json) e,
+// por último, os tipos do grafo de metadados.
 const NODE_SHAPES = {
     document: 'box',
     chunk: 'square',
-    reference: 'triangleDown',
+    pessoa: 'dot',
+    organizacao: 'hexagon',
+    local: 'triangle',
+    documento: 'triangleDown',
+    evento: 'star',
+    ativo: 'diamond',
     knowledge_item: 'dot',
     document_type: 'triangle',
     project: 'hexagon',
@@ -88,7 +98,12 @@ const NODE_SHAPES = {
 const NODE_SIZES = {
     knowledge_item: 10,
     chunk: 8,
-    reference: 12
+    pessoa: 13,
+    organizacao: 13,
+    local: 12,
+    documento: 12,
+    evento: 12,
+    ativo: 12
 };
 
 // Faixa de cosseno mapeada para a espessura das arestas `similar_to`. Com o
@@ -197,7 +212,12 @@ function getGraphColors() {
         topic: value('--graph-topic'),
         tag: value('--graph-tag'),
         chunk: value('--graph-chunk'),
-        reference: value('--graph-reference')
+        pessoa: value('--graph-person'),
+        organizacao: value('--graph-organization'),
+        local: value('--graph-location'),
+        documento: value('--graph-act'),
+        evento: value('--graph-event'),
+        ativo: value('--graph-asset')
     };
 }
 
@@ -426,6 +446,18 @@ function renderEvidence(items) {
             .join(' · ');
         entry.append(title, source);
 
+        if (item.qualifiers && typeof item.qualifiers === 'object') {
+            const qualifiers = Object.entries(item.qualifiers)
+                .filter(([, value]) => typeof value === 'string' && value)
+                .map(([key, value]) => `${t(`entity-graph-qualifier-${key}`, key)}: ${value}`);
+            if (qualifiers.length) {
+                const details = document.createElement('span');
+                details.className = 'graph-evidence-qualifiers';
+                details.textContent = qualifiers.join(' · ');
+                entry.append(details);
+            }
+        }
+
         if (item.excerpt) {
             const excerpt = document.createElement('span');
             excerpt.className = 'graph-evidence-excerpt';
@@ -483,7 +515,12 @@ function handleGraphClick({ nodes, edges }) {
         const relatedEdges = currentGraph.edges.filter(
             (edge) => edge.source === nodeId || edge.target === nodeId
         );
-        if (node) showSelection(node.label, node.type, relatedEdges);
+        if (node) {
+            const aliases = Array.isArray(node.aliases) && node.aliases.length
+                ? ` (${node.aliases.join(', ')})`
+                : '';
+            showSelection(`${node.label}${aliases}`, node.type, relatedEdges);
+        }
         return;
     }
 

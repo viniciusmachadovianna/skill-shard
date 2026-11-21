@@ -47,7 +47,12 @@
     --graph-topic: #b093ef;
     --graph-tag: #75bed8;
     --graph-chunk: #6fd3c1;
-    --graph-reference: #f27ba8;
+    --graph-person: #ffb86b;
+    --graph-organization: #8fb3ff;
+    --graph-location: #a3d977;
+    --graph-act: #f27ba8;
+    --graph-event: #ff7b72;
+    --graph-asset: #d2a8ff;
     --mono: 'IBM Plex Mono', 'Consolas', monospace;
     --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     --base-font-size: 16px;
@@ -90,7 +95,12 @@ html[data-theme="light"] {
     --graph-topic: #6949a4;
     --graph-tag: #176c9a;
     --graph-chunk: #0f7a6b;
-    --graph-reference: #b03068;
+    --graph-person: #b35c00;
+    --graph-organization: #2f5fb8;
+    --graph-location: #4a7f1f;
+    --graph-act: #b03068;
+    --graph-event: #b42318;
+    --graph-asset: #7a3fb8;
 }
 
 * { box-sizing: border-box; }

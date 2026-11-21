@@ -116,7 +116,13 @@
 .graph-type-topic { background: var(--graph-topic); }
 .graph-type-tag { background: var(--graph-tag); }
 .graph-type-chunk { background: var(--graph-chunk); }
-.graph-type-reference { background: var(--graph-reference); }
+.graph-type-pessoa { background: var(--graph-person); }
+.graph-type-organizacao { background: var(--graph-organization); }
+.graph-type-local { background: var(--graph-location); }
+.graph-type-documento { background: var(--graph-act); }
+.graph-type-evento { background: var(--graph-event); }
+.graph-type-ativo { background: var(--graph-asset); }
+.entity-graph-selection li .graph-evidence-qualifiers { color: var(--text); font: 12px var(--mono); }
 .entity-graph-selection li .graph-evidence-excerpt {
     border-left: 2px solid var(--line);
     padding-left: 8px;
