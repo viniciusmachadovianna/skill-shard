@@ -106,6 +106,8 @@ class GraphNode(BaseModel):
     label: str
     type: Literal[
         "document",
+        "chunk",
+        "reference",
         "knowledge_item",
         "document_type",
         "project",
@@ -113,19 +115,41 @@ class GraphNode(BaseModel):
         "topic",
         "tag",
     ]
+    # Só nos nós `chunk`: o trecho que o nó representa.
+    document_id: str | None = None
+    chunk: int | None = None
+    page: int | None = None
 
 class GraphEvidence(BaseModel):
     document_id: str
     document_name: str
-    title: str
+    # Título do item de conhecimento (grafo de metadados); ausente nas
+    # relações da camada de trechos.
+    title: str | None = None
     source_url: str | None = None
+    # Trecho de onde a relação foi tirada e um pedaço do texto em volta.
+    chunk: int | None = None
+    page: int | None = None
+    excerpt: str | None = None
 
 class GraphEdge(BaseModel):
     id: str
     source: str
     target: str
-    label: Literal["contains", "type", "project", "product", "topic", "tag"]
+    label: Literal[
+        "contains",
+        "mentions",
+        "cites",
+        "similar_to",
+        "type",
+        "project",
+        "product",
+        "topic",
+        "tag",
+    ]
     evidence: list[GraphEvidence]
+    # Só em `similar_to`: a similaridade de cosseno entre os trechos.
+    weight: float | None = None
 
 class GraphResponse(BaseModel):
     nodes: list[GraphNode]
@@ -140,56 +164,49 @@ def graph_relationships_for_chunks(graph: dict, chunks: list[dict]) -> dict:
     """
     Seleciona do grafo apenas as relações ligadas aos trechos recuperados.
 
-    O critério é o título: um item do grafo é considerado presente quando o
-    seu título aparece dentro do texto de algum trecho do mesmo documento
-    (sem diferenciar maiúsculas de minúsculas nem espaços extras). Ficam as
-    arestas que tocam esses itens e que têm evidência vinculada a eles, além
-    dos nós que elas conectam. Se o título de um item não aparecer em nenhum
-    trecho recuperado (por exemplo, porque o texto foi cortado entre dois
-    trechos), as relações dele não entram.
+    Uma aresta entra quando alguma das suas evidências vem de um trecho
+    recuperado:
+        - evidência com `chunk`: compara `(document_id, chunk)`;
+        - evidência sem `chunk` (grafo de metadados antigo): o título do item
+          precisa aparecer no texto de um trecho recuperado do mesmo
+          documento, sem diferenciar maiúsculas nem espaços extras.
+    A aresta mantém só as evidências que vieram dos trechos recuperados,
+    exceto `similar_to`, que mantém as duas pontas para mostrar o trecho
+    vizinho. Também entram os nós que as arestas conectam.
 
     Args:
         graph: grafo dos documentos de onde vieram os trechos.
-        chunks: trechos recuperados, cada um com `document_id` e `text`.
+        chunks: trechos recuperados, cada um com `document_id`, `chunk` e
+            `text`.
 
     Returns:
         `{"nodes": [...], "edges": [...]}` com o subgrafo relevante.
     """
-    matching_items = set()
+    retrieved = {
+        (chunk.get("document_id"), chunk["chunk"])
+        for chunk in chunks
+        if chunk.get("chunk") is not None
+    }
     normalized_chunks = [
-        (
-            chunk.get("document_id"),
-            " ".join(chunk["text"].casefold().split()),
-        )
+        (chunk.get("document_id"), " ".join(chunk["text"].casefold().split()))
         for chunk in chunks
     ]
 
-    for edge in graph["edges"]:
-        if edge["label"] != "contains":
-            continue
-        for evidence in edge["evidence"]:
-            normalized_title = " ".join(evidence["title"].casefold().split())
-            if normalized_title and any(
-                document_id == evidence["document_id"] and normalized_title in text
-                for document_id, text in normalized_chunks
-            ):
-                matching_items.add((evidence["document_id"], evidence["title"], edge["target"]))
+    def from_retrieved_chunk(item: dict) -> bool:
+        if item.get("chunk") is not None:
+            return (item["document_id"], item["chunk"]) in retrieved
+        title = " ".join((item.get("title") or "").casefold().split())
+        return bool(title) and any(
+            document_id == item["document_id"] and title in text
+            for document_id, text in normalized_chunks
+        )
 
-    matching_titles = {
-        (document_id, title)
-        for document_id, title, _ in matching_items
-    }
-    matching_item_ids = {item_id for _, _, item_id in matching_items}
     relevant_edges = []
     for edge in graph["edges"]:
-        evidence = [
-            item for item in edge["evidence"]
-            if (item["document_id"], item["title"]) in matching_titles
-        ]
-        if evidence and (
-            edge["source"] in matching_item_ids
-            or edge["target"] in matching_item_ids
-        ):
+        evidence = [item for item in edge["evidence"] if from_retrieved_chunk(item)]
+        if evidence:
+            if edge["label"] == "similar_to":
+                evidence = edge["evidence"]
             relevant_edges.append({**edge, "evidence": evidence})
 
     relevant_node_ids = {
@@ -208,26 +225,33 @@ def build_relationship_context(graph: dict) -> str:
 
     Cada evidência de cada aresta vira uma linha no formato
     `[Relationship: origem --relação--> destino; item: título; source: arquivo]`.
-    Linhas repetidas são removidas, mantendo a ordem.
+    Sem título (camada de trechos), o item é `chunk N`. Linhas repetidas são
+    removidas, mantendo a ordem.
+
+    Ficam de fora as arestas estruturais, que não dizem nada sobre o
+    conteúdo: `similar_to` e `contains` de documento para trecho.
 
     Args:
         graph: grafo com `nodes` e `edges`, como o devolvido por
             `graph_relationships_for_chunks`.
 
     Returns:
-        As linhas separadas por quebra de linha, ou string vazia se o grafo
-        não tiver arestas.
+        As linhas separadas por quebra de linha, ou string vazia se não
+        houver relações a descrever.
     """
-    if not graph["edges"]:
-        return ""
-
-    nodes_by_id = {node["id"]: node["label"] for node in graph["nodes"]}
+    nodes_by_id = {node["id"]: node for node in graph["nodes"]}
     relationships = []
     for edge in graph["edges"]:
+        target = nodes_by_id[edge["target"]]
+        if edge["label"] == "similar_to" or (
+            edge["label"] == "contains" and target["type"] == "chunk"
+        ):
+            continue
         for evidence in edge["evidence"]:
+            item = evidence.get("title") or f"chunk {evidence.get('chunk')}"
             relationships.append(
-                f"[Relationship: {nodes_by_id[edge['source']]} --{edge['label']}--> "
-                f"{nodes_by_id[edge['target']]}; item: {evidence['title']}; "
+                f"[Relationship: {nodes_by_id[edge['source']]['label']} --{edge['label']}--> "
+                f"{target['label']}; item: {item}; "
                 f"source: {evidence['document_name']}]"
             )
     return "\n".join(dict.fromkeys(relationships))

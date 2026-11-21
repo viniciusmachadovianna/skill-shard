@@ -57,6 +57,7 @@ from pathlib import Path
 
 from google.genai import types
 from app.config import client
+from app.retrieval.chunk_graph import attach_chunk_evidence, build_chunk_graph
 from app.retrieval.entity_graph import merge_document_graphs, serialize_document_graph
 from app.retrieval.keyword_search import bm25_scores
 
@@ -621,28 +622,48 @@ def get_indexed_document_graph(document_ids: list[str] | None = None) -> dict:
             )
 
     graph_rows.sort(key=lambda row: row[0])
-    return merge_document_graphs(
+    metadata_graph = merge_document_graphs(
         [json.loads(graph_json) for _, graph_json in graph_rows]
     )
+    chunks, embeddings = _load_indexed_chunks(document_ids_to_load, require_all=False)
+    return merge_document_graphs([
+        attach_chunk_evidence(metadata_graph, chunks),
+        build_chunk_graph(chunks, embeddings),
+    ])
 
 
-def _load_indexed_chunks(document_ids: list[str]) -> tuple[list[dict], list[list[float]]]:
+def _load_indexed_chunks(
+    document_ids: list[str],
+    require_all: bool = True,
+) -> tuple[list[dict], list[list[float]]]:
     """
     Carrega do banco os trechos e os embeddings dos documentos pedidos.
+
+    Args:
+        document_ids: documentos a carregar.
+        require_all: se `True`, todo documento pedido precisa ter trechos
+            indexados. O grafo usa `False`, porque um documento indexado sem
+            texto (um PDF escaneado, por exemplo) não tem trechos, mas ainda
+            aparece como nó.
 
     Returns:
         Uma tupla `(trechos, embeddings)`, com um embedding por trecho, na
         mesma ordem, agrupados por documento e ordenados pela posição.
 
     Raises:
-        MissingIndexedDocumentsError: se algum documento não estiver
-            indexado.
+        MissingIndexedDocumentsError: se `require_all` for `True` e algum
+            documento não estiver indexado.
     """
     if not document_ids:
         return [], []
 
+    def missing() -> tuple[list[dict], list[list[float]]]:
+        if require_all:
+            raise MissingIndexedDocumentsError("One or more documents have not been indexed.")
+        return [], []
+
     if not VECTOR_STORE_PATH.exists():
-        raise MissingIndexedDocumentsError("One or more documents have not been indexed.")
+        return missing()
 
     with closing(sqlite3.connect(VECTOR_STORE_PATH)) as connection:
         tables = {
@@ -652,7 +673,7 @@ def _load_indexed_chunks(document_ids: list[str]) -> tuple[list[dict], list[list
             )
         }
         if not {"chunks", "documents", "document_chunks"}.issubset(tables):
-            raise MissingIndexedDocumentsError("One or more documents have not been indexed.")
+            return missing()
 
         rows = []
         found_document_ids = set()
@@ -674,7 +695,7 @@ def _load_indexed_chunks(document_ids: list[str]) -> tuple[list[dict], list[list
             found_document_ids.update(row[0] for row in batch_rows)
 
     missing_document_ids = set(document_ids) - found_document_ids
-    if missing_document_ids:
+    if missing_document_ids and require_all:
         raise MissingIndexedDocumentsError("One or more documents have not been indexed.")
 
     chunks = [
