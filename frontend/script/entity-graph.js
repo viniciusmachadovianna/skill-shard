@@ -59,6 +59,7 @@ import { $ } from './utils.js';
 const knowledgeDialog = $('#knowledge-dialog');
 const refreshButton = $('#entity-graph-refresh');
 const fitButton = $('#entity-graph-fit');
+const spreadSelect = $('#entity-graph-spread');
 const graphCanvas = $('#entity-graph-canvas');
 const graphStatus = $('#entity-graph-status');
 const graphSummary = $('#entity-graph-summary');
@@ -110,7 +111,13 @@ const NODE_SIZES = {
 // modelo de embedding atual, os vizinhos ficam entre ~0,77 e ~0,95.
 const SIMILARITY_WIDTH_RANGE = { min: 0.75, max: 0.95 };
 
+const SPREAD_MODES = ['orbit', 'clusters', 'balanced', 'even', 'hierarchy'];
+const DEFAULT_SPREAD_MODE = 'clusters';
+const SPREAD_STORAGE_KEY = 'skill-shard-graph-spread';
+
 let network;
+let networkSpreadMode;
+let spreadMode = readStoredSpreadMode();
 let currentGraph;
 let requestId = 0;
 
@@ -360,9 +367,120 @@ function getSimilarityWidth(weight) {
     return 0.75 + ratio * 2.5;
 }
 
-function makeNetworkData(graph) {
+/**
+ * Opções da vis-network para cada modo de dispersão do seletor.
+ *
+ * - `orbit`: anéis por distância até os arquivos (`getOrbitPositions`), sem
+ *   física. Estável e previsível; bom para grafos pequenos.
+ * - `clusters`: ForceAtlas2, que aproxima nós ligados e afasta os demais;
+ *   evidencia comunidades (contrato, incidente, diretoria).
+ * - `balanced`: Barnes-Hut, espaçamento mais uniforme e grupos mais suaves.
+ * - `even`: repulsão simples, distâncias quase iguais entre os nós.
+ * - `hierarchy`: camadas de cima para baixo seguindo a direção das arestas
+ *   (arquivo -> trecho -> entidade).
+ *
+ * Nos modos com física, a simulação roda até estabilizar e então é desligada
+ * (veja `freezeAfterStabilization`), para o desenho parar de se mexer.
+ *
+ * @param {string} mode
+ */
+function getSpreadOptions(mode) {
+    const stabilization = { enabled: true, iterations: 600, updateInterval: 50, fit: true };
+    const options = {
+        orbit: { layout: { hierarchical: false }, physics: { enabled: false } },
+        clusters: {
+            layout: { hierarchical: false, improvedLayout: false },
+            physics: {
+                enabled: true,
+                solver: 'forceAtlas2Based',
+                forceAtlas2Based: {
+                    gravitationalConstant: -70,
+                    centralGravity: 0.01,
+                    springLength: 110,
+                    springConstant: 0.06,
+                    damping: 0.5,
+                    avoidOverlap: 0.6
+                },
+                stabilization
+            }
+        },
+        balanced: {
+            layout: { hierarchical: false, improvedLayout: false },
+            physics: {
+                enabled: true,
+                solver: 'barnesHut',
+                barnesHut: {
+                    gravitationalConstant: -9000,
+                    centralGravity: 0.25,
+                    springLength: 150,
+                    springConstant: 0.03,
+                    avoidOverlap: 0.4
+                },
+                stabilization
+            }
+        },
+        even: {
+            layout: { hierarchical: false, improvedLayout: false },
+            physics: {
+                enabled: true,
+                solver: 'repulsion',
+                repulsion: { nodeDistance: 170, springLength: 160, centralGravity: 0.15 },
+                stabilization
+            }
+        },
+        hierarchy: {
+            layout: {
+                hierarchical: {
+                    enabled: true,
+                    direction: 'UD',
+                    sortMethod: 'directed',
+                    shakeTowards: 'roots',
+                    levelSeparation: 140,
+                    nodeSpacing: 110,
+                    treeSpacing: 160
+                }
+            },
+            physics: { enabled: false }
+        }
+    };
+    return options[mode] ?? options.orbit;
+}
+
+function readStoredSpreadMode() {
+    try {
+        const stored = localStorage.getItem(SPREAD_STORAGE_KEY);
+        return SPREAD_MODES.includes(stored) ? stored : DEFAULT_SPREAD_MODE;
+    } catch {
+        return DEFAULT_SPREAD_MODE;
+    }
+}
+
+function storeSpreadMode(mode) {
+    try {
+        localStorage.setItem(SPREAD_STORAGE_KEY, mode);
+    } catch {
+        // Sem armazenamento (janela privada, por exemplo): a escolha vale só nesta sessão.
+    }
+}
+
+function freezeAfterStabilization() {
+    network.once('stabilizationIterationsDone', () => {
+        network.setOptions({ physics: { enabled: false } });
+        network.fit({ animation: true });
+    });
+}
+
+/**
+ * @param {Graph} graph
+ * @param {Map<string, {x: number, y: number}> | undefined} fixedPositions
+ *     Posições a manter (troca de tema). Sem elas, o modo `orbit` calcula os
+ *     anéis e os outros modos deixam a vis-network posicionar os nós.
+ */
+function makeNetworkData(graph, fixedPositions = undefined) {
     const colors = getGraphColors();
-    const positions = getOrbitPositions(graph);
+    const positions = fixedPositions ?? (
+        spreadMode === 'orbit' ? getOrbitPositions(graph) : new Map()
+    );
     const nodes = new window.vis.DataSet(graph.nodes.map((node) => {
         const color = colors[node.type] || colors.knowledge_item;
         return {
@@ -551,8 +669,20 @@ function updateNetwork(graph, fit = true) {
 
     const data = makeNetworkData(graph);
     updateLegend(graph);
+    const spreadOptions = getSpreadOptions(spreadMode);
+
+    // Trocar de modo recria a rede: a vis-network não alterna de forma
+    // confiável entre layout hierárquico e livre na mesma instância.
+    if (network && networkSpreadMode !== spreadMode) {
+        network.destroy();
+        network = undefined;
+    }
+
     if (!network) {
-        network = new window.vis.Network(graphCanvas, data, {
+        // Criada vazia: os eventos são ligados antes de os dados chegarem, para
+        // não perder o fim da estabilização.
+        const empty = { nodes: new window.vis.DataSet(), edges: new window.vis.DataSet() };
+        network = new window.vis.Network(graphCanvas, empty, {
             autoResize: true,
             interaction: {
                 hover: true,
@@ -560,17 +690,30 @@ function updateNetwork(graph, fit = true) {
                 navigationButtons: false,
                 tooltipDelay: 150
             },
-            physics: { enabled: false },
+            ...spreadOptions,
             nodes: { chosen: true },
             edges: { chosen: true }
         });
+        networkSpreadMode = spreadMode;
         network.on('click', handleGraphClick);
-        network.on('stabilizationIterationsDone', () => network.fit({ animation: true }));
     } else {
-        network.setData(data);
+        // Mesmo modo, dados novos: religa a física (se o modo usa) para
+        // posicionar os nós novos antes de congelar de novo.
+        network.setOptions(spreadOptions);
     }
 
-    if (fit) network.fit({ animation: true });
+    if (spreadOptions.physics.enabled) freezeAfterStabilization();
+    network.setData(data);
+    if (!spreadOptions.physics.enabled && fit) network.fit({ animation: true });
+}
+
+function changeSpreadMode(mode) {
+    spreadMode = SPREAD_MODES.includes(mode) ? mode : DEFAULT_SPREAD_MODE;
+    storeSpreadMode(spreadMode);
+    if (currentGraph?.nodes.length) {
+        clearSelection();
+        updateNetwork(currentGraph);
+    }
 }
 
 async function openEntityGraph() {
@@ -675,9 +818,15 @@ export function initializeEntityGraph() {
         animation: { duration: 450, easingFunction: 'easeInOutQuad' }
     }));
 
+    spreadSelect.value = spreadMode;
+    spreadSelect.addEventListener('change', () => changeSpreadMode(spreadSelect.value));
+
     const themeObserver = new MutationObserver(() => {
         if (!network || !currentGraph) return;
-        network.setData(makeNetworkData(currentGraph));
+        // Mantém as posições atuais: só as cores mudam com o tema.
+        const positions = new Map(Object.entries(network.getPositions()));
+        network.setOptions({ physics: { enabled: false } });
+        network.setData(makeNetworkData(currentGraph, positions));
     });
     themeObserver.observe(document.documentElement, {
         attributes: true,

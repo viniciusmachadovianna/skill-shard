@@ -306,9 +306,21 @@
                 <p class="entity-graph-status" id="entity-graph-status" role="status" aria-live="polite"></p>
                 <p class="entity-graph-summary" id="entity-graph-summary"></p>
             </div>
-            <button class="entity-graph-fit" id="entity-graph-fit" type="button" data-i18n="entity-graph-fit" disabled>
-                Fit graph
-            </button>
+            <div class="entity-graph-controls">
+                <label class="entity-graph-spread" for="entity-graph-spread">
+                    <span data-i18n="entity-graph-spread">Spread</span>
+                    <select class="entity-graph-spread-select" id="entity-graph-spread">
+                        <option value="orbit" data-i18n="entity-graph-spread-orbit">Rings</option>
+                        <option value="clusters" data-i18n="entity-graph-spread-clusters">Clusters</option>
+                        <option value="balanced" data-i18n="entity-graph-spread-balanced">Balanced</option>
+                        <option value="even" data-i18n="entity-graph-spread-even">Even spacing</option>
+                        <option value="hierarchy" data-i18n="entity-graph-spread-hierarchy">Hierarchy</option>
+                    </select>
+                </label>
+                <button class="entity-graph-fit" id="entity-graph-fit" type="button" data-i18n="entity-graph-fit" disabled>
+                    Fit graph
+                </button>
+            </div>
         </div>
         <div class="entity-graph-layout">
             <div class="entity-graph-plot">
