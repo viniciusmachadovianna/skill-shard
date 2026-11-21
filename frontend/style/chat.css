@@ -104,6 +104,43 @@ h1 em { color: var(--cyan); font-style: normal; }
     color: var(--cyan);
     font: 12px var(--mono);
 }
+/* Purple chip inside the caption line (next to the copy button) holding the rating options. */
+.message-grades {
+    display: inline-flex;
+    margin-left: auto;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    background: var(--grade-chip);
+    color: var(--grade-chip-text);
+}
+.grade-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    padding: 2px 6px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: 12px var(--mono);
+    cursor: pointer;
+    transition: background .12s, color .12s;
+}
+.grade-option img { display: block; width: 14px; height: 14px; filter: brightness(0) opacity(.8); }
+.grade-option:hover { background: rgba(255, 255, 255, .28); }
+.grade-option:focus-visible { outline: 2px solid var(--grade-chip-text); outline-offset: -2px; }
+.grade-option[aria-pressed="true"] { background: var(--grade-chip-selected); color: var(--grade-chip-selected-text); }
+/* Labels are hidden until the option is selected, then expand next to the icon. */
+.grade-label {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    transition: max-width .2s ease, opacity .15s, padding .2s ease;
+}
+.grade-option[aria-pressed="true"] .grade-label { max-width: 14em; padding-left: 6px; opacity: 1; }
+.grade-option[aria-pressed="true"] img { filter: var(--grade-selected-icon); }
 .copy-message {
     width: 14px;
     height: 14px;
@@ -191,14 +228,25 @@ h1 em { color: var(--cyan); font-style: normal; }
     text-decoration: underline;
 }
 .assistant-reply {
+    /* Shrink to the bubble, so the caption line (and the rating chip) never goes past it. */
+    width: fit-content;
+    max-width: 94%;
     padding: 13px 0;
     border: 0;
     background: transparent;
     color: var(--muted);
 }
+.assistant-reply small {
+    /* Takes the bubble's width without widening it; items wrap if it is narrow. */
+    width: 0;
+    min-width: 100%;
+    flex-wrap: wrap;
+    row-gap: 6px;
+}
 .assistant-reply > div {
     width: fit-content;
-    max-width: 94%;
+    min-width: min(100%, 280px);
+    max-width: 100%;
     margin-right: auto;
     padding: 12px 18px;
     border: 0;
@@ -389,5 +437,53 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .composer-actions .adjustments-toggle:hover { border-color: var(--cyan); }
 .composer-actions .adjustments-toggle + .send-button { margin-left: 0; }
+.message-grades { display: none; }
+:root[data-lab-mode="on"] .message-grades { display: inline-flex; }
+/* Purple square checkbox placed close to the left of the send button. */
+.composer-actions .lab-toggle {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--grade-chip);
+    background: transparent;
+    cursor: pointer;
+    transition: background .15s;
+}
+.lab-toggle input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.lab-toggle img { display: block; width: 18px; height: 18px; filter: var(--icon-neutral); pointer-events: none; }
+.lab-toggle:hover { background: color-mix(in srgb, var(--grade-chip) 25%, transparent); }
+.lab-toggle:focus-within { outline: 2px solid var(--grade-chip); outline-offset: 2px; }
+.lab-toggle:has(input:checked) { background: var(--grade-chip); }
+/* Blocked (empty chat): grey, whatever the checked state. */
+.composer-actions .lab-toggle:has(input:disabled) { border-color: var(--line); background: transparent; cursor: not-allowed; opacity: .6; }
+.lab-toggle input:disabled { cursor: not-allowed; }
+.lab-toggle:has(input:disabled) img { filter: var(--icon-neutral) opacity(.5) grayscale(1); }
+.lab-toggle:has(input:checked) img { filter: brightness(0) opacity(.85); }
+.composer-actions .lab-control {
+    position: relative;
+    display: flex;
+    margin-left: auto;
+    margin-right: -4px; /* the row gap is 10px, so 6px remain between this and the send button */
+}
+.composer-actions .lab-control + .send-button { margin-left: 0; }
+/* Counter strip attached to the left of the lab icon, only while lab mode is on. */
+.lab-strip { display: none; }
+:root[data-lab-mode="on"] .lab-strip:not([hidden]) { display: flex; }
+.lab-strip {
+    align-items: center;
+    gap: 10px;
+    height: 30px;
+    margin: 0 -1px 0 0; /* overlap the icon border so the two read as one piece */
+    padding: 0 10px;
+    border: 1px solid var(--grade-chip);
+    color: var(--subtext);
+    font: 12px var(--mono);
+    white-space: nowrap;
+}
+.lab-strip-pending { color: var(--grade-chip); }
+.lab-strip-item { display: inline-flex; align-items: center; gap: 4px; }
+.lab-strip-item img { display: block; width: 14px; height: 14px; filter: var(--icon-neutral); }
 .composer-footnote { margin: 10px 0 0; color: #657681; text-align: center; font-size: 13px; font-weight: 400; }
 .composer-footnote-emphasis { color: inherit; font: inherit; text-decoration: underline; text-underline-offset: 3px; }

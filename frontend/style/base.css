@@ -24,6 +24,11 @@
     --bubble-user: #14607a;
     --bubble-user-text: #eefaff;
     --bubble-cut: 14px;
+    --grade-chip: #b093ef;
+    --grade-chip-text: #1c1030;
+    --grade-chip-selected: #1c1030;
+    --grade-chip-selected-text: #f1eaff;
+    --grade-selected-icon: brightness(0) invert(.95);
     --cyan: #35c3ed;
     --green: #58dba0;
     --scrollbar-thumb: #286477;
@@ -60,6 +65,11 @@ html[data-theme="light"] {
     --bubble-system: #e6edf1;
     --bubble-user: #c3e7f2;
     --bubble-user-text: #0b2a35;
+    --grade-chip: #6949a4;
+    --grade-chip-text: #ffffff;
+    --grade-chip-selected: #ffffff;
+    --grade-chip-selected-text: #4a2f85;
+    --grade-selected-icon: brightness(0) opacity(.75);
     --cyan: #007894;
     --green: #168553;
     --scrollbar-thumb: #72aebb;

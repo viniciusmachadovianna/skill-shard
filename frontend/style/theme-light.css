@@ -78,3 +78,11 @@ html[data-theme="light"] .right-panel.is-collapsed {
 html[data-theme="light"] .right-panel.is-collapsed .right-panel-toggle:hover { background: rgba(255, 255, 255, .45); }
 
 html[data-theme="light"] .scroll-cue { background: #6fd6f3; }
+
+
+html[data-theme="light"] .grade-option img { filter: brightness(0) invert(1); }
+html[data-theme="light"] .grade-option:hover { background: rgba(255, 255, 255, .22); }
+html[data-theme="light"] .grade-option[aria-pressed="true"] img { filter: var(--grade-selected-icon); }
+
+html[data-theme="light"] .lab-toggle:has(input:checked) img { filter: brightness(0) invert(1); }
+html[data-theme="light"] .lab-toggle:has(input:disabled) img { filter: var(--icon-neutral) opacity(.5) grayscale(1); }

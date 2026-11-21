@@ -37,6 +37,8 @@ const backendLed = $('#backend-led');
 const composerActions = $('.composer-actions');
 const exportButton = $('#export-button');
 const mockButton = $('#mock-button');
+const labModeToggle = $('#lab-mode');
+const labStrip = $('#lab-strip');
 const workspaceHeading = $('.workspace-heading');
 const messageCount = $('#workspace-message-count');
 const sendButton = $('.send-button');
@@ -179,6 +181,65 @@ function renderMarkdown(markdown) {
     }).join('');
 }
 
+/** Opções de avaliação de cada resposta do sistema: id -> chave de tradução e ícone. */
+const GRADES = {
+    correct: { key: 'grade-correct', icon: './assets/icons/correctAndBased.svg' },
+    ungrounded: { key: 'grade-ungrounded', icon: './assets/icons/correctNotBased.svg' },
+    incorrect: { key: 'grade-incorrect', icon: './assets/icons/incorrect.svg' },
+    hallucination: { key: 'grade-hallucination', icon: './assets/icons/hallucination.svg' }
+};
+
+/**
+ * Cria o chip roxo com as opções "Correct / Correct, but not based /
+ * Incorrect" (cada uma com um ícone), mostrado na linha da legenda ao lado do
+ * botão de copiar. Clicar marca a avaliação em `article.dataset.grade`; clicar
+ * de novo na mesma opção a remove.
+ *
+ * @param {HTMLElement} article Mensagem avaliada.
+ * @returns {HTMLElement} Chip com os botões.
+ */
+function createGradeOptions(article) {
+    const row = document.createElement('div');
+    row.className = 'message-grades';
+    row.setAttribute('role', 'group');
+    row.dataset.i18nAria = 'grade-group';
+    row.setAttribute('aria-label', t('grade-group'));
+    for (const [grade, { key, icon }] of Object.entries(GRADES)) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `grade-option grade-${grade}`;
+        button.dataset.grade = grade;
+        button.setAttribute('aria-pressed', 'false');
+        // Icon-only until selected; the name stays available as tooltip and accessible name.
+        button.title = t(key);
+        button.setAttribute('aria-label', t(key));
+        button.dataset.i18nTitle = key;
+        button.dataset.i18nAria = key;
+        const image = document.createElement('img');
+        image.src = icon;
+        image.alt = '';
+        image.setAttribute('aria-hidden', 'true');
+        image.width = 18;
+        image.height = 18;
+        const text = document.createElement('span');
+        text.className = 'grade-label';
+        text.dataset.i18n = key;
+        text.textContent = t(key);
+        button.append(image, text);
+        button.addEventListener('click', () => {
+            const selected = article.dataset.grade === grade ? '' : grade;
+            if (selected) article.dataset.grade = selected;
+            else delete article.dataset.grade;
+            row.querySelectorAll('.grade-option').forEach((option) => {
+                option.setAttribute('aria-pressed', String(option.dataset.grade === selected));
+            });
+            updateLabSummary();
+        });
+        row.append(button);
+    }
+    return row;
+}
+
 function addMessage(label, message, className = '', mode = '') {
     const article = document.createElement('article');
     article.className = `chat-message ${className}`.trim();
@@ -206,7 +267,7 @@ function addMessage(label, message, className = '', mode = '') {
             await navigator.clipboard.writeText(stripQuoteMarkers(message));
             showToast(t('message-copied'), 'success');
         });
-        caption.append(copyButton);
+        caption.append(copyButton, createGradeOptions(article));
     }
     const body = document.createElement('div');
     const isReply = className.includes('assistant-reply');
@@ -337,9 +398,48 @@ function scrollToLatestMessage() {
     workArea.scrollTo({ top: workArea.scrollHeight, behavior: 'smooth' });
 }
 
+/**
+ * Atualiza a faixa de contadores do modo laboratório (colada ao ícone) com as
+ * respostas do sistema da conversa aberta:
+ * quantas ainda não foram avaliadas e quantas receberam cada avaliação.
+ */
+function updateLabSummary() {
+    const replies = [...conversationOutput.querySelectorAll('.assistant-reply')];
+    const counts = Object.fromEntries(Object.keys(GRADES).map((grade) => [grade, 0]));
+    for (const reply of replies) {
+        if (counts[reply.dataset.grade] !== undefined) counts[reply.dataset.grade] += 1;
+    }
+    const voted = Object.values(counts).reduce((sum, value) => sum + value, 0);
+    const pending = t('lab-not-voted')
+        .replace('{pending}', String(replies.length - voted))
+        .replace('{total}', String(replies.length));
+
+    labStrip.hidden = replies.length === 0;
+
+    const pendingText = document.createElement('span');
+    pendingText.className = 'lab-strip-pending';
+    pendingText.textContent = pending;
+    const items = Object.entries(GRADES).map(([grade, { key, icon }]) => {
+        const item = document.createElement('span');
+        item.className = 'lab-strip-item';
+        item.title = t(key);
+        const image = document.createElement('img');
+        image.src = icon;
+        image.alt = '';
+        image.width = 14;
+        image.height = 14;
+        item.append(image, String(counts[grade]));
+        return item;
+    });
+    labStrip.replaceChildren(pendingText, ...items);
+}
+
 function updateExportButton() {
     const count = conversationOutput.childElementCount;
+    updateLabSummary();
     exportButton.disabled = count === 0;
+    // Lab mode is only available when the conversation has messages to rate.
+    labModeToggle.disabled = count === 0;
     workspaceHeading.hidden = count === 0;
     messageCount.textContent = t(count === 1 ? 'message-count-one' : 'message-count-many')
         .replace('{count}', String(count));
@@ -487,7 +587,8 @@ function exportConversation(onEmptyExport) {
         const timestamp = message.querySelector('time').textContent;
         const body = message.dataset.rawMessage ?? message.querySelector(':scope > div').innerText;
         const mode = message.dataset.retrievalMode ? ` (${message.dataset.retrievalMode})` : '';
-        return `[${timestamp}] ${label}${mode}:\n\n${body}`;
+        const grade = GRADES[message.dataset.grade] ? ` [${t(GRADES[message.dataset.grade].key)}]` : '';
+        return `[${timestamp}] ${label}${mode}${grade}:\n\n${body}`;
     });
     if (!messages.length) {
         onEmptyExport();
@@ -614,6 +715,13 @@ export function initializeChat({ onEmptyExport, onRelationalResponse, ensureConv
     });
 
     exportButton.addEventListener('click', () => exportConversation(onEmptyExport));
+
+    // Lab mode: the purple rating chips only show while the box is checked.
+    labModeToggle.addEventListener('change', (event) => {
+        if (event.target.checked) document.documentElement.dataset.labMode = 'on';
+        else delete document.documentElement.dataset.labMode;
+        showToast(t(event.target.checked ? 'lab-mode-on' : 'lab-mode-off'));
+    });
 
     // Development helper: adds a user + system exchange without calling the API.
     mockButton.addEventListener('click', () => {

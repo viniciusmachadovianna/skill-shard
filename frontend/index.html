@@ -169,7 +169,14 @@
                         </p>
                         <button class="backend-retry" id="backend-retry" type="button" data-i18n="backend-retry"
                             hidden>RETRY CHECK</button>
-                        <button class="send-button" type="submit" aria-label="Send message" data-i18n-aria="send-message" disabled>→</button>
+                        <div class="lab-control">
+                            <p class="lab-strip" id="lab-strip" role="status" aria-live="polite" hidden></p>
+                            <label class="lab-toggle" title="Lab mode: rate answers" data-i18n-title="lab-mode-title">
+                                <input type="checkbox" id="lab-mode" disabled aria-label="Lab mode: rate answers" data-i18n-aria="lab-mode-title">
+                                <img src="./assets/icons/research.svg" alt="" aria-hidden="true" width="18" height="18">
+                            </label>
+                        </div>
+                        <button class="send-button" type="submit" aria-label="Send message" data-i18n-aria="send-message" disabled><img src="./assets/icons/send.svg" alt="" aria-hidden="true" width="18" height="18"></button>
                     </div>
                 </form>
                 <p class="composer-footnote"><span data-i18n="composer-footnote">Fluency doesn't equal truth. Always double-check the responses given here,</span> <span class="composer-footnote-emphasis" data-i18n="composer-footnote-strong">even when answers are grounded in documents</span></p>
