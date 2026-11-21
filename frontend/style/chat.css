@@ -68,6 +68,23 @@ h1 em { color: var(--cyan); font-style: normal; }
 }
 .objective-card:hover { border-color: var(--cyan); background: var(--surface-hover); transform: translateY(-1px); }
 .objective-icon { display: block; width: 19px; height: 19px; }
+/* Extra welcome option: a quiet, low-profile test shortcut (single slim row, no card fill, muted colours). */
+.objective-mock {
+    grid-column: 1 / -1;
+    height: 36px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 0 12px;
+    border-style: dashed;
+    background: transparent;
+    opacity: .7;
+}
+.objective-mock:hover { opacity: 1; background: transparent; transform: none; }
+.objective-mock .objective-icon { width: 15px; height: 15px; opacity: .8; }
+.objective-mock .objective-name { color: var(--subtext); font-size: 13px; }
+.objective-mock .card-arrow { display: none; }
 .objective-name { color: var(--text); font-size: 16px; }
 .card-arrow { position: absolute; top: 10px; right: 12px; color: #71818d; font-size: 17px; }
 .scroll-cue {

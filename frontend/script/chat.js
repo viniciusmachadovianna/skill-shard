@@ -36,7 +36,6 @@ const backendRetryButton = $('#backend-retry');
 const backendLed = $('#backend-led');
 const composerActions = $('.composer-actions');
 const exportButton = $('#export-button');
-const mockButton = $('#mock-button');
 const labModeToggle = $('#lab-mode');
 const labStrip = $('#lab-strip');
 const workspaceHeading = $('.workspace-heading');
@@ -683,7 +682,7 @@ function exportConversation(onEmptyExport) {
  *     quando o usuário pedir uma nova tentativa.
  */
 export function initializeChat({ onEmptyExport, onRelationalResponse, ensureConversation }) {
-    $$('.objective-card').forEach((card) => {
+    $$('.objective-card:not(.objective-mock)').forEach((card) => {
         card.addEventListener('click', () => {
             promptInput.value = card.dataset.prompt;
             promptInput.focus();
@@ -784,12 +783,14 @@ export function initializeChat({ onEmptyExport, onRelationalResponse, ensureConv
     });
 
     // Development helper: adds a user + system exchange without calling the API.
-    mockButton.addEventListener('click', () => {
+    const addMockExchange = () => {
         if (conversationOutput === emptyConversationOutput) ensureConversation?.();
         welcomeContent.hidden = true;
         addMessage(t('message-operator'), MOCK_QUESTION, 'user-prompt');
         addMessage(t('message-system'), MOCK_ANSWER, 'assistant-reply', retrievalMode.selectedOptions[0].textContent.trim());
-    });
+    };
+    // Extra option of the welcome screen.
+    $('#mock-card').addEventListener('click', addMockExchange);
 
     return { setKnowledgeIndexStatus, setRetryKnowledgeIndex };
 }
