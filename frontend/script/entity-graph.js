@@ -13,7 +13,10 @@
  * @typedef {Object} GraphNode
  * @property {string} id
  * @property {string} label
- * @property {'document' | 'knowledge_item' | 'document_type' | 'project' | 'product' | 'topic' | 'tag'} type
+ * @property {'document' | 'chunk' | 'reference' | 'knowledge_item' | 'document_type' | 'project' | 'product' | 'topic' | 'tag'} type
+ * @property {string} [document_id] Só em `chunk`: documento do trecho.
+ * @property {number} [chunk] Só em `chunk`: número do trecho no documento.
+ * @property {number | null} [page] Só em `chunk`: página onde o trecho começa.
  */
 
 /**
@@ -21,8 +24,11 @@
  * @typedef {Object} GraphEvidence
  * @property {string} document_id
  * @property {string} document_name
- * @property {string} title Título do item de conhecimento.
+ * @property {string} [title] Título do item de conhecimento (grafo de metadados).
  * @property {string} [source_url] Link da fonte original, quando existe.
+ * @property {number} [chunk] Trecho de onde a relação foi tirada.
+ * @property {number | null} [page] Página onde o trecho começa.
+ * @property {string} [excerpt] Pedaço do texto em volta da menção.
  */
 
 /**
@@ -30,8 +36,10 @@
  * @property {string} id
  * @property {string} source ID do nó de origem.
  * @property {string} target ID do nó de destino.
- * @property {string} label Relação: `contains`, `type`, `project`, `product`, `topic` ou `tag`.
+ * @property {string} label Relação: `contains`, `mentions`, `cites`, `similar_to`,
+ *     `type`, `project`, `product`, `topic` ou `tag`.
  * @property {GraphEvidence[]} evidence
+ * @property {number} [weight] Só em `similar_to`: similaridade de cosseno.
  */
 
 /**
@@ -58,6 +66,7 @@ const selectedLabel = $('#entity-graph-selected-label');
 const selectedType = $('#entity-graph-selected-type');
 const evidenceList = $('#entity-graph-evidence-list');
 const evidenceMore = $('#entity-graph-evidence-more');
+const legend = $('#entity-graph-legend');
 const MAX_EVIDENCE_ITEMS = 12;
 const NODE_LABEL_LINE_LENGTH = 22;
 const ORBIT_LAYER_GAP = 180;
@@ -66,6 +75,8 @@ const MIN_ORBIT_RADIUS = 180;
 
 const NODE_SHAPES = {
     document: 'box',
+    chunk: 'square',
+    reference: 'triangleDown',
     knowledge_item: 'dot',
     document_type: 'triangle',
     project: 'hexagon',
@@ -73,6 +84,16 @@ const NODE_SHAPES = {
     topic: 'ellipse',
     tag: 'star'
 };
+
+const NODE_SIZES = {
+    knowledge_item: 10,
+    chunk: 8,
+    reference: 12
+};
+
+// Faixa de cosseno mapeada para a espessura das arestas `similar_to`. Com o
+// modelo de embedding atual, os vizinhos ficam entre ~0,77 e ~0,95.
+const SIMILARITY_WIDTH_RANGE = { min: 0.75, max: 0.95 };
 
 let network;
 let currentGraph;
@@ -136,7 +157,9 @@ function validateGraph(graph) {
             !item
             || typeof item.document_id !== 'string'
             || typeof item.document_name !== 'string'
-            || typeof item.title !== 'string'
+            || (item.title != null && typeof item.title !== 'string')
+            || (item.chunk != null && !Number.isInteger(item.chunk))
+            || (item.title == null && item.chunk == null)
         ))) {
             throw new Error(t('entity-graph-invalid-data'));
         }
@@ -172,7 +195,9 @@ function getGraphColors() {
         project: value('--graph-project'),
         product: value('--graph-product'),
         topic: value('--graph-topic'),
-        tag: value('--graph-tag')
+        tag: value('--graph-tag'),
+        chunk: value('--graph-chunk'),
+        reference: value('--graph-reference')
     };
 }
 
@@ -277,6 +302,44 @@ function getOrbitPositions(graph) {
     return positions;
 }
 
+/**
+ * Mostra na legenda só os tipos de nó presentes no grafo exibido, na ordem de
+ * `NODE_SHAPES`, com o ícone no mesmo formato e cor do nó. Sem grafo (ou com
+ * grafo vazio), a legenda fica escondida. Os rótulos usam `data-i18n`, então
+ * acompanham a troca de idioma.
+ *
+ * @param {Graph | undefined} graph
+ */
+function updateLegend(graph) {
+    const types = new Set(graph?.nodes.map((node) => node.type) ?? []);
+    const orderedTypes = [
+        ...Object.keys(NODE_SHAPES).filter((type) => types.has(type)),
+        ...[...types].filter((type) => !(type in NODE_SHAPES)).sort()
+    ];
+
+    const items = orderedTypes.map((type) => {
+        const item = document.createElement('span');
+        const icon = document.createElement('i');
+        const label = document.createElement('span');
+        icon.className = `graph-legend-dot graph-legend-shape-${NODE_SHAPES[type] || 'dot'} graph-type-${type}`;
+        icon.setAttribute('aria-hidden', 'true');
+        label.dataset.i18n = `entity-graph-type-${type}`;
+        label.textContent = t(`entity-graph-type-${type}`, type);
+        item.append(icon, label);
+        return item;
+    });
+
+    legend.replaceChildren(legend.firstElementChild, ...items);
+    legend.hidden = !items.length;
+}
+
+function getSimilarityWidth(weight) {
+    if (typeof weight !== 'number') return 1;
+    const { min, max } = SIMILARITY_WIDTH_RANGE;
+    const ratio = Math.min(1, Math.max(0, (weight - min) / (max - min)));
+    return 0.75 + ratio * 2.5;
+}
+
 function makeNetworkData(graph) {
     const colors = getGraphColors();
     const positions = getOrbitPositions(graph);
@@ -296,24 +359,30 @@ function makeNetworkData(graph) {
             },
             font: { color: colors.text, face: 'IBM Plex Mono', size: 12 },
             borderWidth: 2,
-            size: node.type === 'knowledge_item' ? 10 : 14
+            size: NODE_SIZES[node.type] ?? 14
         };
     }));
-    const edges = new window.vis.DataSet(graph.edges.map((edge) => ({
-        ...edge,
-        from: edge.source,
-        to: edge.target,
-        label: '',
-        color: {
-            color: colors.edge,
-            highlight: colors.knowledge_item,
-            hover: colors.knowledge_item
-        },
-        width: 1.5,
-        hoverWidth: 2,
-        arrows: { to: { enabled: true, scaleFactor: 0.35 } },
-        smooth: { type: 'continuous', roundness: 0.15 }
-    })));
+    const edges = new window.vis.DataSet(graph.edges.map((edge) => {
+        // Similaridade não tem direção: linha tracejada, sem seta, mais grossa
+        // quanto mais parecidos os trechos.
+        const similarity = edge.label === 'similar_to';
+        return {
+            ...edge,
+            from: edge.source,
+            to: edge.target,
+            label: '',
+            color: {
+                color: colors.edge,
+                highlight: colors.knowledge_item,
+                hover: colors.knowledge_item
+            },
+            width: similarity ? getSimilarityWidth(edge.weight) : 1.5,
+            hoverWidth: 2,
+            dashes: similarity,
+            arrows: { to: { enabled: !similarity, scaleFactor: 0.35 } },
+            smooth: { type: 'continuous', roundness: 0.15 }
+        };
+    }));
 
     return { nodes, edges };
 }
@@ -321,7 +390,7 @@ function makeNetworkData(graph) {
 function getEvidence(edges) {
     const evidence = new Map();
     edges.flatMap((edge) => edge.evidence).forEach((item) => {
-        const key = `${item.document_id}\0${item.title}\0${item.source_url ?? ''}`;
+        const key = `${item.document_id}\0${item.chunk ?? ''}\0${item.title ?? ''}\0${item.source_url ?? ''}`;
         evidence.set(key, item);
     });
     return [...evidence.values()];
@@ -345,9 +414,24 @@ function renderEvidence(items) {
         const entry = document.createElement('li');
         const title = document.createElement('strong');
         const source = document.createElement('span');
-        title.textContent = item.title;
-        source.textContent = item.document_name;
+        const chunkLabel = Number.isInteger(item.chunk)
+            ? t('entity-graph-evidence-chunk').replace('{chunk}', String(item.chunk))
+            : '';
+        const pageLabel = Number.isInteger(item.page)
+            ? t('entity-graph-evidence-page').replace('{page}', String(item.page))
+            : '';
+        title.textContent = item.title || chunkLabel;
+        source.textContent = [item.document_name, item.title ? chunkLabel : '', pageLabel]
+            .filter(Boolean)
+            .join(' · ');
         entry.append(title, source);
+
+        if (item.excerpt) {
+            const excerpt = document.createElement('span');
+            excerpt.className = 'graph-evidence-excerpt';
+            excerpt.textContent = item.excerpt;
+            entry.append(excerpt);
+        }
 
         const sourceUrl = safeSourceUrl(item.source_url);
         if (sourceUrl) {
@@ -368,15 +452,17 @@ function renderEvidence(items) {
     }
 }
 
-function showSelection(label, type, edges, relation = '') {
+function showSelection(label, type, edges, relation = '', weight = undefined) {
     selectedLabel.textContent = label;
     const typeLabel = t(`entity-graph-type-${type}`, type);
     const relationLabel = relation
         ? t(`entity-graph-relation-${relation}`, relation)
         : '';
-    selectedType.textContent = relationLabel
-        ? `${relationLabel} - ${typeLabel}`
-        : typeLabel;
+    const similarityLabel = typeof weight === 'number'
+        ? t('entity-graph-similarity').replace('{score}', weight.toFixed(3))
+        : '';
+    const description = relationLabel ? `${relationLabel} - ${typeLabel}` : typeLabel;
+    selectedType.textContent = similarityLabel ? `${description} · ${similarityLabel}` : description;
 
     const evidence = getEvidence(edges);
     renderEvidence(evidence);
@@ -406,11 +492,13 @@ function handleGraphClick({ nodes, edges }) {
         if (edge) {
             const source = currentGraph.nodes.find((item) => item.id === edge.source);
             const target = currentGraph.nodes.find((item) => item.id === edge.target);
+            const arrow = edge.label === 'similar_to' ? '↔' : '→';
             showSelection(
-                `${source?.label ?? edge.source} → ${target?.label ?? edge.target}`,
+                `${source?.label ?? edge.source} ${arrow} ${target?.label ?? edge.target}`,
                 'relation',
                 [edge],
-                edge.label
+                edge.label,
+                edge.weight
             );
         }
         return;
@@ -425,6 +513,7 @@ function updateNetwork(graph, fit = true) {
     }
 
     const data = makeNetworkData(graph);
+    updateLegend(graph);
     if (!network) {
         network = new window.vis.Network(graphCanvas, data, {
             autoResize: true,
@@ -453,6 +542,7 @@ async function openEntityGraph() {
     currentGraph = undefined;
     fitButton.disabled = true;
     graphSummary.textContent = '';
+    updateLegend(undefined);
     clearSelection();
     showEmptyMessage('entity-graph-loading');
     setGraphStatus(t('entity-graph-loading'), 'loading');
@@ -525,6 +615,7 @@ export function renderAnswerGraph(graph) {
         graphEmpty.hidden = true;
         setGraphStatus(t('entity-graph-answer-loaded'), 'ready');
     } catch (error) {
+        updateLegend(undefined);
         console.error('Could not render the answer entity graph:', error);
         const detail = error instanceof Error ? error.message : t('entity-graph-load-error');
         setGraphStatus(`${t('entity-graph-load-error')} ${detail}`, 'error');

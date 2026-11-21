@@ -90,7 +90,24 @@
 }
 .entity-graph-legend > span { display: inline-flex; align-items: center; gap: 5px; }
 .entity-graph-legend > span:first-child { color: var(--subtext); }
-.graph-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.entity-graph-legend[hidden] { display: none; }
+/* Ícones da legenda com o mesmo formato dos nós desenhados pela vis-network. */
+.graph-legend-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; }
+.graph-legend-shape-box { width: 13px; height: 8px; border-radius: 2px; }
+.graph-legend-shape-square { border-radius: 1px; }
+.graph-legend-shape-ellipse { width: 13px; height: 8px; }
+.graph-legend-shape-triangle,
+.graph-legend-shape-triangleDown,
+.graph-legend-shape-diamond,
+.graph-legend-shape-hexagon,
+.graph-legend-shape-star { width: 11px; height: 10px; border-radius: 0; }
+.graph-legend-shape-triangle { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.graph-legend-shape-triangleDown { clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.graph-legend-shape-diamond { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.graph-legend-shape-hexagon { clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+.graph-legend-shape-star {
+    clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
 .graph-type-document { background: var(--graph-document); }
 .graph-type-knowledge_item { background: var(--graph-item); }
 .graph-type-document_type { background: var(--graph-type); }
@@ -98,3 +115,12 @@
 .graph-type-product { background: var(--graph-product); }
 .graph-type-topic { background: var(--graph-topic); }
 .graph-type-tag { background: var(--graph-tag); }
+.graph-type-chunk { background: var(--graph-chunk); }
+.graph-type-reference { background: var(--graph-reference); }
+.entity-graph-selection li .graph-evidence-excerpt {
+    border-left: 2px solid var(--line);
+    padding-left: 8px;
+    color: var(--subtext);
+    font-size: 12px;
+    line-height: 1.45;
+}

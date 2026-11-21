@@ -46,6 +46,8 @@
     --graph-product: #58dba0;
     --graph-topic: #b093ef;
     --graph-tag: #75bed8;
+    --graph-chunk: #6fd3c1;
+    --graph-reference: #f27ba8;
     --mono: 'IBM Plex Mono', 'Consolas', monospace;
     --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     --base-font-size: 16px;
@@ -87,6 +89,8 @@ html[data-theme="light"] {
     --graph-product: #168553;
     --graph-topic: #6949a4;
     --graph-tag: #176c9a;
+    --graph-chunk: #0f7a6b;
+    --graph-reference: #b03068;
 }
 
 * { box-sizing: border-box; }
