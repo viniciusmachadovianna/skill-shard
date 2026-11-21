@@ -89,7 +89,9 @@
     border-left: 0;
     background: transparent;
 }
-.conversation-rename:hover img { filter: none; }
+/* Rename is not a destructive action: it keeps the icon colour on hover (the shared delete rule turns icons red). */
+.conversation-entry .conversation-rename:hover img { filter: brightness(1.4) saturate(.85); }
+html[data-theme="light"] .conversation-entry .conversation-rename:hover img { filter: brightness(.8); }
 .conversation-entry .conversation-item.is-renaming { flex: 0 0 auto; padding-right: 8px; pointer-events: none; }
 .conversation-rename-input {
     min-width: 0;

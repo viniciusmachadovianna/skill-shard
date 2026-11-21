@@ -54,7 +54,8 @@ const sidebarResizeHandle = $('.sidebar-resize-handle');
 const rightPanel = $('.right-panel');
 const rightPanelToggle = $('.right-panel-toggle');
 const rightPanelToggleIcon = rightPanelToggle.querySelector('img');
-if (window.matchMedia('(max-width: 800px)').matches) rightPanel.classList.add('is-collapsed');
+// The data explorer always starts collapsed; the toggle (or a Relational RAG answer) opens it.
+rightPanel.classList.add('is-collapsed');
 const rightPanelBar = $('.right-panel-bar');
 const workArea = $('#work-area');
 
