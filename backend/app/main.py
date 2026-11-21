@@ -48,7 +48,7 @@ from pydantic import BaseModel, Field
 from app.generation.llm_client import ask_llm
 from app.generation.citation_quotes import insert_chunk_quotes
 from app.config import frontend_origin
-from app.ingestion.chunker import chunk_text_by_words
+from app.ingestion.chunker import chunk_document
 from app.ingestion.loader import load_pdf_pages_from_bytes
 from app.retrieval.vector_store import (
     MissingIndexedDocumentsError,
@@ -255,8 +255,9 @@ def build_document_chunks(documents: list[IndexDocument]) -> list[dict]:
 
     PDFs (em `base64`) são decodificados e lidos página por página. Os demais
     formatos (TXT, MD, CSV e JSON) são tratados como uma única "página" sem
-    número. O texto é dividido por `chunk_text_by_words` e os trechos de cada
-    documento são numerados em sequência a partir de 1, atravessando páginas.
+    número. O texto é dividido por `chunk_document`, que segue a estrutura de
+    cada formato, e os trechos de cada documento são numerados em sequência a
+    partir de 1. Nos PDFs, `page` é a página onde o trecho começa.
 
     Args:
         documents: documentos recebidos do frontend.
@@ -294,21 +295,16 @@ def build_document_chunks(documents: list[IndexDocument]) -> list[dict]:
                 raise ValueError(f"{document.name}: invalid text encoding.")
             pages = [{"page": None, "text": document.content, "source_file": document.name}]
 
-        chunk_index = 0
-        for page in pages:
-            # for text in chunk_text_by_words(page["text"]):
-            for piece in chunk_text_by_words(page["text"], page["source_file"]):
-                chunk_index += 1
-                chunks.append(
-                    {
-                        # "text": text,
-                        "text": piece["text"],
-                        "source": document.name,
-                        "page": page["page"],
-                        "chunk": chunk_index,
-                        "document_id": document.id,
-                    }
-                )
+        for chunk_index, piece in enumerate(chunk_document(pages, document.name), start=1):
+            chunks.append(
+                {
+                    "text": piece["text"],
+                    "source": document.name,
+                    "page": piece["page"],
+                    "chunk": chunk_index,
+                    "document_id": document.id,
+                }
+            )
 
     return chunks
 
